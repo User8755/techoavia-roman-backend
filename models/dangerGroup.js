@@ -6,13 +6,13 @@ const dangerGroup = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 2,
-    unique: true
+    unique: true,
   },
   dangerID: {
     type: Number,
     required: true,
     minlength: 1,
-    unique: true
+    unique: true,
   },
 });
 

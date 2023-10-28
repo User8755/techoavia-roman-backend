@@ -1,7 +1,11 @@
+/* eslint-disable no-console */
 const express = require('express');
+
 const app = express();
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const { createUsers } = require('./controllers/user');
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -29,9 +33,19 @@ app.use((req, res, next) => {
   return next();
 });
 
+app.post('/signup', createUsers);
+
 app.use('/', require('./routes/dangerGroup'));
 app.use('/', require('./routes/danger'));
 
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+  res.status(statusCode).send({
+    message: statusCode === 500 ? 'На сервере произошла ошибка' : message,
+  });
+  next();
+});
+
 app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}`);
+  console.log(`Слушаем порт ${PORT}`);
 });
