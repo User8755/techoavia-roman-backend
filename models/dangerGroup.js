@@ -6,13 +6,14 @@ const dangerGroup = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 2,
-    unique: true,
+    validate: /[^{}<>=a-zA-Z]/,
   },
   dangerID: {
-    type: Number,
+    type: String,
     required: true,
     minlength: 1,
     unique: true,
+    validate: /^\d+\.?\d*$/,
   },
 });
 

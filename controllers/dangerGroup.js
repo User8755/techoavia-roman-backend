@@ -9,7 +9,7 @@ module.exports.getDangerGroup = (req, res) => {
     .catch((err) => console.log(err));
 };
 
-module.exports.createDangerGroup = (req, res) => {
+module.exports.createDangerGroup = (req, res, next) => {
   const { label, dangerID } = req.body;
   dangerGroup
     .create({ label, dangerID })
@@ -19,7 +19,7 @@ module.exports.createDangerGroup = (req, res) => {
         res.status(409).send({ message: 'Не врено заполнено название' });
       } else if (err.code === 11000 && err.keyPattern.dangerID === 1) {
         res.status(409).send({ message: 'Не врено заполнено Id' });
-      } else { console.log(err); }
+      } else { next(err); }
     });
 };
 

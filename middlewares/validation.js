@@ -20,3 +20,26 @@ module.exports.validationLogin = celebrate({
     password: Joi.string().required(),
   }),
 });
+
+module.exports.validationDangerGroup = celebrate({
+  body: Joi.object().keys({
+    label: Joi.string().required().regex(/^[А-Яа-я]/),
+    dangerID: Joi.string().required(),
+  }),
+});
+
+module.exports.validationDanger = celebrate({
+  body: Joi.object().keys({
+    label: Joi.string().required(),
+    dependence: Joi.string().required(),
+    groupId: Joi.string().required(),
+  }),
+});
+
+module.exports.validationDangerEvent = celebrate({
+  body: Joi.object().keys({
+    label: Joi.string().required(),
+    dependence: Joi.string().required(),
+    groupId: Joi.string().required(),
+  }),
+});

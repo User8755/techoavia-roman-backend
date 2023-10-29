@@ -35,6 +35,7 @@ app.use((req, res, next) => {
 app.use('/', require('./routes/user'));
 app.use('/', require('./routes/dangerGroup'));
 app.use('/', require('./routes/danger'));
+app.use('/', require('./routes/dangerEvent'));
 
 app.use((err, req, res, next) => {
   console.log(err);

@@ -11,6 +11,12 @@ const dangerEvent = new mongoose.Schema({
     required: true,
     minlength: 2,
   },
+  groupId: {
+    type: String,
+    required: true,
+    unique: true,
+    minlength: 2,
+  },
 });
 
 module.exports = mongoose.model('dangerEvent', dangerEvent);

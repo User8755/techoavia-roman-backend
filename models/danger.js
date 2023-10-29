@@ -7,7 +7,7 @@ const danger = new mongoose.Schema({
     minlength: 2,
   },
   groupId: {
-    type: Number,
+    type: String,
     required: true,
     minlength: 1,
   },
