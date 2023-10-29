@@ -12,7 +12,7 @@ const { PORT = 3001, MONGODB = 'mongodb://127.0.0.1:27017/test' } = process.env;
 
 mongoose.connect(MONGODB);
 
-const urlList = ['http://localhost:3000'];
+const urlList = ['http://localhost:3000, https://user8755.github.io/'];
 
 app.use((req, res, next) => {
   const { origin } = req.headers;
