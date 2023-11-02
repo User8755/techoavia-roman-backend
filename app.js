@@ -12,7 +12,7 @@ const { PORT = 3001, MONGODB = 'mongodb://127.0.0.1:27017/test' } = process.env;
 
 mongoose.connect(MONGODB);
 
-const urlList = ['http://localhost:3000, https://tafontend.online/'];
+const urlList = ['https://tafontend.online/'];
 
 app.use((req, res, next) => {
   const { origin } = req.headers;
@@ -30,6 +30,12 @@ app.use((req, res, next) => {
   }
 
   return next();
+});
+
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
 });
 
 app.use('/', require('./routes/user'));
