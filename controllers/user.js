@@ -37,8 +37,6 @@ module.exports.createUsers = (req, res, next) => {
 };
 
 module.exports.login = (req, res, next) => {
-  // eslint-disable-next-line no-console
-  console.log(res);
   const { email, password } = req.body;
   User.findOne({ email }).select('+password')
     .then((user) => {
