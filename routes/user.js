@@ -4,5 +4,5 @@ const { validationCreateUser, validationLogin } = require('../middlewares/valida
 
 router.post('/signup', validationCreateUser, createUsers);
 router.post('/signin', validationLogin, login);
-router.get('/me', login);
+router.get('/users/me', login);
 module.exports = router;
