@@ -19,6 +19,7 @@ const urlList = ['http://127.0.0.1:3000', 'https://tafontend.online/'];
 app.use((req, res, next) => {
   const { origin } = req.headers;
   const { method } = req;
+  console.log(origin);
   const requestHeaders = req.headers['access-control-request-headers'];
   const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,PUT,PATCH,POST,DELETE';
   console.log(urlList.includes(origin));
