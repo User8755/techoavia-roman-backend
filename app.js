@@ -14,7 +14,7 @@ const { PORT = 3001, MONGODB = 'mongodb://127.0.0.1:27017/test' } = process.env;
 
 mongoose.connect(MONGODB);
 
-const urlList = ['http://127.0.0.1:3000', 'https://tafontend.online/'];
+const urlList = ['http://127.0.0.1:3000', 'https://tafontend.online'];
 
 app.use((req, res, next) => {
   const { origin } = req.headers;
