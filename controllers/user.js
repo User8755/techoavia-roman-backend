@@ -5,6 +5,7 @@ const User = require('../models/user');
 const ConflictError = require('../errors/ConflictError');
 const BadRequestError = require('../errors/BadRequestError');
 const Unauthorized = require('../errors/Unauthorized');
+const NotFoundError = require('../errors/NotFound');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -49,10 +50,28 @@ module.exports.login = (req, res, next) => {
           if (!matched) {
             throw new Unauthorized('Проверьте email и пароль');
           }
-          res.send({ token });
+          res.cookie('key', token, { maxAge: 3600000 * 24 * 7, sameSite: true, secure: true }).send({ message: 'успешно' });
         });
     })
     .catch((err) => {
       next(err);
+    });
+};
+
+module.exports.getUsersСurrent = (req, res, next) => {
+  User.findById({ _id: req.user._id })
+    .then((user) => {
+      if (user) {
+        res.send(user);
+      } else {
+        next(new NotFoundError('Пользователь с данным Id не найден'));
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new BadRequestError('Неверный Id пользователя'));
+      } else {
+        next(err);
+      }
     });
 };
