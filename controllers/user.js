@@ -52,7 +52,7 @@ module.exports.login = (req, res, next) => {
           }
           res.cookie('key', token, {
             maxAge: 3600000 * 24 * 7, sameSite: 'None', secure: true, httpOnly: true,
-          }).send({ message: 'успешно' });
+          }).end();
         });
     })
     .catch((err) => {
