@@ -19,13 +19,12 @@ const urlList = ['http://127.0.0.1:3000', 'https://tafontend.online'];
 app.use((req, res, next) => {
   const { origin } = req.headers;
   const { method } = req;
-  console.log(origin);
+
   const requestHeaders = req.headers['access-control-request-headers'];
   const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,PUT,PATCH,POST,DELETE';
-  console.log(urlList.includes(origin));
+
   if (urlList.includes(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
-    console.log(origin);
   }
 
   // res.header('Access-Control-Allow-Origin', '*');
@@ -38,11 +37,44 @@ app.use((req, res, next) => {
   return next();
 });
 
-app.get('/crash-test', () => {
-  setTimeout(() => {
-    throw new Error('Сервер сейчас упадёт');
-  }, 0);
-});
+// const ExcelJS = require('exceljs');
+
+// const fileName = './list.xlsx';
+
+// const workbook = new ExcelJS.Workbook();
+
+// workbook.xlsx
+//   .readFile(fileName)
+//   .then(() => {})
+//   .catch((e) => console.log(e));
+// workbook.xlsx.readFile(fileName).then(() => {
+//   const worksheet = workbook.getWorksheet('Лист1');
+//   const dobCol = worksheet.getColumn(2);
+
+//   // dobCol.eachCell((cell) => {
+//   //   // console.log(`sheet.getCell('${cell.address}').style = `);
+//   //   // console.log(cell.style);
+//   //   worksheet.getCell(
+//   //     cell.address,
+//   //   ).value = `getCell(${cell.address}).style = {${cell.style}}`;
+//   // });
+//   // const row = worksheet.getRow(27);
+//   // row.eachCell((cell, colNumber) => {
+//   //   if (cell.value !== null) {
+//   //     console.log(`sheet.getCell('${cell.address}').value='${cell.value}'`);
+//   //   }
+//   // });
+//   // row.eachCell((cell) => {
+//   //   console.log(`sheet.mergeCells('${cell.model.address}', '${cell.model.master}')`)
+//   // });
+//   dobCol.eachCell((cell) => {
+//     // console.log(`sheet.getCell('${cell.address}').style = `);
+//     //console.log(cell._row);
+
+//   });
+//   console.log( worksheet)
+//   workbook.xlsx.writeFile('filename1.xlsx').catch((e) => console.log(e));
+// });
 
 app.use('/users', require('./routes/user'));
 app.use('/dangerGroup', require('./routes/dangerGroup'));
