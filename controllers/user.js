@@ -10,7 +10,14 @@ const NotFoundError = require('../errors/NotFound');
 const { NODE_ENV, JWT_SECRET } = process.env;
 
 module.exports.createUsers = (req, res, next) => {
-  const { name, family, email } = req.body;
+  const {
+    name, family, email, branch, login, role,
+  } = req.body;
+  let newrole;
+  if (role === 'Администратор филиала') {
+    newrole = 'admin';
+  }
+
   bcrypt
     .hash(req.body.password, 4) // для теста пароль 4 символа
     .then((hash) => User.create({
@@ -18,6 +25,9 @@ module.exports.createUsers = (req, res, next) => {
       family,
       email,
       password: hash,
+      branch,
+      login,
+      role: newrole,
     }))
     .then((user) => {
       res.send({
@@ -27,10 +37,15 @@ module.exports.createUsers = (req, res, next) => {
       });
     })
     .catch((err) => {
+      console.log(err);
       if (err.code === 11000) {
-        next(new ConflictError('Пользователь с таким email зарегистрирован'));
+        next(
+          new ConflictError(
+            'Пользователь с таким логином или email зарегистрирован',
+          ),
+        );
       } else if (err.name === 'ValidationError') {
-        next(new BadRequestError('Произошла ошибка, проверьте email и пароль'));
+        next(new BadRequestError('Произошла ошибка, проверьте логин и пароль'));
       } else {
         next(err);
       }
@@ -38,22 +53,24 @@ module.exports.createUsers = (req, res, next) => {
 };
 
 module.exports.login = (req, res, next) => {
-  const { email, password } = req.body;
-  User.findOne({ email }).select('+password')
+  const { login, password } = req.body;
+  User.findOne({ login })
+    .select('+password')
     .then((user) => {
       if (!user) {
-        throw new Unauthorized('Проверьте email и пароль');
+        throw new Unauthorized('Проверьте логин и пароль');
       }
-      return bcrypt.compare(password, user.password)
-        .then((matched) => {
-          const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
-          if (!matched) {
-            throw new Unauthorized('Проверьте email и пароль');
-          }
-          res.cookie('key', token, {
-            maxAge: 3600000 * 24 * 7, sameSite: 'None', secure: true, httpOnly: true,
-          }).end();
-        });
+      return bcrypt.compare(password, user.password).then((matched) => {
+        const token = jwt.sign(
+          { _id: user._id },
+          NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+          { expiresIn: '7d' },
+        );
+        if (!matched) {
+          throw new Unauthorized('Проверьте логин и пароль');
+        }
+        res.send({ key: token });
+      });
     })
     .catch((err) => {
       next(err);
@@ -61,7 +78,13 @@ module.exports.login = (req, res, next) => {
 };
 
 module.exports.getUsersСurrent = (req, res, next) => {
-  User.findById({ _id: req.user._id })
+  const { authorization } = req.headers;
+  const token = authorization.replace('Bearer ', '');
+  const payload = jwt.verify(
+    token,
+    NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+  );
+  User.findById({ _id: payload._id })
     .then((user) => {
       if (user) {
         res.send(user);
@@ -76,4 +99,12 @@ module.exports.getUsersСurrent = (req, res, next) => {
         next(err);
       }
     });
+};
+
+module.exports.getAllUsers = (req, res, next) => {
+  User.find({})
+    .then((user) => {
+      res.send(user);
+    })
+    .catch((e) => next(e));
 };

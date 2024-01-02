@@ -16,9 +16,9 @@ const user = new mongoose.Schema(
     },
     password: {
       type: String,
-      require: true,
-      minlength: 6,
+      minlength: 4,
       select: false,
+      default: '111111',
     },
     email: {
       type: String,
@@ -31,8 +31,17 @@ const user = new mongoose.Schema(
     },
     role: {
       type: String,
-      default: 'admin',
+      default: 'user',
       require: true,
+    },
+    branch: {
+      type: String,
+      require: true,
+    },
+    login: {
+      type: String,
+      require: true,
+      unique: true,
     },
 
   },
