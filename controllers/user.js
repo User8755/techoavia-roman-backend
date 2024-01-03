@@ -16,6 +16,12 @@ module.exports.createUsers = (req, res, next) => {
   let newrole;
   if (role === 'Администратор филиала') {
     newrole = 'admin';
+  } else if (role === 'Пользователь') {
+    newrole = 'user';
+  } else if (role === 'Нет') {
+    newrole = 'none';
+  } else if (role === 'Супер') {
+    newrole = 'sadmin';
   }
 
   bcrypt
@@ -37,7 +43,6 @@ module.exports.createUsers = (req, res, next) => {
       });
     })
     .catch((err) => {
-      console.log(err);
       if (err.code === 11000) {
         next(
           new ConflictError(
@@ -78,13 +83,8 @@ module.exports.login = (req, res, next) => {
 };
 
 module.exports.getUsersСurrent = (req, res, next) => {
-  const { authorization } = req.headers;
-  const token = authorization.replace('Bearer ', '');
-  const payload = jwt.verify(
-    token,
-    NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
-  );
-  User.findById({ _id: payload._id })
+  console.log(req.user)
+  User.findById({ _id: req.user._id })
     .then((user) => {
       if (user) {
         res.send(user);
@@ -102,9 +102,62 @@ module.exports.getUsersСurrent = (req, res, next) => {
 };
 
 module.exports.getAllUsers = (req, res, next) => {
-  User.find({})
+  const { authorization } = req.headers;
+  const token = authorization.replace('Bearer ', '');
+  const payload = jwt.verify(
+    token,
+    NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+  );
+  User.findById({ _id: payload._id })
     .then((user) => {
-      res.send(user);
+      if (user.role === 'admin') {
+        User.find({ branch: user.branch })
+          .then((u) => {
+            res.send(u);
+          })
+          .catch((e) => next(e));
+      } else if (user.role === 'sadmin') {
+        User.find({})
+          .then((u) => {
+            const sortedUserBranch = u.sort((a, b) => {
+              const nameA = a.branch.toLowerCase();
+              const nameB = b.branch.toLowerCase();
+              if (nameA < nameB) return -1;
+              // сортируем строки по возрастанию
+              if (nameA > nameB) return 1;
+              return 0; // Никакой сортировки
+            });
+            res.send(sortedUserBranch);
+          })
+          .catch((e) => next(e));
+      } else {
+        next(new NotFoundError('Пользователь с данным Id не найден'));
+      }
+    })
+    .catch((e) => next(e));
+};
+
+module.exports.updateProfile = (req, res, next) => {
+  const { authorization } = req.headers;
+  const token = authorization.replace('Bearer ', '');
+  const payload = jwt.verify(
+    token,
+    NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+  );
+  bcrypt
+    .hash(req.body.password.password, 4) // Пофискисть это дерьмо
+    .then((hash) => User.findByIdAndUpdate(
+      payload._id,
+      { password: hash },
+      { new: true, runValidators: true },
+    ))
+
+    .then((user) => {
+      if (!user) {
+        next(new NotFoundError('Пользователь с данным Id не найден'));
+      } else {
+        res.send(user);
+      }
     })
     .catch((e) => next(e));
 };

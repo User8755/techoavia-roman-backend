@@ -5,7 +5,6 @@ module.exports.createBranch = (req, res, next) => {
   Branch.create({ branch })
     .then((i) => res.send(i))
     .catch((e) => {
-      console.log(e);
       if (e.code === 11000) {
         res.status(409).send('Такая запись уже существует');
       } else {
