@@ -83,7 +83,6 @@ module.exports.login = (req, res, next) => {
 };
 
 module.exports.getUsersСurrent = (req, res, next) => {
-  console.log(req.user)
   User.findById({ _id: req.user._id })
     .then((user) => {
       if (user) {
@@ -152,6 +151,34 @@ module.exports.updateProfile = (req, res, next) => {
       { new: true, runValidators: true },
     ))
 
+    .then((user) => {
+      if (!user) {
+        next(new NotFoundError('Пользователь с данным Id не найден'));
+      } else {
+        res.send(user);
+      }
+    })
+    .catch((e) => next(e));
+};
+
+module.exports.updateUserRole = (req, res, next) => {
+  const { role, id } = req.body;
+  let newrole;
+  if (role === 'Администратор филиала') {
+    newrole = 'admin';
+  } else if (role === 'Пользователь') {
+    newrole = 'user';
+  } else if (role === 'Нет') {
+    newrole = 'none';
+  } else if (role === 'Супер') {
+    newrole = 'sadmin';
+  }
+
+  User.findByIdAndUpdate(
+    id,
+    { role: newrole },
+    { new: true, runValidators: true },
+  )
     .then((user) => {
       if (!user) {
         next(new NotFoundError('Пользователь с данным Id не найден'));
