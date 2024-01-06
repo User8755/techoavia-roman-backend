@@ -1,5 +1,9 @@
 const router = require('express').Router();
-const { getDangerGroup, createDangerGroup, delDangerGroup } = require('../controllers/dangerGroup');
+const {
+  getDangerGroup,
+  createDangerGroup,
+  delDangerGroup,
+} = require('../controllers/dangerGroup');
 const { validationDangerGroup } = require('../middlewares/validation');
 const auth = require('../middlewares/auth');
 

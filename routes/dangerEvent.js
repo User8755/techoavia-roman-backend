@@ -1,5 +1,8 @@
 const router = require('express').Router();
-const { getDangerEvent, createDangerEvent } = require('../controllers/dangerEvent');
+const {
+  getDangerEvent,
+  createDangerEvent,
+} = require('../controllers/dangerEvent');
 const auth = require('../middlewares/auth');
 
 router.get('/', auth, getDangerEvent);

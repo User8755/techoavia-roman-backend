@@ -42,6 +42,7 @@ app.use('/users', require('./routes/user'));
 // app.use('/danger', require('./routes/danger'));
 // app.use('/dangerEvent', require('./routes/dangerEvent'));
 app.use('/update', require('./routes/update'));
+app.use('/info', require('./routes/info'));
 
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;

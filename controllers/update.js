@@ -1,4 +1,6 @@
 const Branch = require('../models/branch');
+const BadRequestError = require('../errors/BadRequestError');
+const ConflictError = require('../errors/ConflictError');
 
 module.exports.createBranch = (req, res, next) => {
   const { branch } = req.body;
@@ -6,7 +8,10 @@ module.exports.createBranch = (req, res, next) => {
     .then((i) => res.send(i))
     .catch((e) => {
       if (e.code === 11000) {
-        res.status(409).send('Такая запись уже существует');
+        next(next(new ConflictError('Запись уже существует')));
+      }
+      if (e.name === 'ValidationError') {
+        next(new BadRequestError('Недопустимая запись'));
       } else {
         next(e);
       }
