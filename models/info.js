@@ -5,7 +5,6 @@ const info = new mongoose.Schema({
     type: String,
     require: true,
     minlength: 2,
-    default: 'nnnnnn',
   },
 });
 
