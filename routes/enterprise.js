@@ -6,11 +6,11 @@ const {
   updateCurrentEnterpriseValue,
 } = require('../controllers/enterprise');
 const auth = require('../middlewares/auth');
-const { validationEnterprise } = require('../middlewares/validation');
+const { validationEnterprise, validationEnterpriseValue } = require('../middlewares/validation');
 
 router.post('/', auth, validationEnterprise, createEnterprise);
 router.get('/', auth, getEnterprisesUser);
 router.get('/:id', auth, getCurrentEnterprise);
-router.patch('/:id', auth, updateCurrentEnterpriseValue);
+router.patch('/:id', auth, validationEnterpriseValue, updateCurrentEnterpriseValue);
 
 module.exports = router;

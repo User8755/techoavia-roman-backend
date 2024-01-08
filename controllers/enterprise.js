@@ -1,6 +1,5 @@
 const Enterprise = require('../models/enterprise');
 const ConflictError = require('../errors/ConflictError');
-const NotFoundError = require('../errors/NotFound');
 
 module.exports.createEnterprise = (req, res, next) => {
   Enterprise.create({ enterprise: req.body.enterprise, owner: req.user._id })
@@ -34,7 +33,6 @@ module.exports.getCurrentEnterprise = (req, res, next) => {
 };
 
 module.exports.updateCurrentEnterpriseValue = (req, res, next) => {
-  console.log(req.body.proff);
   Enterprise.findByIdAndUpdate(
     req.params.id,
     {
@@ -87,5 +85,5 @@ module.exports.updateCurrentEnterpriseValue = (req, res, next) => {
     { new: true },
   )
     .then((value) => res.send(value))
-    .catch((e) => console.log(e));
+    .catch((e) => next(e));
 };
