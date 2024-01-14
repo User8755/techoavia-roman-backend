@@ -6,6 +6,7 @@ const {
   getAllUsers,
   updateProfile,
   updateUserRole,
+  getAllUsersBranch,
 } = require('../controllers/user');
 const {
   validationCreateUser,
@@ -18,6 +19,7 @@ router.post('/signup', validationCreateUser, createUsers);
 router.post('/signin', validationLogin, login);
 router.get('/me', auth, getUsersСurrent);
 router.get('/all', auth, getAllUsers);
+router.get('/all/branch', auth, getAllUsersBranch);
 router.patch('/me', auth, updateProfile);
 router.patch('/role', auth, updateUserRole);
 

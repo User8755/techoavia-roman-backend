@@ -22,6 +22,7 @@ const user = new mongoose.Schema(
     },
     email: {
       type: String,
+      select: false,
       required: true,
       unique: true,
       validate: {
@@ -30,8 +31,8 @@ const user = new mongoose.Schema(
       },
     },
     role: {
-      type: String,
-      default: 'user',
+      type: Array,
+      default: ['user'],
       require: true,
     },
     branch: {

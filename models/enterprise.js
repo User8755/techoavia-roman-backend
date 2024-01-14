@@ -15,6 +15,10 @@ const enterprise = new mongoose.Schema({
     type: Array,
     default: [],
   },
+  access: {
+    type: Array,
+    default: [],
+  },
 });
 
 module.exports = mongoose.model('enterprise', enterprise);

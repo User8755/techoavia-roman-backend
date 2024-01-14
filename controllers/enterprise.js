@@ -8,15 +8,17 @@ module.exports.createEnterprise = (req, res, next) => {
 };
 
 module.exports.getEnterprisesUser = (req, res, next) => {
-  Enterprise.find({})
+  Enterprise.find({ owner: req.user._id })
     .then((i) => {
-      const arr = [];
-      i.forEach((e) => {
-        if (e.owner.toString() === req.user._id) {
-          arr.push(e);
-        }
-      });
-      res.send(arr);
+      res.send(i);
+    })
+    .catch((e) => next(e));
+};
+
+module.exports.getEnterprisesAccessUser = (req, res, next) => {
+  Enterprise.find({ access: req.user._id })
+    .then((i) => {
+      res.send(i);
     })
     .catch((e) => next(e));
 };
@@ -85,5 +87,18 @@ module.exports.updateCurrentEnterpriseValue = (req, res, next) => {
     { new: true },
   )
     .then((value) => res.send(value))
+    .catch((e) => next(e));
+};
+
+module.exports.updateAccess = (req, res, next) => {
+  const { user } = req.body;
+  Enterprise.findByIdAndUpdate(
+    req.params.id,
+    { $push: { access: user } },
+    { new: true },
+  )
+    .then((i) => {
+      res.send(i);
+    })
     .catch((e) => next(e));
 };

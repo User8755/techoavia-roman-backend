@@ -67,7 +67,7 @@ module.exports.login = (req, res, next) => {
       }
       return bcrypt.compare(password, user.password).then((matched) => {
         const token = jwt.sign(
-          { _id: user._id },
+          { _id: user._id, role: user.role },
           NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
           { expiresIn: '7d' },
         );
@@ -101,21 +101,15 @@ module.exports.getUsersСurrent = (req, res, next) => {
 };
 
 module.exports.getAllUsers = (req, res, next) => {
-  const { authorization } = req.headers;
-  const token = authorization.replace('Bearer ', '');
-  const payload = jwt.verify(
-    token,
-    NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
-  );
-  User.findById({ _id: payload._id })
+  User.findById({ _id: req.user._id })
     .then((user) => {
-      if (user.role === 'admin') {
+      if (user.role.includes('admin')) {
         User.find({ branch: user.branch })
           .then((u) => {
             res.send(u);
           })
           .catch((e) => next(e));
-      } else if (user.role === 'sadmin') {
+      } else if (user.role.includes('sadmin')) {
         User.find({})
           .then((u) => {
             const sortedUserBranch = u.sort((a, b) => {
@@ -127,6 +121,22 @@ module.exports.getAllUsers = (req, res, next) => {
               return 0; // Никакой сортировки
             });
             res.send(sortedUserBranch);
+          })
+          .catch((e) => next(e));
+      } else {
+        next(new NotFoundError('Пользователь с данным Id не найден'));
+      }
+    })
+    .catch((e) => next(e));
+};
+
+module.exports.getAllUsersBranch = (req, res, next) => {
+  User.findById({ _id: req.user._id })
+    .then((user) => {
+      if (user) {
+        User.find({ branch: user.branch })
+          .then((u) => {
+            res.send(u);
           })
           .catch((e) => next(e));
       } else {
