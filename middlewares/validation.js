@@ -48,6 +48,9 @@ module.exports.validationDangerEvent = celebrate({
 module.exports.validationEnterprise = celebrate({
   body: Joi.object().keys({
     enterprise: Joi.string().required().min(2),
+    inn: Joi.string().required().min(2),
+    kpp: Joi.string().required().min(2),
+    order: Joi.string().required().min(2),
   }),
 });
 

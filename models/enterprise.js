@@ -19,6 +19,22 @@ const enterprise = new mongoose.Schema({
     type: Array,
     default: [],
   },
+  inn: {
+    type: String,
+    require: true,
+    minlength: 2,
+  },
+  kpp: {
+    type: String,
+    require: true,
+    minlength: 2,
+  },
+  order: {
+    type: String,
+    require: true,
+    minlength: 2,
+    unique: true,
+  },
 });
 
 module.exports = mongoose.model('enterprise', enterprise);
