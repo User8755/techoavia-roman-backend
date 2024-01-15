@@ -15,33 +15,35 @@ const { PORT = 3001, MONGODB = 'mongodb://127.0.0.1:27017/test' } = process.env;
 
 mongoose.connect(MONGODB);
 
- const urlList = ['http://localhost:3000', 'https://tafontend.online/'];
-app.use(cors({
-  origin: urlList,
-  credentials: true,
-  secure: false,
-}));
-// app.use((req, res, next) => {
-//   const { origin } = req.headers;
-//   const { method } = req;
+const urlList = ['http://localhost:3000', 'https://tafontend.online/'];
+app.use(
+  cors({
+    origin: urlList,
+    credentials: true,
+    secure: false,
+  }),
+);
+app.use((req, res, next) => {
+  const { origin } = req.headers;
+  const { method } = req;
 
-//   const requestHeaders = req.headers['access-control-request-headers'];
-//   const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,PUT,PATCH,POST,DELETE';
-// console.log(urlList.includes(origin))
-//   if (urlList.includes(origin)) {
-//     res.header('Access-Control-Allow-Origin', origin);
-//     res.header('Access-Control-Allow-Credentials', true);
-//   }
+  const requestHeaders = req.headers['access-control-request-headers'];
+  const DEFAULT_ALLOWED_METHODS = 'GET,HEAD,PUT,PATCH,POST,DELETE';
+  console.log(urlList.includes(origin));
+  if (urlList.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Credentials', true);
+  }
 
-//   //res.header('Access-Control-Allow-Origin', '*');
-//   if (method === 'OPTIONS') {
-//     res.header('Access-Control-Allow-Methods', DEFAULT_ALLOWED_METHODS);
-//     res.header('Access-Control-Allow-Headers', requestHeaders);
-//     return res.end();
-//   }
+  // res.header('Access-Control-Allow-Origin', '*');
+  if (method === 'OPTIONS') {
+    res.header('Access-Control-Allow-Methods', DEFAULT_ALLOWED_METHODS);
+    res.header('Access-Control-Allow-Headers', requestHeaders);
+    return res.end();
+  }
 
-//   return next();
-// });
+  return next();
+});
 
 app.use('/users', require('./routes/user'));
 // app.use('/dangerGroup', require('./routes/dangerGroup'));
