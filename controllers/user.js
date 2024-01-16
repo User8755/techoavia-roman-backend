@@ -76,9 +76,10 @@ module.exports.login = (req, res, next) => {
           throw new Unauthorized('Проверьте логин и пароль');
         }
         res.cookie('key', token, {
-          // sameSite: 'lax',
+          sameSite: 'none',
           maxAge: 3600000,
           httpOnly: true,
+          secure: true,
         }).send({ key: token });
       });
     })

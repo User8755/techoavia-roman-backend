@@ -25,7 +25,7 @@ app.use(
     origin: urlList,
     credentials: true,
     secure: true,
-  }), // https://tafontend.online
+  }),
 );
 // app.use((req, res, next) => {
 //   const { origin } = req.headers;
