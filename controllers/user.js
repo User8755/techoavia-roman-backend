@@ -58,6 +58,7 @@ module.exports.createUsers = (req, res, next) => {
 };
 
 module.exports.login = (req, res, next) => {
+  console.log(req.cookies);
   const { login, password } = req.body;
   User.findOne({ login })
     .select('+password')
@@ -74,7 +75,11 @@ module.exports.login = (req, res, next) => {
         if (!matched) {
           throw new Unauthorized('Проверьте логин и пароль');
         }
-        res.cookie('key', token).send({ key: token });
+        res.cookie('key', token, {
+          sameSite: 'lax',
+          maxAge: 3600000,
+          httpOnly: true,
+        }).send({ key: token });
       });
     })
     .catch((err) => {
