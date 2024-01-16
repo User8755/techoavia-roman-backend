@@ -74,7 +74,7 @@ module.exports.login = (req, res, next) => {
         if (!matched) {
           throw new Unauthorized('Проверьте логин и пароль');
         }
-        res.send({ key: token });
+        res.cookie('key', token).send({ key: token });
       });
     })
     .catch((err) => {
