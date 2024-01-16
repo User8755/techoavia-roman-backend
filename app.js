@@ -22,7 +22,7 @@ const urlList = [
 ];
 app.use(
   cors({
-    origin: 'http://localhost:3000',
+    origin: urlList,
     credentials: true,
     secure: true,
   }), // https://tafontend.online
