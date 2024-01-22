@@ -78,7 +78,7 @@ module.exports.validationEnterpriseValue = celebrate({
     speciesSIZ: Joi.string().default('').min(0),
     issuanceRate: Joi.string().default('').min(0),
     commit: Joi.string().default('').min(0).min(0),
-    proffSIZ: Joi.string().default('').min(0),
+    proffSIZ: Joi.array(),
     danger776: Joi.string().default('').min(0),
     danger776Id: Joi.string().default('').min(0),
     dangerEvent776: Joi.string().default('').min(0),
