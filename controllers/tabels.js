@@ -114,10 +114,10 @@ module.exports.createBaseTabel = (req, res, next) => {
     });
 };
 const workbook = new Excel.Workbook();
+
 module.exports.createNormTabel = (req, res, next) => {
   Enterprise.findById(req.params.id)
     .then((el) => {
-      const addEmptyRow = el.value.length;
       const fileName = 'normSIZ.xlsx';
       workbook.xlsx
         .readFile(fileName)
@@ -137,11 +137,6 @@ module.exports.createNormTabel = (req, res, next) => {
           };
           const sheet = e.getWorksheet('Лист1');
           const cell = (c, i) => sheet.getCell(c + i);
-          let a = 0;
-          while (a !== addEmptyRow) {
-            sheet.insertRow(11);
-            a += 1;
-          }
 
           let startRow = 11;
           el.value.forEach((item) => {
@@ -173,6 +168,7 @@ module.exports.createNormTabel = (req, res, next) => {
             cell('I', startRow).style = style;
             cell('J', startRow).style = style;
             startRow += 1;
+            sheet.insertRow(startRow);
             if (item.proffSIZ) {
               item.proffSIZ.forEach((SIZ) => {
                 cell('A', startRow).value = item.proffId;
@@ -195,6 +191,7 @@ module.exports.createNormTabel = (req, res, next) => {
                 cell('I', startRow).style = style;
                 cell('J', startRow).style = style;
                 startRow += 1;
+                sheet.insertRow(startRow);
               });
             }
           });
@@ -219,4 +216,106 @@ module.exports.createNormTabel = (req, res, next) => {
     .catch((i) => {
       next(i);
     });
+};
+
+module.exports.createMapOPRTabel = (req, res, next) => {
+  Enterprise.findById(req.params.id).then((el) => {
+    const fileName = 'mapOPR.xlsx';
+    workbook.xlsx
+      .readFile(fileName)
+      .then((e) => {
+        const style = {
+          border: {
+            left: { style: 'thin' },
+            right: { style: 'thin' },
+            bottom: { style: 'thin' },
+            top: { style: 'thin' },
+          },
+          alignment: {
+            horizontal: 'center',
+            vertical: 'middle',
+            wrapText: 'true',
+          },
+        };
+        const sheet = e.getWorksheet('Лист1');
+
+        sheet.getColumn(1).width = 2.33203125;
+        sheet.getColumn(2).width = 5.33203125;
+        sheet.getColumn(3).width = 5.33203125;
+        sheet.getColumn(4).width = 10.5;
+        sheet.getColumn(5).width = 20.5;
+        sheet.getColumn(6).width = 9.6640625;
+        sheet.getColumn(7).width = 25.33203125;
+        sheet.getColumn(8).width = 15;
+        sheet.getColumn(9).width = 8;
+        sheet.getColumn(10).width = 12.83203125;
+        sheet.getColumn(11).width = 10.1640625;
+        sheet.getColumn(12).width = 11.1640625;
+        sheet.getColumn(13).width = 11.1640625;
+        sheet.getColumn(14).width = 14.83203125;
+        sheet.getColumn(15).width = 15.1640625;
+        sheet.getColumn(16).width = 13.83203125;
+        sheet.getColumn(17).width = 14.33203125;
+        sheet.getColumn(18).width = 9;
+        sheet.getColumn(19).width = 9.83203125;
+        sheet.getColumn(20).width = 11.5;
+        sheet.getColumn(21).width = 10;
+
+        let i = 30;
+
+        el.value.forEach((elem) => {
+          sheet.getCell(`B${i}`).value = i - 29;
+          sheet.getCell(`D${i}`).value = elem.danger776Id;
+          sheet.getCell(`E${i}`).value = elem.danger776;
+          sheet.getCell(`F${i}`).value = elem.dangerEvent776Id;
+          sheet.getCell(`G${i}`).value = elem.dangerEvent776;
+          sheet.getCell(`H${i}`).value = elem.obj;
+          sheet.getCell(`J${i}`).value = elem.source;
+          sheet.getCell(`L${i}`).value = elem.existingRiskManagement;
+          sheet.getCell(`O${i}`).value = elem.probability;
+          sheet.getCell(`P${i}`).value = elem.heaviness;
+          sheet.getCell(`Q${i}`).value = elem.ipr;
+          sheet.getCell(`R${i}`).value = elem.riskAttitude;
+          sheet.getCell(`T${i}`).value = elem.acceptability;
+          sheet.getCell(`B${i}`).style = style;
+          sheet.getCell(`D${i}`).style = style;
+          sheet.getCell(`E${i}`).style = style;
+          sheet.getCell(`F${i}`).style = style;
+          sheet.getCell(`G${i}`).style = style;
+          sheet.getCell(`H${i}`).style = style;
+          sheet.getCell(`J${i}`).style = style;
+          sheet.getCell(`L${i}`).style = style;
+          sheet.getCell(`O${i}`).style = style;
+          sheet.getCell(`P${i}`).style = style;
+          sheet.getCell(`Q${i}`).style = style;
+          sheet.getCell(`R${i}`).style = style;
+          sheet.getCell(`T${i}`).style = style;
+          sheet.mergeCells(`B${i}`, `C${i}`);
+          sheet.mergeCells(`H${i}`, `I${i}`);
+          sheet.mergeCells(`J${i}`, `K${i}`);
+          sheet.mergeCells(`L${i}`, `N${i}`);
+          sheet.mergeCells(`R${i}`, `S${i}`);
+          sheet.mergeCells(`T${i}`, `U${i}`);
+
+          i += 1;
+          sheet.insertRow(i);
+        });
+
+        res.setHeader(
+          'Content-Type',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        );
+        res.setHeader(
+          'Content-Disposition',
+          `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+        );
+        workbook.xlsx
+          .write(res)
+          .then(() => {
+            res.end();
+          })
+          .catch((err) => next(err));
+      })
+      .catch((e) => next(e));
+  });
 };
