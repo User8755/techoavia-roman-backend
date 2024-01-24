@@ -319,3 +319,88 @@ module.exports.createMapOPRTabel = (req, res, next) => {
       .catch((e) => next(e));
   });
 };
+
+module.exports.createListOfMeasuresTabel = (req, res, next) => {
+  Enterprise.findById(req.params.id).then((el) => {
+    const fileName = 'ListOfMeasures.xlsx';
+    workbook.xlsx
+      .readFile(fileName)
+      .then((e) => {
+        const style = {
+          border: {
+            left: { style: 'thin' },
+            right: { style: 'thin' },
+            bottom: { style: 'thin' },
+            top: { style: 'thin' },
+          },
+          alignment: {
+            horizontal: 'center',
+            vertical: 'middle',
+            wrapText: 'true',
+          },
+        };
+        const sheet = e.getWorksheet('TDSheet');
+
+        let line = 21;
+        const cell = (c) => sheet.getCell(c + line);
+
+        el.value.forEach((i) => {
+          cell('A').value = line - 20;
+          cell('B').value = i.danger776Id;
+          cell('C').value = i.danger776;
+          cell('D').value = i.dangerEvent776Id;
+          cell('E').value = i.dangerEvent776;
+          cell('F').value = i.obj;
+          cell('G').value = i.source;
+          cell('H').value = i.job || i.proff;
+          cell('I').value = i.riskManagement;
+          cell('J').value = i.periodicity;
+          cell('L').value = i.completionMark;
+          cell('M').value = i.probability;
+          cell('N').value = i.probability1;
+          cell('O').value = i.heaviness;
+          cell('P').value = i.heaviness1;
+          cell('Q').value = i.ipr;
+          cell('R').value = i.ipr1;
+
+          cell('A').style = style;
+          cell('B').style = style;
+          cell('C').style = style;
+          cell('D').style = style;
+          cell('E').style = style;
+          cell('F').style = style;
+          cell('G').style = style;
+          cell('H').style = style;
+          cell('I').style = style;
+          cell('J').style = style;
+          cell('L').style = style;
+          cell('M').style = style;
+          cell('N').style = style;
+          cell('O').style = style;
+          cell('P').style = style;
+          cell('Q').style = style;
+          cell('R').style = style;
+          cell('K').style = style;
+
+          line += 1;
+          sheet.insertRow(line);
+        });
+
+        res.setHeader(
+          'Content-Type',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        );
+        res.setHeader(
+          'Content-Disposition',
+          `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+        );
+        workbook.xlsx
+          .write(res)
+          .then(() => {
+            res.end();
+          })
+          .catch((err) => next(err));
+      })
+      .catch((e) => next(e));
+  });
+};
