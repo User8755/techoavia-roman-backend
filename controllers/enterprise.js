@@ -107,3 +107,16 @@ module.exports.updateAccess = (req, res, next) => {
     })
     .catch((e) => next(e));
 };
+
+module.exports.updateCloseAccess = (req, res, next) => {
+  const { user } = req.body;
+  Enterprise.findByIdAndUpdate(
+    req.params.id,
+    { $pull: { access: user } },
+    { new: true },
+  )
+    .then((i) => {
+      res.send(i);
+    })
+    .catch((e) => next(e));
+};

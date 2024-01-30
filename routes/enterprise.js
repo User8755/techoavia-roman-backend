@@ -6,6 +6,7 @@ const {
   updateCurrentEnterpriseValue,
   updateAccess,
   getEnterprisesAccessUser,
+  updateCloseAccess,
 } = require('../controllers/enterprise');
 const auth = require('../middlewares/auth');
 const {
@@ -24,5 +25,6 @@ router.patch(
   updateCurrentEnterpriseValue,
 );
 router.patch('/access/:id', auth, updateAccess);
+router.delete('/access/:id', auth, updateCloseAccess);
 
 module.exports = router;

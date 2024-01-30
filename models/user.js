@@ -43,8 +43,8 @@ const user = new mongoose.Schema(
       type: String,
       require: true,
       unique: true,
+      select: false,
     },
-
   },
   { versionKey: false },
 );
