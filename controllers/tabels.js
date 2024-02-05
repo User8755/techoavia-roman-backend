@@ -89,8 +89,16 @@ module.exports.createBaseTabel = (req, res, next) => {
         { header: 'Ответственное лицо', key: 'responsiblePerson', width: 20 },
         { header: 'Отметка о выполнении', key: 'completionMark', width: 20 },
       ];
+      let i = 1;
       el.value.forEach((item) => {
+        item.number = i;
         sheet.addRow(item);
+
+        if (item.proffSIZ) {
+          item.proffSIZ.forEach((SIZ) => sheet.addRow(SIZ));
+        }
+
+        i += 1;
       });
 
       res.setHeader(
