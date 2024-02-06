@@ -6,7 +6,11 @@ module.exports.createEnterprise = (req, res, next) => {
     enterprise, inn, kpp, order,
   } = req.body;
   Enterprise.create({
-    enterprise, inn, kpp, order, owner: req.user._id,
+    enterprise,
+    inn,
+    kpp,
+    order,
+    owner: req.user._id,
   })
     .then((i) => res.send(i))
     .catch((e) => next(e));
@@ -30,7 +34,10 @@ module.exports.getEnterprisesAccessUser = (req, res, next) => {
 module.exports.getCurrentEnterprise = (req, res, next) => {
   Enterprise.findOne({ _id: req.params.id })
     .then((i) => {
-      if (i.owner.toString() === req.user._id || i.access.includes(req.user._id)) {
+      if (
+        i.owner.toString() === req.user._id
+        || i.access.includes(req.user._id)
+      ) {
         res.send(i);
       } else {
         next(new ConflictError('Нет доступа'));
@@ -43,7 +50,7 @@ module.exports.updateCurrentEnterpriseValue = (req, res, next) => {
   Enterprise.findByIdAndUpdate(
     req.params.id,
     {
-      $addToSet: {
+      $push: {
         value: {
           proff: req.body.proff,
           proffId: req.body.proffId,

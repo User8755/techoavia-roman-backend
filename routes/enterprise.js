@@ -11,7 +11,6 @@ const {
 const auth = require('../middlewares/auth');
 const {
   validationEnterprise,
-  validationEnterpriseValue,
 } = require('../middlewares/validation');
 
 router.post('/', auth, validationEnterprise, createEnterprise);
@@ -21,7 +20,6 @@ router.get('/:id', auth, getCurrentEnterprise);
 router.patch(
   '/:id',
   auth,
-  validationEnterpriseValue,
   updateCurrentEnterpriseValue,
 );
 router.patch('/access/:id', auth, updateAccess);
