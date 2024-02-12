@@ -9,6 +9,7 @@ module.exports.createBaseTabel = (req, res, next) => {
       sheet.columns = [
         { header: '№ п/п', key: 'number', width: 9 },
         { header: 'Код профессии (при наличии)', key: 'proffId', width: 20 },
+        { header: 'Номер рабочего места', key: 'num', width: 20 },
         { header: 'Профессия', key: 'proff', width: 20 },
         { header: 'Должность', key: 'job', width: 20 },
         { header: 'Подразделение', key: 'subdivision', width: 20 },

@@ -52,6 +52,7 @@ module.exports.updateCurrentEnterpriseValue = (req, res, next) => {
     {
       $push: {
         value: {
+          num: req.body.num,
           proff: req.body.proff,
           proffId: req.body.proffId,
           danger: req.body.danger,
