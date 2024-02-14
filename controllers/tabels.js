@@ -413,3 +413,87 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
       .catch((e) => next(e));
   });
 };
+
+module.exports.updateEnterpriceValue = (req, res, next) => {
+  workbook.xlsx.load(req.files.file.data).then(() => {
+    const worksheet = workbook.getWorksheet(1);
+    const cell = (lit, num) => worksheet.getCell(lit + num);
+    const arr = [];
+    const { lastRow } = worksheet;
+
+    for (let startRow = 2; startRow <= lastRow.number; startRow += 1) {
+      const obj = { SIZ: [] };
+      const siz = {};
+      if (cell('A', startRow).value) {
+        // obj.type = cell('A', startRow).value;
+        obj.proffId = cell('B', startRow).value;
+        obj.num = cell('C', startRow).value;
+        obj.proff = cell('D', startRow).value;
+        obj.job = cell('E', startRow).value;
+        obj.subdivision = cell('F', startRow).value;
+        obj.obj = cell('J', startRow).value;
+        obj.source = cell('K', startRow).value;
+        obj.dangerID = cell('L', startRow).value;
+        obj.danger = cell('M', startRow).value;
+        obj.dangerGroupId = cell('N', startRow).value;
+        obj.dangerGroup = cell('O', startRow).value;
+        obj.dangerEventID = cell('P', startRow).value;
+        obj.dangerEvent = cell('Q', startRow).value;
+        obj.heaviness = cell('R', startRow).value;
+        obj.probability = cell('S', startRow).value;
+        obj.ipr = cell('T', startRow).value;
+        obj.risk = cell('U', startRow).value;
+        obj.acceptability = cell('V', startRow).value;
+        obj.riskAttitude = cell('W', startRow).value;
+        obj.typeSIZ = cell('X', startRow).value;
+        obj.speciesSIZ = cell('Y', startRow).value;
+        obj.issuanceRate = cell('Z', startRow).value;
+        obj.additionalMeans = cell('AA', startRow).value;
+        obj.AdditionalIssuanceRate = cell('AB', startRow).value;
+        obj.standart = cell('AC', startRow).value;
+        obj.OperatingLevel = cell('AD', startRow).value;
+        obj.commit = cell('AE', startRow).value;
+        obj.danger776Id = cell('AF', startRow).value;
+        obj.danger776 = cell('AG', startRow).value;
+        obj.dangerEvent776Id = cell('AH', startRow).value;
+        obj.dangerEvent776 = cell('AI', startRow).value;
+        obj.riskManagementID = cell('AJ', startRow).value;
+        obj.riskManagement = cell('AK', startRow).value;
+        obj.heaviness1 = cell('AL', startRow).value;
+        obj.probability1 = cell('AM', startRow).value;
+        obj.ipr1 = cell('AN', startRow).value;
+        obj.risk1 = cell('AO', startRow).value;
+        obj.acceptability1 = cell('AP', startRow).value;
+        obj.riskAttitude1 = cell('AQ', startRow).value;
+        obj.existingRiskManagement = cell('AR', startRow).value;
+        obj.periodicity = cell('AS', startRow).value;
+        obj.responsiblePerson = cell('AT', startRow).value;
+        obj.completionMark = cell('AU', startRow).value;
+
+        arr.push(obj);
+      }
+      if (!cell('A', startRow).value) {
+        const lastObj = arr.at(-1);
+        siz.type = cell('G', startRow).value;
+        siz.vid = cell('H', startRow).value;
+        siz.norm = cell('I', startRow).value;
+
+        lastObj.SIZ.push(siz);
+      }
+    }
+    Enterprise.findById(req.params.id)
+      .then((i) => {
+        i.value.splice(0, arr.length);
+        Enterprise.findByIdAndUpdate(
+          req.params.id,
+          {
+            $set: {
+              value: arr,
+            },
+          },
+          { new: true },
+        ).then((newValue) => res.send(newValue));
+      })
+      .catch((i) => next(i));
+  });
+};
