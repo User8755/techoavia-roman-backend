@@ -274,10 +274,10 @@ module.exports.createMapOPRTabel = (req, res, next) => {
 
         el.value.forEach((elem) => {
           sheet.getCell(`B${i}`).value = i - 29;
-          sheet.getCell(`D${i}`).value = elem.danger776Id;
-          sheet.getCell(`E${i}`).value = elem.danger776;
-          sheet.getCell(`F${i}`).value = elem.dangerEvent776Id;
-          sheet.getCell(`G${i}`).value = elem.dangerEvent776;
+          sheet.getCell(`D${i}`).value = elem.danger776Id || elem.dangerGroupId;
+          sheet.getCell(`E${i}`).value = elem.danger776 || elem.dangerGroup;
+          sheet.getCell(`F${i}`).value = elem.dangerEvent776Id || elem.dangerEventID;
+          sheet.getCell(`G${i}`).value = elem.dangerEvent776 || elem.dangerEvent;
           sheet.getCell(`H${i}`).value = elem.obj;
           sheet.getCell(`J${i}`).value = elem.source;
           sheet.getCell(`L${i}`).value = elem.existingRiskManagement;
