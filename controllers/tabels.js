@@ -495,5 +495,5 @@ module.exports.updateEnterpriceValue = (req, res, next) => {
         ).then((newValue) => res.send(newValue));
       })
       .catch((i) => next(i));
-  });
+  }).catch((i) => next(i));
 };
