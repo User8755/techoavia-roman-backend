@@ -49,6 +49,7 @@ app.use('/update', require('./routes/update'));
 app.use('/info', require('./routes/info'));
 app.use('/enterprise', require('./routes/enterprise'));
 app.use('/tabels', require('./routes/tabels'));
+app.use('/value', require('./routes/enterpriceValue'));
 
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
@@ -58,62 +59,6 @@ app.use((err, req, res, next) => {
   });
   next();
 });
-
-// const workbook = new Excel.Workbook();
-// workbook.getWorksheet();
-// workbook.xlsx
-//   .readFile('Базовая таблица.xlsx')
-//   .then(() => {
-//     const worksheet = workbook.getWorksheet(1);
-//     const arr = [];
-//     const { lastRow } = worksheet;
-
-//     const cell = (lit, num) => worksheet.getCell(lit + num);
-
-//     for (let startRow = 2; startRow <= lastRow.number; startRow += 1) {
-//       const obj = { SIZ: [] };
-//       const siz = {};
-//       if (cell('A', startRow).value) {
-//         obj.type = cell('A', startRow).value;
-//         arr.push(obj);
-//       }
-//       if (!cell('A', startRow).value) {
-//         const lastObj = arr.at(-1);
-//         siz.t = cell('F', startRow).value;
-//         siz.a = cell('G', startRow).value;
-//         lastObj.SIZ.push(siz);
-//       }
-//     }
-
-//     // let excelTitles = [];
-//     // const excelData = [];
-
-//     // // excel to json converter (only the first sheet)
-//     // workbook.worksheets[0].eachRow((row, rowNumber) => {
-//     //   // rowNumber 0 is empty
-//     //   if (rowNumber > 0) {
-//     //     // get values from row
-//     //     const rowValues = row.values;
-//     //     // remove first element (extra without reason)
-//     //     rowValues.shift();
-//     //     // titles row
-//     //     if (rowNumber === 1) excelTitles = rowValues;
-//     //     // table data
-//     //     else {
-//     //       // create object with the titles and the row values (if any)
-//     //       const rowObject = {};
-//     //       for (let i = 0; i < excelTitles.length; i++) {
-//     //         const title = excelTitles[i];
-//     //         const value = rowValues[i] ? rowValues[i] : '';
-//     //         rowObject[title] = value;
-//     //       }
-//     //       excelData.push(rowObject);
-//     //     }
-//     //   }
-//     // });
-//     // console.log(excelData);
-//   })
-//   .catch();
 
 app.listen(PORT, () => {
   console.log(`Слушаем порт ${PORT}`);

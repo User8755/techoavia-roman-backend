@@ -1,8 +1,8 @@
 const Excel = require('exceljs');
-const Enterprise = require('../models/enterprise');
+const Value = require('../models/value');
 
 module.exports.createBaseTabel = (req, res, next) => {
-  Enterprise.findById(req.params.id)
+  Value.find({ enterpriseId: req.params.id })
     .then((el) => {
       const workbook = new Excel.Workbook();
       const sheet = workbook.addWorksheet('sheet');
@@ -91,7 +91,7 @@ module.exports.createBaseTabel = (req, res, next) => {
         { header: 'Отметка о выполнении', key: 'completionMark', width: 20 },
       ];
       let i = 1;
-      el.value.forEach((item) => {
+      el.forEach((item) => {
         item.number = i;
         sheet.addRow(item);
 
@@ -125,7 +125,7 @@ module.exports.createBaseTabel = (req, res, next) => {
 const workbook = new Excel.Workbook();
 
 module.exports.createNormTabel = (req, res, next) => {
-  Enterprise.findById(req.params.id)
+  Value.find({ enterpriseId: req.params.id })
     .then((el) => {
       const fileName = 'normSIZ.xlsx';
       workbook.xlsx
@@ -148,9 +148,9 @@ module.exports.createNormTabel = (req, res, next) => {
           const cell = (c, i) => sheet.getCell(c + i);
 
           let startRow = 11;
-          el.value.forEach((item) => {
+          el.forEach((item) => {
             cell('A', startRow).value = item.proffId;
-            cell('B', startRow).value = item.proff || item.job || item.subdivision;
+            cell('B', startRow).value = item.num;
             cell('C', startRow).value = item.typeSIZ;
             cell(
               'D',
@@ -228,7 +228,7 @@ module.exports.createNormTabel = (req, res, next) => {
 };
 
 module.exports.createMapOPRTabel = (req, res, next) => {
-  Enterprise.findById(req.params.id).then((el) => {
+  Value.find({ enterpriseId: req.params.id }).then((el) => {
     const fileName = 'mapOPR.xlsx';
     workbook.xlsx
       .readFile(fileName)
@@ -272,8 +272,8 @@ module.exports.createMapOPRTabel = (req, res, next) => {
 
         let i = 30;
 
-        el.value.forEach((elem) => {
-          sheet.getCell(`B${i}`).value = i - 29;
+        el.forEach((elem) => {
+          sheet.getCell(`B${i}`).value = elem.num;
           sheet.getCell(`D${i}`).value = elem.danger776Id || elem.dangerGroupId;
           sheet.getCell(`E${i}`).value = elem.danger776 || elem.dangerGroup;
           sheet.getCell(`F${i}`).value = elem.dangerEvent776Id || elem.dangerEventID;
@@ -330,7 +330,7 @@ module.exports.createMapOPRTabel = (req, res, next) => {
 };
 
 module.exports.createListOfMeasuresTabel = (req, res, next) => {
-  Enterprise.findById(req.params.id).then((el) => {
+  Value.find({ enterpriseId: req.params.id }).then((el) => {
     const fileName = 'ListOfMeasures.xlsx';
     workbook.xlsx
       .readFile(fileName)
@@ -353,7 +353,7 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
         let line = 21;
         const cell = (c) => sheet.getCell(c + line);
 
-        el.value.forEach((i) => {
+        el.forEach((i) => {
           cell('A').value = line - 20;
           cell('B').value = i.danger776Id;
           cell('C').value = i.danger776;
@@ -361,7 +361,7 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
           cell('E').value = i.dangerEvent776;
           cell('F').value = i.obj;
           cell('G').value = i.source;
-          cell('H').value = i.job || i.proff;
+          cell('H').value = i.num;
           cell('I').value = i.riskManagement;
           cell('J').value = i.periodicity;
           cell('L').value = i.completionMark;
@@ -412,88 +412,4 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
       })
       .catch((e) => next(e));
   });
-};
-
-module.exports.updateEnterpriceValue = (req, res, next) => {
-  workbook.xlsx.load(req.files.file.data).then(() => {
-    const worksheet = workbook.getWorksheet(1);
-    const cell = (lit, num) => worksheet.getCell(lit + num);
-    const arr = [];
-    const { lastRow } = worksheet;
-
-    for (let startRow = 2; startRow <= lastRow.number; startRow += 1) {
-      const obj = { SIZ: [] };
-      const siz = {};
-      if (cell('A', startRow).value) {
-        // obj.type = cell('A', startRow).value;
-        obj.proffId = cell('B', startRow).value;
-        obj.num = cell('C', startRow).value;
-        obj.proff = cell('D', startRow).value;
-        obj.job = cell('E', startRow).value;
-        obj.subdivision = cell('F', startRow).value;
-        obj.obj = cell('J', startRow).value;
-        obj.source = cell('K', startRow).value;
-        obj.dangerID = cell('L', startRow).value;
-        obj.danger = cell('M', startRow).value;
-        obj.dangerGroupId = cell('N', startRow).value;
-        obj.dangerGroup = cell('O', startRow).value;
-        obj.dangerEventID = cell('P', startRow).value;
-        obj.dangerEvent = cell('Q', startRow).value;
-        obj.heaviness = cell('R', startRow).value;
-        obj.probability = cell('S', startRow).value;
-        obj.ipr = cell('T', startRow).value;
-        obj.risk = cell('U', startRow).value;
-        obj.acceptability = cell('V', startRow).value;
-        obj.riskAttitude = cell('W', startRow).value;
-        obj.typeSIZ = cell('X', startRow).value;
-        obj.speciesSIZ = cell('Y', startRow).value;
-        obj.issuanceRate = cell('Z', startRow).value;
-        obj.additionalMeans = cell('AA', startRow).value;
-        obj.AdditionalIssuanceRate = cell('AB', startRow).value;
-        obj.standart = cell('AC', startRow).value;
-        obj.OperatingLevel = cell('AD', startRow).value;
-        obj.commit = cell('AE', startRow).value;
-        obj.danger776Id = cell('AF', startRow).value;
-        obj.danger776 = cell('AG', startRow).value;
-        obj.dangerEvent776Id = cell('AH', startRow).value;
-        obj.dangerEvent776 = cell('AI', startRow).value;
-        obj.riskManagementID = cell('AJ', startRow).value;
-        obj.riskManagement = cell('AK', startRow).value;
-        obj.heaviness1 = cell('AL', startRow).value;
-        obj.probability1 = cell('AM', startRow).value;
-        obj.ipr1 = cell('AN', startRow).value;
-        obj.risk1 = cell('AO', startRow).value;
-        obj.acceptability1 = cell('AP', startRow).value;
-        obj.riskAttitude1 = cell('AQ', startRow).value;
-        obj.existingRiskManagement = cell('AR', startRow).value;
-        obj.periodicity = cell('AS', startRow).value;
-        obj.responsiblePerson = cell('AT', startRow).value;
-        obj.completionMark = cell('AU', startRow).value;
-
-        arr.push(obj);
-      }
-      if (!cell('A', startRow).value) {
-        const lastObj = arr.at(-1);
-        siz.type = cell('G', startRow).value;
-        siz.vid = cell('H', startRow).value;
-        siz.norm = cell('I', startRow).value;
-
-        lastObj.SIZ.push(siz);
-      }
-    }
-    Enterprise.findById(req.params.id)
-      .then((i) => {
-        i.value.splice(0, arr.length);
-        Enterprise.findByIdAndUpdate(
-          req.params.id,
-          {
-            $set: {
-              value: arr,
-            },
-          },
-          { new: true },
-        ).then((newValue) => res.send(newValue));
-      })
-      .catch((i) => next(i));
-  }).catch((i) => next(i));
 };
