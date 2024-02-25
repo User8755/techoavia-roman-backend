@@ -14,6 +14,10 @@ module.exports.updateValue = (req, res, next) => {
       const arr = [];
       const { lastRow } = worksheet;
 
+      if (cell('AU', 1).value !== 'Отметка о выполнении') {
+        next(new NotFound('Не верный файл'));
+      }
+
       Enterprise.findById(req.params.id)
         .then((enterprise) => {
           if (!enterprise) {
@@ -114,6 +118,9 @@ module.exports.newValue = (req, res, next) => {
 
 module.exports.getValueEnterprise = (req, res, next) => {
   Value.find({ enterpriseId: req.params.id })
-    .then((i) => res.send(i))
+    .then((i) => {
+      const arrLen = String(i.length);
+      res.send(arrLen);
+    })
     .catch((e) => next(e));
 };

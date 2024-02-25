@@ -1,3 +1,6 @@
+/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-return-assign */
 const Excel = require('exceljs');
 const Value = require('../models/value');
 
@@ -150,12 +153,18 @@ module.exports.createNormTabel = (req, res, next) => {
           let startRow = 11;
           el.forEach((item) => {
             cell('A', startRow).value = item.proffId;
-            cell('B', startRow).value = item.num;
-            cell('C', startRow).value = item.typeSIZ;
+            cell(
+              'B',
+              startRow,
+            ).value = `${item.num}. ${item.job}. ${item.subdivision}.`;
+            cell(
+              'C',
+              startRow,
+            ).value = item.typeSIZ === null ? '' : `${item.typeSIZ}`;
             cell(
               'D',
               startRow,
-            ).value = `${item.typeSIZ} ${item.standart} ${item.OperatingLevel}`;
+            ).value = item.typeSIZ === null ? '' : `${item.typeSIZ} \n ${item.speciesSIZ} \n ${item.standart} \n ${item.OperatingLevel}`;
             cell('E', startRow).value = item.issuanceRate;
             cell(
               'F',
@@ -204,6 +213,7 @@ module.exports.createNormTabel = (req, res, next) => {
               });
             }
           });
+          sheet.autoFilter = 'A10:J10';
           res.setHeader(
             'Content-Type',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -554,4 +564,313 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
       })
       .catch((e) => next(e));
   });
+};
+
+module.exports.createListHazardsTable = (req, res, next) => {
+  Value.find({ enterpriseId: req.params.id })
+    .then((el) => {
+      const fileName = 'Реестр опасностей.xlsx';
+      workbook.xlsx
+        .readFile(fileName)
+        .then((e) => {
+          const sheet = e.getWorksheet(1);
+
+          const cellA16 = sheet.getCell('A16');
+          const cellB16 = sheet.getCell('B16');
+          const cellC16 = sheet.getCell('C16');
+          const cellD16 = sheet.getCell('D16');
+          const cellE16 = sheet.getCell('E16');
+
+          const border = {
+            border: {
+              left: { style: 'thin' },
+              right: { style: 'thin' },
+              bottom: { style: 'thin' },
+              top: { style: 'thin' },
+            },
+            alignment: {
+              horizontal: 'center',
+              vertical: 'middle',
+              wrapText: 'true',
+            },
+            font: {
+              size: 8,
+              bold: true,
+              name: 'Arial',
+            },
+          };
+
+          const textRotation = {
+            border: {
+              left: { style: 'thin' },
+              right: { style: 'thin' },
+              bottom: { style: 'thin' },
+              top: { style: 'thin' },
+            },
+            alignment: {
+              horizontal: 'center',
+              vertical: 'middle',
+              wrapText: 'true',
+              textRotation: 'vertical',
+            },
+            font: {
+              size: 8,
+              bold: true,
+              name: 'Arial',
+            },
+          };
+
+          cellA16.style = border;
+          cellC16.style = border;
+          cellE16.style = border;
+
+          cellB16.style = textRotation;
+          cellD16.style = textRotation;
+
+          cellA16.value = '№ п/п';
+          cellB16.value = '№ опасности*';
+          cellC16.value = 'Наименование опасности';
+          cellD16.value = '№ опасного события*';
+          cellE16.value = 'Наименование опасного события';
+
+          sheet.getColumn(1).width = 6;
+          sheet.getColumn(2).width = 8;
+          sheet.getColumn(3).width = 20;
+          sheet.getColumn(4).width = 8;
+          sheet.getColumn(5).width = 20;
+          let i = 17;
+          let col = 6;
+
+          const table2 = {};
+
+          const uniq = el.reduce((accumulator, currentValue) => {
+            if (
+              accumulator.every(
+                (item) => !(
+                  item.dangerEvent776Id === currentValue.dangerEvent776Id
+                    && item.dangerEventID === currentValue.dangerEventID
+                ),
+              )
+            ) accumulator.push(currentValue);
+            return accumulator;
+          }, []);
+
+          const resProff = el.filter(
+            ({ num }) => !table2[num] && (table2[num] = 1),
+          );
+
+          uniq.forEach((e1) => {
+            sheet.getCell(`A${i}`).value = e1.number;
+            sheet.getCell(`B${i}`).value = e1.danger776Id || e1.dangerGroupId;
+            sheet.getCell(`C${i}`).value = e1.danger776 || e1.dangerGroup;
+            sheet.getCell(`D${i}`).value = e1.dangerEvent776Id || e1.dangerEventID;
+            sheet.getCell(`E${i}`).value = e1.dangerEvent776 || e1.dangerEvent;
+
+            sheet.getCell(`A${i}`).style = border;
+            sheet.getCell(`B${i}`).style = border;
+            sheet.getCell(`C${i}`).style = border;
+            sheet.getCell(`D${i}`).style = border;
+            sheet.getCell(`E${i}`).style = border;
+            i += 1;
+          });
+          const rowAddress = [];
+
+          resProff.forEach((element) => {
+            const currentCell = sheet.getColumn(col).letter;
+            rowAddress.push(currentCell + 16);
+
+            sheet.getCell(currentCell + 16).value = element.num;
+            sheet.getCell(currentCell + 16).style = border;
+            sheet.getCell(currentCell + 16).width = 20;
+            col += 1;
+          });
+
+          rowAddress.forEach((address) => {
+            const filterJobValue = el.filter(
+              (element) => element.num === sheet.getCell(address).value,
+            );
+
+            filterJobValue.forEach((v) => {
+              let colStr = i;
+              while (colStr >= 17) {
+                if (sheet.getCell(`D${colStr}`).value === v.dangerEvent776Id) {
+                  sheet.getCell(
+                    sheet.getCell(address)._column.letter + colStr,
+                  ).value = '+';
+                } else if (
+                  sheet.getCell(`D${colStr}`).value === v.dangerEventID
+                ) {
+                  sheet.getCell(
+                    sheet.getCell(address)._column.letter + colStr,
+                  ).value = '+';
+                }
+                colStr -= 1;
+              }
+            });
+          });
+          res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          );
+          res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+          );
+          workbook.xlsx
+            .write(res)
+            .then(() => {
+              res.end();
+            })
+            .catch((err) => next(err));
+        })
+        .catch((e) => next(e));
+      // const sheet = workbook.addWorksheet('Реестр');
+
+      // const cellA16 = sheet.getCell('A16');
+      // const cellB16 = sheet.getCell('B16');
+      // const cellC16 = sheet.getCell('C16');
+      // const cellD16 = sheet.getCell('D16');
+      // const cellE16 = sheet.getCell('E16');
+
+      // const border = {
+      //   border: {
+      //     left: { style: 'thin' },
+      //     right: { style: 'thin' },
+      //     bottom: { style: 'thin' },
+      //     top: { style: 'thin' },
+      //   },
+      //   alignment: {
+      //     horizontal: 'center',
+      //     vertical: 'middle',
+      //     wrapText: 'true',
+      //   },
+      //   font: {
+      //     size: 8,
+      //     bold: true,
+      //     name: 'Arial',
+      //   },
+      // };
+
+      // const textRotation = {
+      //   border: {
+      //     left: { style: 'thin' },
+      //     right: { style: 'thin' },
+      //     bottom: { style: 'thin' },
+      //     top: { style: 'thin' },
+      //   },
+      //   alignment: {
+      //     horizontal: 'center',
+      //     vertical: 'middle',
+      //     wrapText: 'true',
+      //     textRotation: 'vertical',
+      //   },
+      //   font: {
+      //     size: 8,
+      //     bold: true,
+      //     name: 'Arial',
+      //   },
+      // };
+
+      // cellA16.style = border;
+      // cellC16.style = border;
+      // cellE16.style = border;
+
+      // cellB16.style = textRotation;
+      // cellD16.style = textRotation;
+
+      // cellA16.value = '№ п/п';
+      // cellB16.value = '№ опасности*';
+      // cellC16.value = 'Наименование опасности';
+      // cellD16.value = '№ опасного события*';
+      // cellE16.value = 'Наименование опасного события';
+
+      // sheet.getColumn(1).width = 6;
+      // sheet.getColumn(2).width = 8;
+      // sheet.getColumn(3).width = 20;
+      // sheet.getColumn(4).width = 8;
+      // sheet.getColumn(5).width = 20;
+      // let i = 17;
+      // let col = 6;
+
+      // const table2 = {};
+
+      // const uniq = el.reduce((accumulator, currentValue) => {
+      //   if (
+      //     accumulator.every(
+      //       (item) => !(
+      //         item.dangerEvent776Id === currentValue.dangerEvent776Id
+      //           && item.dangerEventID === currentValue.dangerEventID
+      //       ),
+      //     )
+      //   ) accumulator.push(currentValue);
+      //   return accumulator;
+      // }, []);
+
+      // const resProff = el.filter(
+      //   ({ num }) => !table2[num] && (table2[num] = 1),
+      // );
+
+      // uniq.forEach((e) => {
+      //   sheet.getCell(`A${i}`).value = e.number;
+      //   sheet.getCell(`B${i}`).value = e.danger776Id || e.dangerGroupId;
+      //   sheet.getCell(`C${i}`).value = e.danger776 || e.dangerGroup;
+      //   sheet.getCell(`D${i}`).value = e.dangerEvent776Id || e.dangerEventID;
+      //   sheet.getCell(`E${i}`).value = e.dangerEvent776 || e.dangerEvent;
+
+      //   sheet.getCell(`A${i}`).style = border;
+      //   sheet.getCell(`B${i}`).style = border;
+      //   sheet.getCell(`C${i}`).style = border;
+      //   sheet.getCell(`D${i}`).style = border;
+      //   sheet.getCell(`E${i}`).style = border;
+      //   i += 1;
+      // });
+      // const rowAddress = [];
+
+      // resProff.forEach((e) => {
+      //   const currentCell = sheet.getColumn(col).letter;
+      //   rowAddress.push(currentCell + 16);
+
+      //   sheet.getCell(currentCell + 16).value = e.num;
+      //   sheet.getCell(currentCell + 16).style = border;
+      //   sheet.getCell(currentCell + 16).width = 20;
+      //   col += 1;
+      // });
+
+      // rowAddress.forEach((address) => {
+      //   const filterJobValue = el.filter(
+      //     (element) => element.num === sheet.getCell(address).value,
+      //   );
+
+      //   filterJobValue.forEach((v) => {
+      //     let colStr = i;
+      //     while (colStr >= 17) {
+      //       if (sheet.getCell(`D${colStr}`).value === v.dangerEvent776Id) {
+      //         sheet.getCell(
+      //           sheet.getCell(address)._column.letter + colStr,
+      //         ).value = '+';
+      //       } else if (sheet.getCell(`D${colStr}`).value === v.dangerEventID) {
+      //         sheet.getCell(
+      //           sheet.getCell(address)._column.letter + colStr,
+      //         ).value = '+';
+      //       }
+      //       colStr -= 1;
+      //     }
+      //   });
+      // });
+      // res.setHeader(
+      //   'Content-Type',
+      //   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      // );
+      // res.setHeader(
+      //   'Content-Disposition',
+      //   `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+      // );
+      // workbook.xlsx
+      //   .write(res)
+      //   .then(() => {
+      //     res.end();
+      //   })
+      //   .catch((err) => next(err));
+    })
+    .catch((e) => next(e));
 };
