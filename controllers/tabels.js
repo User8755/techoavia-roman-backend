@@ -752,103 +752,108 @@ module.exports.createPlanTimetable = (req, res, next) => {
       ent.owner.toString() === req.user._id
       || ent.access.includes(req.user._id)
     ) {
-      Value.find({ enterpriseId: req.params.id }).then((el) => {
-        const fileName = 'План-график.xlsx';
-        workbook.xlsx
-          .readFile(fileName)
-          .then((e) => {
-            const border = {
-              border: {
-                left: { style: 'medium' },
-                top: { style: 'medium' },
-                bottom: { style: 'medium' },
-                right: { style: 'medium' },
-              },
-              alignment: {
-                horizontal: 'center',
-                vertical: 'middle',
-                wrapText: 'true',
-              },
-            };
-            const sheet = e.getWorksheet(1);
-            let start = 16;
-            const cell = (c) => sheet.getCell(c);
-            el.forEach((value) => {
-              cell(`A${start}`).value = start - 15;
-              cell(`B${start}`).value = value.danger776Id || value.dangerGroupId;
-              cell(`C${start}`).value = value.danger776 || value.dangerGroup;
-              cell(`D${start}`).value = value.dangerEvent776Id || value.dangerEventID;
-              cell(`E${start}`).value = value.dangerEvent776 || value.dangerEvent;
-              cell(`F${start}`).value = value.obj;
-              cell(`G${start}`).value = value.source;
-              cell(`H${start}`).value = value.num;
-              cell(`I${start}`).value = `${value.riskManagement} \n ${value.existingRiskManagement}`;
-              cell(`J${start}`).value = value.periodicity;
-              cell(`K${start}`).value = value.responsiblePerson;
-              cell(`L${start}`).value = value.completionMark;
+      Value.find({ enterpriseId: req.params.id })
+        .then((el) => {
+          const fileName = 'План-график.xlsx';
+          workbook.xlsx
+            .readFile(fileName)
+            .then((e) => {
+              const border = {
+                border: {
+                  left: { style: 'medium' },
+                  top: { style: 'medium' },
+                  bottom: { style: 'medium' },
+                  right: { style: 'medium' },
+                },
+                alignment: {
+                  horizontal: 'center',
+                  vertical: 'middle',
+                  wrapText: 'true',
+                },
+              };
+              const sheet = e.getWorksheet(1);
+              let start = 16;
+              const cell = (c) => sheet.getCell(c);
+              cell('B10').value = ent.enterprise;
+              el.forEach((value) => {
+                cell(`A${start}`).value = start - 15;
+                cell(`B${start}`).value = value.danger776Id || value.dangerGroupId;
+                cell(`C${start}`).value = value.danger776 || value.dangerGroup;
+                cell(`D${start}`).value = value.dangerEvent776Id || value.dangerEventID;
+                cell(`E${start}`).value = value.dangerEvent776 || value.dangerEvent;
+                cell(`F${start}`).value = value.obj;
+                cell(`G${start}`).value = value.source;
+                cell(`H${start}`).value = value.num;
+                cell(
+                  `I${start}`,
+                ).value = `${value.riskManagement} \n ${value.existingRiskManagement}`;
+                cell(`J${start}`).value = value.periodicity;
+                cell(`K${start}`).value = value.responsiblePerson;
+                cell(`L${start}`).value = value.completionMark;
 
-              cell(`A${start}`).style = border;
-              cell(`B${start}`).style = border;
-              cell(`C${start}`).style = border;
-              cell(`D${start}`).style = border;
-              cell(`E${start}`).style = border;
-              cell(`F${start}`).style = border;
-              cell(`G${start}`).style = border;
-              cell(`H${start}`).style = border;
-              cell(`I${start}`).style = border;
-              cell(`J${start}`).style = border;
-              cell(`K${start}`).style = border;
-              cell(`L${start}`).style = border;
-              start += 1;
-              sheet.insertRow(start)
-            });
-            let tableTwoStart = start + 5;
-            el.forEach((value, index) => {
-              cell(`A${tableTwoStart}`).value = index + 1;
-              cell(`B${tableTwoStart}`).value = value.dangerGroupId;
-              cell(`C${tableTwoStart}`).value = value.dangerGroup;
-              cell(`D${tableTwoStart}`).value = value.dangerEventID;
-              cell(`E${tableTwoStart}`).value = value.dangerEvent;
-              cell(`F${tableTwoStart}`).value = value.obj;
-              cell(`G${tableTwoStart}`).value = value.source;
-              cell(`H${tableTwoStart}`).value = value.num;
-              cell(`I${tableTwoStart}`).value = value.typeSIZ === null ? '' : `Выдавать: ${value.typeSIZ}`;
-              cell(`J${tableTwoStart}`).value = value.issuanceRate;
-              cell(`K${tableTwoStart}`).value = value.responsiblePerson;
-              cell(`L${tableTwoStart}`).value = value.completionMark;
+                cell(`A${start}`).style = border;
+                cell(`B${start}`).style = border;
+                cell(`C${start}`).style = border;
+                cell(`D${start}`).style = border;
+                cell(`E${start}`).style = border;
+                cell(`F${start}`).style = border;
+                cell(`G${start}`).style = border;
+                cell(`H${start}`).style = border;
+                cell(`I${start}`).style = border;
+                cell(`J${start}`).style = border;
+                cell(`K${start}`).style = border;
+                cell(`L${start}`).style = border;
+                start += 1;
+                sheet.insertRow(start);
+              });
+              let tableTwoStart = start + 5;
+              el.forEach((value, index) => {
+                cell(`A${tableTwoStart}`).value = index + 1;
+                cell(`B${tableTwoStart}`).value = value.dangerGroupId;
+                cell(`C${tableTwoStart}`).value = value.dangerGroup;
+                cell(`D${tableTwoStart}`).value = value.dangerEventID;
+                cell(`E${tableTwoStart}`).value = value.dangerEvent;
+                cell(`F${tableTwoStart}`).value = value.obj;
+                cell(`G${tableTwoStart}`).value = value.source;
+                cell(`H${tableTwoStart}`).value = value.num;
+                cell(`I${tableTwoStart}`).value = value.typeSIZ === null ? '' : `Выдавать: ${value.typeSIZ}`;
+                cell(`J${tableTwoStart}`).value = value.issuanceRate;
+                cell(`K${tableTwoStart}`).value = value.responsiblePerson;
+                cell(`L${tableTwoStart}`).value = value.completionMark;
 
-              cell(`A${tableTwoStart}`).style = border;
-              cell(`B${tableTwoStart}`).style = border;
-              cell(`C${tableTwoStart}`).style = border;
-              cell(`D${tableTwoStart}`).style = border;
-              cell(`E${tableTwoStart}`).style = border;
-              cell(`F${tableTwoStart}`).style = border;
-              cell(`G${tableTwoStart}`).style = border;
-              cell(`H${tableTwoStart}`).style = border;
-              cell(`I${tableTwoStart}`).style = border;
-              cell(`J${tableTwoStart}`).style = border;
-              cell(`K${tableTwoStart}`).style = border;
-              cell(`L${tableTwoStart}`).style = border;
-              tableTwoStart += 1;
-            });
-            res.setHeader(
-              'Content-Type',
-              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            );
-            res.setHeader(
-              'Content-Disposition',
-              `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
-            );
+                cell(`A${tableTwoStart}`).style = border;
+                cell(`B${tableTwoStart}`).style = border;
+                cell(`C${tableTwoStart}`).style = border;
+                cell(`D${tableTwoStart}`).style = border;
+                cell(`E${tableTwoStart}`).style = border;
+                cell(`F${tableTwoStart}`).style = border;
+                cell(`G${tableTwoStart}`).style = border;
+                cell(`H${tableTwoStart}`).style = border;
+                cell(`I${tableTwoStart}`).style = border;
+                cell(`J${tableTwoStart}`).style = border;
+                cell(`K${tableTwoStart}`).style = border;
+                cell(`L${tableTwoStart}`).style = border;
+                tableTwoStart += 1;
+              });
+              res.setHeader(
+                'Content-Type',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              );
+              res.setHeader(
+                'Content-Disposition',
+                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+              );
 
-            workbook.xlsx
-              .write(res)
-              .then(() => {
-                res.end();
-              })
-              .catch((err) => next(err));
-          })
-          .catch((e) => next(e));
-      }).catch((err) => next(err));
+              workbook.xlsx
+                .write(res)
+                .then(() => {
+                  res.end();
+                })
+                .catch((err) => next(err));
+            })
+            .catch((e) => next(e));
+        })
+        .catch((err) => next(err));
     }
   });
 };
