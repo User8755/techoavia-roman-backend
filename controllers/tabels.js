@@ -771,6 +771,17 @@ module.exports.createPlanTimetable = (req, res, next) => {
                   wrapText: 'true',
                 },
               };
+              const borderSecondary = {
+                border: {
+                  bottom: { style: 'medium' },
+                  right: { style: 'medium' },
+                },
+                alignment: {
+                  horizontal: 'center',
+                  vertical: 'middle',
+                  wrapText: 'true',
+                },
+              };
               const sheet = e.getWorksheet(1);
               let start = 16;
               const cell = (c) => sheet.getCell(c);
@@ -822,17 +833,17 @@ module.exports.createPlanTimetable = (req, res, next) => {
                 cell(`L${tableTwoStart}`).value = value.completionMark;
 
                 cell(`A${tableTwoStart}`).style = border;
-                cell(`B${tableTwoStart}`).style = border;
-                cell(`C${tableTwoStart}`).style = border;
-                cell(`D${tableTwoStart}`).style = border;
-                cell(`E${tableTwoStart}`).style = border;
-                cell(`F${tableTwoStart}`).style = border;
-                cell(`G${tableTwoStart}`).style = border;
-                cell(`H${tableTwoStart}`).style = border;
-                cell(`I${tableTwoStart}`).style = border;
-                cell(`J${tableTwoStart}`).style = border;
-                cell(`K${tableTwoStart}`).style = border;
-                cell(`L${tableTwoStart}`).style = border;
+                cell(`B${tableTwoStart}`).style = borderSecondary;
+                cell(`C${tableTwoStart}`).style = borderSecondary;
+                cell(`D${tableTwoStart}`).style = borderSecondary;
+                cell(`E${tableTwoStart}`).style = borderSecondary;
+                cell(`F${tableTwoStart}`).style = borderSecondary;
+                cell(`G${tableTwoStart}`).style = borderSecondary;
+                cell(`H${tableTwoStart}`).style = borderSecondary;
+                cell(`I${tableTwoStart}`).style = borderSecondary;
+                cell(`J${tableTwoStart}`).style = borderSecondary;
+                cell(`K${tableTwoStart}`).style = borderSecondary;
+                cell(`L${tableTwoStart}`).style = borderSecondary;
                 tableTwoStart += 1;
               });
               res.setHeader(
