@@ -783,9 +783,14 @@ module.exports.createPlanTimetable = (req, res, next) => {
                 },
               };
               const sheet = e.getWorksheet(1);
-              let start = 16;
+              const sheetTwo = e.getWorksheet(2);
+
               const cell = (c) => sheet.getCell(c);
+              const cellSheetTwo = (c) => sheetTwo.getCell(c);
+              sheet.autoFilter = 'A15:L15';
+              sheetTwo.autoFilter = 'A3:L3';
               cell('B10').value = ent.enterprise;
+              let start = 16;
               el.forEach((value) => {
                 cell(`A${start}`).value = start - 15;
                 cell(`B${start}`).value = value.danger776Id || value.dangerGroupId;
@@ -815,11 +820,10 @@ module.exports.createPlanTimetable = (req, res, next) => {
                 cell(`K${start}`).style = border;
                 cell(`L${start}`).style = border;
                 start += 1;
-                sheet.insertRow(start);
               });
+
               let tableTwoStart = 4;
-              const sheetTwo = e.getWorksheet(2);
-              const cellSheetTwo = (c) => sheetTwo.getCell(c);
+
               el.forEach((value, index) => {
                 cellSheetTwo(`A${tableTwoStart}`).value = index + 1;
                 cellSheetTwo(`B${tableTwoStart}`).value = value.dangerGroupId;
