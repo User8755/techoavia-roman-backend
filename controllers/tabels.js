@@ -5,6 +5,7 @@ const Excel = require('exceljs');
 const Value = require('../models/value');
 const Enterprise = require('../models/enterprise');
 const NotFound = require('../errors/NotFound');
+const convertValues = require('../forNormTable');
 
 module.exports.createBaseTabel = (req, res, next) => {
   Value.find({ enterpriseId: req.params.id })
@@ -154,15 +155,16 @@ module.exports.createNormTabel = (req, res, next) => {
 
           let startRow = 11;
           el.forEach((item) => {
+            const handleFilterTypeSIZ = convertValues.find((i) => i.typeSIZ === item.typeSIZ);
             cell('A', startRow).value = item.proffId;
             cell(
               'B',
               startRow,
             ).value = `${item.num}. ${item.job}. ${item.subdivision}.`;
             cell('C', startRow).value = item.typeSIZ === null ? '' : `${item.typeSIZ}`;
-            cell('D', startRow).value = item.typeSIZ === null
+            cell('D', startRow).value = !handleFilterTypeSIZ
               ? ''
-              : `${item.typeSIZ} \n ${item.speciesSIZ} \n ${item.standart} \n ${item.OperatingLevel}`;
+              : `${handleFilterTypeSIZ.forTable} \n ${item.speciesSIZ} \n ${item.standart} \n ${item.OperatingLevel}`;
             cell('E', startRow).value = item.issuanceRate;
             cell(
               'F',
