@@ -1,9 +1,9 @@
 const Info = require('../models/info');
 
 module.exports.createInfo = (req, res, next) => {
-  const { info } = req.body;
+  const { info } = req.body.data;
   Info.create({ info })
-    .then((i) => res.send(i))
+    .then((i) => res.status(201).send(i))
     .catch((e) => next(e));
 };
 

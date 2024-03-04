@@ -15,7 +15,7 @@ const {
 const auth = require('../middlewares/auth');
 // const role = require('../middlewares/role');
 
-router.post('/signup', validationCreateUser, createUsers);
+router.post('/signup', auth, validationCreateUser, createUsers);
 router.post('/signin', validationLogin, login);
 router.get('/me', auth, getUsersСurrent);
 router.get('/all', auth, getAllUsers);

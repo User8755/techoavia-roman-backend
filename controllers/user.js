@@ -58,7 +58,6 @@ module.exports.createUsers = (req, res, next) => {
 };
 
 module.exports.login = (req, res, next) => {
-  console.log(req.cookies);
   const { login, password } = req.body;
   User.findOne({ login })
     .select('+password')
@@ -75,12 +74,14 @@ module.exports.login = (req, res, next) => {
         if (!matched) {
           throw new Unauthorized('Проверьте логин и пароль');
         }
-        res.cookie('key', token, {
-          sameSite: 'none',
-          maxAge: 3600000,
-          httpOnly: true,
-          secure: true,
-        }).send({ key: token });
+        res
+          .cookie('key', token, {
+            sameSite: 'none',
+            maxAge: 3600000,
+            httpOnly: true,
+            secure: true,
+          })
+          .send({ key: token });
       });
     })
     .catch((err) => {
@@ -109,29 +110,10 @@ module.exports.getUsersСurrent = (req, res, next) => {
 module.exports.getAllUsers = (req, res, next) => {
   User.findById({ _id: req.user._id })
     .then((user) => {
-      if (user.role.includes('admin')) {
-        User.find({ branch: user.branch })
-          .then((u) => {
-            res.send(u);
-          })
-          .catch((e) => next(e));
-      } else if (user.role.includes('sadmin')) {
-        User.find({})
-          .then((u) => {
-            const sortedUserBranch = u.sort((a, b) => {
-              const nameA = a.branch.toLowerCase();
-              const nameB = b.branch.toLowerCase();
-              if (nameA < nameB) return -1;
-              // сортируем строки по возрастанию
-              if (nameA > nameB) return 1;
-              return 0; // Никакой сортировки
-            });
-            res.send(sortedUserBranch);
-          })
-          .catch((e) => next(e));
-      } else {
+      if (!user) {
         next(new NotFoundError('Пользователь с данным Id не найден'));
       }
+      User.find({}).then((allUsers) => res.send(allUsers)).catch((e) => next(e));
     })
     .catch((e) => next(e));
 };
@@ -179,20 +161,9 @@ module.exports.updateProfile = (req, res, next) => {
 
 module.exports.updateUserRole = (req, res, next) => {
   const { role, id } = req.body;
-  let newrole;
-  if (role === 'Администратор филиала') {
-    newrole = 'admin';
-  } else if (role === 'Пользователь') {
-    newrole = 'user';
-  } else if (role === 'Нет') {
-    newrole = 'none';
-  } else if (role === 'Супер') {
-    newrole = 'sadmin';
-  }
-
   User.findByIdAndUpdate(
     id,
-    { role: newrole },
+    { $addToSet: [role] },
     { new: true, runValidators: true },
   )
     .then((user) => {
