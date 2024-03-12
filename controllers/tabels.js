@@ -166,7 +166,7 @@ module.exports.createNormTabel = (req, res, next) => {
             cell('C', startRow).value = item.typeSIZ === null ? '' : `${item.typeSIZ}`;
             cell('D', startRow).value = !handleFilterTypeSIZ
               ? ''
-              : `${item.speciesSIZ} \n ${handleFilterTypeSIZ.forTable}  ${
+              : `${item.speciesSIZ} ${handleFilterTypeSIZ.forTable}  ${
                 item.OperatingLevel !== null ? `\n ${item.OperatingLevel}` : ''
               }  ${item.standart !== null ? `\n ${item.standart}` : ''}`;
             cell('E', startRow).value = item.issuanceRate;
