@@ -145,8 +145,8 @@ module.exports.createNormTabel = (req, res, next) => {
               top: { style: 'thin' },
             },
             alignment: {
-              horizontal: 'center',
-              vertical: 'middle',
+              horizontal: 'left',
+              vertical: 'top',
               wrapText: 'true',
             },
           };
@@ -155,7 +155,9 @@ module.exports.createNormTabel = (req, res, next) => {
 
           let startRow = 11;
           el.forEach((item) => {
-            const handleFilterTypeSIZ = convertValues.find((i) => i.typeSIZ === item.typeSIZ);
+            const handleFilterTypeSIZ = convertValues.find(
+              (i) => i.typeSIZ === item.typeSIZ,
+            );
             cell('A', startRow).value = item.proffId;
             cell(
               'B',
@@ -164,7 +166,9 @@ module.exports.createNormTabel = (req, res, next) => {
             cell('C', startRow).value = item.typeSIZ === null ? '' : `${item.typeSIZ}`;
             cell('D', startRow).value = !handleFilterTypeSIZ
               ? ''
-              : `${item.speciesSIZ} \n ${handleFilterTypeSIZ.forTable} \n ${item.OperatingLevel} \n ${item.standart}`;
+              : `${item.speciesSIZ} \n ${handleFilterTypeSIZ.forTable}  ${
+                item.OperatingLevel !== null ? `\n ${item.OperatingLevel}` : ''
+              }  ${item.standart !== null ? `\n ${item.standart}` : ''}`;
             cell('E', startRow).value = item.issuanceRate;
             cell(
               'F',

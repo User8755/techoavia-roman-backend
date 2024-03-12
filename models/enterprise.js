@@ -11,10 +11,6 @@ const enterprise = new mongoose.Schema({
     ref: 'user',
     require: true,
   },
-  value: {
-    type: Array,
-    default: [],
-  },
   access: {
     type: Array,
     default: [],
@@ -34,6 +30,10 @@ const enterprise = new mongoose.Schema({
     require: true,
     minlength: 2,
     unique: true,
+  },
+  isHiden: {
+    type: Boolean,
+    default: false,
   },
 });
 

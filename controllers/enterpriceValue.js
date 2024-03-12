@@ -117,10 +117,9 @@ module.exports.newValue = (req, res, next) => {
 };
 
 module.exports.getValueEnterprise = (req, res, next) => {
-  Value.find({ enterpriseId: req.params.id })
+  Value.count({ enterpriseId: req.params.id })
     .then((i) => {
-      const arrLen = String(i.length);
-      res.send(arrLen);
+      res.send(String(i));
     })
     .catch((e) => next(e));
 };
