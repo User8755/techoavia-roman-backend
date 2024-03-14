@@ -72,6 +72,7 @@ module.exports.updateValue = (req, res, next) => {
               newObj.periodicity = cell('AS', startRow).value;
               newObj.responsiblePerson = cell('AT', startRow).value;
               newObj.completionMark = cell('AU', startRow).value;
+              newObj.numWorkers = cell('AV', startRow).value;
               newObj.enterpriseId = req.params.id;
 
               arr.push(newObj);
@@ -108,7 +109,7 @@ module.exports.newValue = (req, res, next) => {
       if (!enterprise) {
         next(new NotFound('Предприятие не найдено'));
       }
-
+      console.log(req.body)
       Value.create(req.body)
         .then((data) => res.send(data))
         .catch((e) => next(e));

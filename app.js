@@ -6,7 +6,6 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const Excel = require('exceljs');
 const fileUpload = require('express-fileupload');
 
 app.use(bodyParser.json());
@@ -30,16 +29,6 @@ app.use(
     secure: true,
   }),
 );
-
-const workbook = new Excel.Workbook();
-app.post('/', (req, res) => {
-  workbook.xlsx.load(req.files.file.data).then(() => {
-    const worksheet = workbook.getWorksheet(1);
-    const cell = (lit, num) => worksheet.getCell(lit + num);
-    console.log(cell('A', 1).value);
-    res.send({ 1: cell('A', 1).value });
-  });
-});
 
 app.use('/users', require('./routes/user'));
 // app.use('/dangerGroup', require('./routes/dangerGroup'));

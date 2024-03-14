@@ -95,6 +95,7 @@ module.exports.createBaseTabel = (req, res, next) => {
         { header: 'Периодичность', key: 'periodicity', width: 20 },
         { header: 'Ответственное лицо', key: 'responsiblePerson', width: 20 },
         { header: 'Отметка о выполнении', key: 'completionMark', width: 20 },
+        { header: 'Кол-во работников', key: 'numWorkers', width: 20 },
       ];
       let i = 1;
       el.forEach((item) => {
@@ -104,10 +105,10 @@ module.exports.createBaseTabel = (req, res, next) => {
         if (item.proffSIZ) {
           item.proffSIZ.forEach((SIZ) => sheet.addRow(SIZ));
         }
-
         i += 1;
       });
-      sheet.autoFilter = 'A1:AU29';
+      sheet.autoFilter = 'A1:AV1';
+
       res.setHeader(
         'Content-Type',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -152,7 +153,6 @@ module.exports.createNormTabel = (req, res, next) => {
           };
           const sheet = e.getWorksheet('Лист1');
           const cell = (c, i) => sheet.getCell(c + i);
-
           let startRow = 11;
           el.forEach((item) => {
             const handleFilterTypeSIZ = convertValues.find(
@@ -167,8 +167,8 @@ module.exports.createNormTabel = (req, res, next) => {
             cell('D', startRow).value = !handleFilterTypeSIZ
               ? ''
               : `${item.speciesSIZ} ${handleFilterTypeSIZ.forTable}  ${
-                item.OperatingLevel !== null ? `\n${item.OperatingLevel}` : ''
-              }  ${item.standart !== null ? `\n${item.standart}` : ''}`;
+                item.OperatingLevel !== null ? `${item.OperatingLevel}` : ''
+              }  ${item.standart !== null ? `${item.standart}` : ''}`;
             cell('E', startRow).value = item.issuanceRate;
             cell(
               'F',

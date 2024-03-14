@@ -138,6 +138,9 @@ const value = new mongoose.Schema(
     SIZ: {
       type: Array,
     },
+    numWorkers: {
+      type: String,
+    },
   },
   { versionKey: false },
 );
