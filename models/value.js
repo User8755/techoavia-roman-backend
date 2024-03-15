@@ -135,7 +135,7 @@ const value = new mongoose.Schema(
     completionMark: {
       type: String,
     },
-    SIZ: {
+    proffSIZ: {
       type: Array,
     },
     numWorkers: {

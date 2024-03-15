@@ -152,8 +152,10 @@ module.exports.createNormTabel = (req, res, next) => {
             },
           };
           const sheet = e.getWorksheet('Лист1');
+
           const cell = (c, i) => sheet.getCell(c + i);
           let startRow = 11;
+
           el.forEach((item) => {
             const handleFilterTypeSIZ = convertValues.find(
               (i) => i.typeSIZ === item.typeSIZ,
@@ -858,6 +860,95 @@ module.exports.createPlanTimetable = (req, res, next) => {
                 cellSheetTwo(`L${tableTwoStart}`).style = borderSecondary;
                 tableTwoStart += 1;
               });
+              res.setHeader(
+                'Content-Type',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              );
+              res.setHeader(
+                'Content-Disposition',
+                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+              );
+
+              workbook.xlsx
+                .write(res)
+                .then(() => {
+                  res.end();
+                })
+                .catch((err) => next(err));
+            })
+            .catch((e) => next(e));
+        })
+        .catch((err) => next(err));
+    }
+  });
+};
+
+module.exports.createRegisterHazards = (req, res, next) => {
+  Enterprise.findById(req.params.id).then((ent) => {
+    if (!ent) {
+      next(new NotFound('Предприятие не найдено'));
+    }
+    if (
+      ent.owner.toString() === req.user._id
+      || ent.access.includes(req.user._id)
+    ) {
+      Value.find({ enterpriseId: req.params.id })
+        .then((el) => {
+          const fileName = 'Реестр оцененных опасностей_ИОУПР.xlsx';
+          workbook.xlsx
+            .readFile(fileName)
+            .then((e) => {
+              const sheet = e.getWorksheet(1);
+
+              const uniq = el.reduce((accumulator, currentValue) => {
+                if (
+                  accumulator.every(
+                    (item) => !(
+                      item.dangerEventID === currentValue.dangerEventID
+                    ),
+                  )
+                ) accumulator.push(currentValue);
+                return accumulator;
+              }, []);
+              const arr = [];
+              el.forEach((item) => {
+                const obj = {};
+                if (item.dangerEventID !== null) {
+                  obj.dangerEventID = item.dangerEventID;
+                } else {
+                  obj.dangerEvent776Id = item.dangerEvent776Id;
+                }
+                arr.push(obj)
+              });
+console.log(arr)
+              console.time();
+              uniq.forEach((item, index) => {
+                const startRow = index + 15;
+                // const rowValues = [];
+                // rowValues[2] = item.source;
+                // rowValues[3] = item.danger776Id || item.dangerEvent776Id;
+                // sheet.insertRow(15, rowValues);
+
+                sheet.getCell(`A${startRow}`).value = index + 1;
+                sheet.getCell(`C${startRow}`).value = item.dangerGroupId || item.danger776Id;
+                sheet.getCell(`F${startRow}`).value = item.dangerGroup || item.danger776;
+                sheet.getCell(`L${startRow}`).value = item.dangerEventID || item.dangerEvent776Id;
+                sheet.getCell(`O${startRow}`).value = item.dangerEvent || item.dangerEvent776;
+                sheet.mergeCells(`C${startRow} : E${startRow}`);
+                sheet.mergeCells(`F${startRow} : K${startRow}`);
+                sheet.mergeCells(`L${startRow} : N${startRow}`);
+                sheet.mergeCells(`O${startRow} : Q${startRow}`);
+                sheet.mergeCells(`R${startRow} : S${startRow}`);
+                sheet.mergeCells(`T${startRow} : W${startRow}`);
+                sheet.mergeCells(`X${startRow} : Z${startRow}`);
+                sheet.mergeCells(`AA${startRow} : AC${startRow}`);
+                sheet.mergeCells(`AD${startRow} : AF${startRow}`);
+                sheet.mergeCells(`AG${startRow} : AH${startRow}`);
+                sheet.mergeCells(`AI${startRow} : AJ${startRow}`);
+
+                sheet.insertRow(index + 16);
+              });
+              console.timeEnd();
               res.setHeader(
                 'Content-Type',
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
