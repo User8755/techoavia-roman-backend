@@ -13,7 +13,12 @@ module.exports.createEnterprise = (req, res, next) => {
     owner: req.user._id,
   })
     .then((i) => res.send(i))
-    .catch((e) => next(e));
+    .catch((e) => {
+      if (e.code === 11000) {
+        next(new ConflictError('Данный номер договра уже существует'));
+      }
+      next(e);
+    });
 };
 
 module.exports.getEnterprisesUser = (req, res, next) => {

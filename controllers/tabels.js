@@ -7,6 +7,20 @@ const Enterprise = require('../models/enterprise');
 const NotFound = require('../errors/NotFound');
 const convertValues = require('../forNormTable');
 
+const style = {
+  border: {
+    left: { style: 'thin' },
+    right: { style: 'thin' },
+    bottom: { style: 'thin' },
+    top: { style: 'thin' },
+  },
+  alignment: {
+    horizontal: 'left',
+    vertical: 'top',
+    wrapText: 'true',
+  },
+};
+
 module.exports.createBaseTabel = (req, res, next) => {
   Value.find({ enterpriseId: req.params.id })
     .then((el) => {
@@ -138,19 +152,6 @@ module.exports.createNormTabel = (req, res, next) => {
       workbook.xlsx
         .readFile(fileName)
         .then((e) => {
-          const style = {
-            border: {
-              left: { style: 'thin' },
-              right: { style: 'thin' },
-              bottom: { style: 'thin' },
-              top: { style: 'thin' },
-            },
-            alignment: {
-              horizontal: 'left',
-              vertical: 'top',
-              wrapText: 'true',
-            },
-          };
           const sheet = e.getWorksheet('Лист1');
 
           const cell = (c, i) => sheet.getCell(c + i);
@@ -263,20 +264,6 @@ module.exports.createMapOPRTabel = (req, res, next) => {
           workbook.xlsx
             .readFile(fileName)
             .then((e) => {
-              const style = {
-                border: {
-                  left: { style: 'thin' },
-                  right: { style: 'thin' },
-                  bottom: { style: 'thin' },
-                  top: { style: 'thin' },
-                },
-                alignment: {
-                  horizontal: 'center',
-                  vertical: 'middle',
-                  wrapText: 'true',
-                },
-              };
-
               const sheet = e.getWorksheet('Лист1');
 
               uniq.forEach((w) => {
@@ -508,19 +495,6 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
     workbook.xlsx
       .readFile(fileName)
       .then((e) => {
-        const style = {
-          border: {
-            left: { style: 'thin' },
-            right: { style: 'thin' },
-            bottom: { style: 'thin' },
-            top: { style: 'thin' },
-          },
-          alignment: {
-            horizontal: 'center',
-            vertical: 'middle',
-            wrapText: 'true',
-          },
-        };
         const sheet = e.getWorksheet('TDSheet');
 
         let line = 21;
@@ -900,40 +874,136 @@ module.exports.createRegisterHazards = (req, res, next) => {
             .then((e) => {
               const sheet = e.getWorksheet(1);
 
-              const uniq = el.reduce((accumulator, currentValue) => {
-                if (
-                  accumulator.every(
-                    (item) => !(
-                      item.dangerEventID === currentValue.dangerEventID
-                    ),
-                  )
-                ) accumulator.push(currentValue);
-                return accumulator;
-              }, []);
-              const arr = [];
-              el.forEach((item) => {
-                const obj = {};
-                if (item.dangerEventID !== null) {
-                  obj.dangerEventID = item.dangerEventID;
-                } else {
-                  obj.dangerEvent776Id = item.dangerEvent776Id;
-                }
-                arr.push(obj)
+              const { cities } = el.reduce((acc, city) => (acc.map[city.source]
+                ? acc
+                : ((acc.map[city.source] = true), acc.cities.push(city), acc)), {
+                map: {},
+                cities: [],
               });
-console.log(arr)
-              console.time();
-              uniq.forEach((item, index) => {
-                const startRow = index + 15;
-                // const rowValues = [];
-                // rowValues[2] = item.source;
-                // rowValues[3] = item.danger776Id || item.dangerEvent776Id;
-                // sheet.insertRow(15, rowValues);
+              const arr = [];
+              cities.forEach((item) => {
+                const filter = el.filter((i) => i.source === item.source);
+                filter.forEach((o) => {
+                  if (
+                    !arr.some((l) => l.source === o.source && l.dangerEventID === o.dangerEventID)
+                  ) {
+                    arr.push({
+                      source: o.source,
+                      dangerEventID: o.dangerEventID,
+                      dangerEvent776Id: o.dangerEvent776Id,
+                      dangerGroup: o.dangerGroup,
+                      danger776: o.danger776,
+                      dangerEvent: o.dangerEvent,
+                      dangerEvent776: o.dangerEvent776,
+                      dangerGroupId: o.dangerGroupId,
+                      danger776Id: o.danger776Id,
+                      numWorkers: 0, // Кол-во работников
+                      countWorkPlaces: 0, // Кол-во рабочих мест
+                      // Риски кол-во рабочих мест
+                      veryLowPlace: 0, // Незначительный
+                      lowPlace: 0, // Низкий
+                      midPlace: 0, // Средний
+                      highPlace: 0, // Высокий
+                      criticalPlace: 0, // Критический
+                      // Риски кол-во работников
+                      veryLowWorker: 0, // Незначительный
+                      lowWorker: 0, // Низкий
+                      midWorker: 0, // Средний
+                      highWorker: 0, // Высокий
+                      criticalWorker: 0, // Критический
+                      IPR: 0,
+                    });
+                  }
+                });
+              });
 
+              arr.forEach((i) => {
+                const filter = el.filter((n) => n.source === i.source
+                && n.dangerEvent776Id === i.dangerEvent776Id
+                || n.dangerEventID === i.dangerEventID);
+                filter.forEach((t) => {
+                  i.IPR += t.ipr;
+                  switch (t.risk) {
+                    case 'Незначительный':
+                      i.veryLowPlace += Number(t.numWorkers);
+                      break;
+                    case 'Низкий':
+                      i.lowWorker += Number(t.numWorkers);
+                      break;
+                    case 'Средний':
+                      i.midWorker += Number(t.numWorkers);
+                      break;
+                    case 'Высокий':
+                      i.highWorker += Number(t.numWorkers);
+                      break;
+                    default:
+                      i.criticalWorker += Number(t.numWorkers);
+                  }
+                });
+
+                const { uniqNum } = filter.reduce((acc, city) => (acc.map[city.num]
+                  ? acc
+                  : ((acc.map[city.num] = true), acc.uniqNum.push(city), acc)), {
+                  map: {},
+                  uniqNum: [],
+                });
+
+                uniqNum.forEach((w) => {
+                  i.numWorkers += Number(w.numWorkers);
+                  i.countWorkPlaces += 1;
+                  switch (w.risk) {
+                    case 'Незначительный':
+                      i.veryLowPlace += 1;
+                      break;
+                    case 'Низкий':
+                      i.lowPlace += 1;
+                      break;
+                    case 'Средний':
+                      i.midPlace += 1;
+                      break;
+                    case 'Высокий':
+                      i.highPlace += 1;
+                      break;
+                    default:
+                      i.criticalPlace += 1;
+                  }
+                });
+              });
+
+              arr.sort((a, b) => {
+                const nameA = a.IPR;
+                const nameB = b.IPR;
+                if (nameA > nameB) return -1;
+                if (nameA < nameB) return 1;
+                return 0;
+              }).forEach((item, index) => {
+                const startRow = index + 15;
                 sheet.getCell(`A${startRow}`).value = index + 1;
+                sheet.getCell(`B${startRow}`).value = item.source;
                 sheet.getCell(`C${startRow}`).value = item.dangerGroupId || item.danger776Id;
                 sheet.getCell(`F${startRow}`).value = item.dangerGroup || item.danger776;
                 sheet.getCell(`L${startRow}`).value = item.dangerEventID || item.dangerEvent776Id;
                 sheet.getCell(`O${startRow}`).value = item.dangerEvent || item.dangerEvent776;
+                sheet.getCell(`R${startRow}`).value = `${item.numWorkers}/${item.countWorkPlaces}`;
+                sheet.getCell(`T${startRow}`).value = `${item.veryLowWorker}/${item.veryLowPlace}`;
+                sheet.getCell(`X${startRow}`).value = `${item.lowWorker}/${item.lowPlace}`;
+                sheet.getCell(`AA${startRow}`).value = `${item.midWorker}/${item.midPlace}`;
+                sheet.getCell(`AD${startRow}`).value = `${item.highWorker}/${item.highPlace}`;
+                sheet.getCell(`AG${startRow}`).value = `${item.criticalWorker}/${item.criticalPlace}`;
+                sheet.getCell(`AI${startRow}`).value = item.IPR;
+                sheet.getCell(`A${startRow}`).style = style;
+                sheet.getCell(`B${startRow}`).style = style;
+                sheet.getCell(`C${startRow}`).style = style;
+                sheet.getCell(`F${startRow}`).style = style;
+                sheet.getCell(`L${startRow}`).style = style;
+                sheet.getCell(`O${startRow}`).style = style;
+                sheet.getCell(`R${startRow}`).style = style;
+                sheet.getCell(`T${startRow}`).style = style;
+                sheet.getCell(`X${startRow}`).style = style;
+                sheet.getCell(`AA${startRow}`).style = style;
+                sheet.getCell(`AD${startRow}`).style = style;
+                sheet.getCell(`AG${startRow}`).style = style;
+                sheet.getCell(`AI${startRow}`).style = style;
                 sheet.mergeCells(`C${startRow} : E${startRow}`);
                 sheet.mergeCells(`F${startRow} : K${startRow}`);
                 sheet.mergeCells(`L${startRow} : N${startRow}`);
@@ -948,7 +1018,7 @@ console.log(arr)
 
                 sheet.insertRow(index + 16);
               });
-              console.timeEnd();
+
               res.setHeader(
                 'Content-Type',
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

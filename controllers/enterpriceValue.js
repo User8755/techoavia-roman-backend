@@ -109,7 +109,7 @@ module.exports.newValue = (req, res, next) => {
       if (!enterprise) {
         next(new NotFound('Предприятие не найдено'));
       }
-      console.log(req.body)
+      console.log(req.body);
       Value.create(req.body)
         .then((data) => res.send(data))
         .catch((e) => next(e));
