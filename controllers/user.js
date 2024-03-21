@@ -67,7 +67,7 @@ module.exports.login = (req, res, next) => {
       }
       return bcrypt.compare(password, user.password).then((matched) => {
         const token = jwt.sign(
-          { _id: user._id, role: user.role },
+          { _id: user._id, role: user.role, name: `${user.name} ${user.family}` },
           NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
           { expiresIn: '7d' },
         );

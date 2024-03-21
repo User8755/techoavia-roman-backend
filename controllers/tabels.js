@@ -146,102 +146,215 @@ module.exports.createBaseTabel = (req, res, next) => {
 const workbook = new Excel.Workbook();
 
 module.exports.createNormTabel = (req, res, next) => {
-  Value.find({ enterpriseId: req.params.id })
-    .then((el) => {
-      const fileName = 'normSIZ.xlsx';
-      workbook.xlsx
-        .readFile(fileName)
-        .then((e) => {
-          const sheet = e.getWorksheet('Лист1');
+  Enterprise.findById(req.params.id)
+    .then((ent) => {
+      if (!ent) {
+        next(new NotFound('Предприятие не найдено'));
+      }
+      if (
+        ent.owner.toString() === req.user._id
+      || ent.access.includes(req.user._id)
+      ) {
+        Value.find({ enterpriseId: req.params.id })
+          .then((el) => {
+            const fileName = 'normSIZ.xlsx';
+            workbook.xlsx
+              .readFile(fileName)
+              .then((e) => {
+                const entName = `Нормы выдачи средств индивидуальной защиты (далее — СИЗ) в ${ent.enterprise} (наименование подразделения, организации)
+                в соответствии с требованиями приказов Минтруда от 29 октября 2021 г.
+                №767н «Об утверждении единых типовых норм (далее – ЕТН) выдачи СИЗ и смывающих средств»,
+                №766н «Об утверждении правил обеспечения работников средствами индивидуальной защиты и смывающими средствами»
+                (далее - приказ №766н)`;
 
-          const cell = (c, i) => sheet.getCell(c + i);
-          let startRow = 11;
+                const sheet = e.getWorksheet('Лист1');
 
-          el.forEach((item) => {
-            const handleFilterTypeSIZ = convertValues.find(
-              (i) => i.typeSIZ === item.typeSIZ,
-            );
-            cell('A', startRow).value = item.proffId;
-            cell(
-              'B',
-              startRow,
-            ).value = `${item.num}. ${item.job}. ${item.subdivision}.`;
-            cell('C', startRow).value = item.typeSIZ === null ? '' : `${item.typeSIZ}`;
-            cell('D', startRow).value = !handleFilterTypeSIZ
-              ? ''
-              : `${item.speciesSIZ} ${handleFilterTypeSIZ.forTable}  ${
-                item.OperatingLevel !== null ? `${item.OperatingLevel}` : ''
-              }  ${item.standart !== null ? `${item.standart}` : ''}`;
-            cell('E', startRow).value = item.issuanceRate;
-            cell(
-              'F',
-              startRow,
-            ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
-            cell('G', startRow).value = item.dangerGroupId;
-            cell('H', startRow).value = item.dangerGroup;
-            cell('I', startRow).value = item.dangerEventID;
-            cell('J', startRow).value = item.dangerEvent;
-            // стили
-            cell('A', startRow).style = style;
-            cell('B', startRow).style = style;
-            cell('C', startRow).style = style;
-            cell('D', startRow).style = style;
-            cell('E', startRow).style = style;
-            cell('F', startRow).style = style;
-            cell('G', startRow).style = style;
-            cell('H', startRow).style = style;
-            cell('I', startRow).style = style;
-            cell('J', startRow).style = style;
-            startRow += 1;
-            sheet.insertRow(startRow);
-            if (item.proffSIZ) {
-              item.proffSIZ.forEach((SIZ) => {
-                cell('A', startRow).value = item.proffId;
-                cell('D', startRow).value = SIZ.vid;
-                cell('E', startRow).value = SIZ.norm;
-                cell('F', startRow).value = 'Пункт 1 Приложения 1 Приказа 767н';
-                cell('G', startRow).value = item.dangerGroupId;
-                cell('H', startRow).value = item.dangerGroup;
-                cell('I', startRow).value = item.dangerEventID;
-                cell('J', startRow).value = item.dangerEvent;
-                // стили
-                cell('A', startRow).style = style;
-                cell('B', startRow).style = style;
-                cell('C', startRow).style = style;
-                cell('D', startRow).style = style;
-                cell('E', startRow).style = style;
-                cell('F', startRow).style = style;
-                cell('G', startRow).style = style;
-                cell('H', startRow).style = style;
-                cell('I', startRow).style = style;
-                cell('J', startRow).style = style;
-                startRow += 1;
-                sheet.insertRow(startRow);
-              });
-            }
+                const cell = (c, i) => sheet.getCell(c + i);
+                let startRow = 11;
+                sheet.getCell('A5').value = entName;
+                el.forEach((item) => {
+                  const handleFilterTypeSIZ = convertValues.find(
+                    (i) => i.typeSIZ === item.typeSIZ,
+                  );
+                  cell('A', startRow).value = item.proffId;
+                  cell(
+                    'B',
+                    startRow,
+                  ).value = `${item.num}. ${item.job}. ${item.subdivision}.`;
+                  cell('C', startRow).value = item.typeSIZ === null ? '' : `${item.typeSIZ}`;
+                  cell('D', startRow).value = !handleFilterTypeSIZ
+                    ? ''
+                    : `${item.speciesSIZ} ${handleFilterTypeSIZ.forTable}  ${
+                      item.OperatingLevel !== null ? `${item.OperatingLevel}` : ''
+                    }  ${item.standart !== null ? `${item.standart}` : ''}`;
+                  cell('E', startRow).value = item.issuanceRate;
+                  cell(
+                    'F',
+                    startRow,
+                  ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
+                  cell('G', startRow).value = item.dangerGroupId;
+                  cell('H', startRow).value = item.dangerGroup;
+                  cell('I', startRow).value = item.dangerEventID;
+                  cell('J', startRow).value = item.dangerEvent;
+                  // стили
+                  cell('A', startRow).style = style;
+                  cell('B', startRow).style = style;
+                  cell('C', startRow).style = style;
+                  cell('D', startRow).style = style;
+                  cell('E', startRow).style = style;
+                  cell('F', startRow).style = style;
+                  cell('G', startRow).style = style;
+                  cell('H', startRow).style = style;
+                  cell('I', startRow).style = style;
+                  cell('J', startRow).style = style;
+                  startRow += 1;
+                  sheet.insertRow(startRow);
+                  if (item.proffSIZ) {
+                    item.proffSIZ.forEach((SIZ) => {
+                      cell('A', startRow).value = item.proffId;
+                      cell('D', startRow).value = SIZ.vid;
+                      cell('E', startRow).value = SIZ.norm;
+                      cell('F', startRow).value = 'Пункт 1 Приложения 1 Приказа 767н';
+                      cell('G', startRow).value = item.dangerGroupId;
+                      cell('H', startRow).value = item.dangerGroup;
+                      cell('I', startRow).value = item.dangerEventID;
+                      cell('J', startRow).value = item.dangerEvent;
+                      // стили
+                      cell('A', startRow).style = style;
+                      cell('B', startRow).style = style;
+                      cell('C', startRow).style = style;
+                      cell('D', startRow).style = style;
+                      cell('E', startRow).style = style;
+                      cell('F', startRow).style = style;
+                      cell('G', startRow).style = style;
+                      cell('H', startRow).style = style;
+                      cell('I', startRow).style = style;
+                      cell('J', startRow).style = style;
+                      startRow += 1;
+                      sheet.insertRow(startRow);
+                    });
+                  }
+                });
+                sheet.autoFilter = 'A10:J10';
+                res.setHeader(
+                  'Content-Type',
+                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                );
+                res.setHeader(
+                  'Content-Disposition',
+                  `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+                );
+
+                workbook.xlsx
+                  .write(res)
+                  .then(() => {
+                    res.end();
+                  })
+                  .catch((err) => next(err));
+              })
+              .catch((e) => next(e));
+          })
+          .catch((i) => {
+            next(i);
           });
-          sheet.autoFilter = 'A10:J10';
-          res.setHeader(
-            'Content-Type',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          );
-          res.setHeader(
-            'Content-Disposition',
-            `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
-          );
-
-          workbook.xlsx
-            .write(res)
-            .then(() => {
-              res.end();
-            })
-            .catch((err) => next(err));
-        })
-        .catch((e) => next(e));
-    })
-    .catch((i) => {
-      next(i);
+      }
     });
+  // Value.find({ enterpriseId: req.params.id })
+  //   .then((el) => {
+  //     const fileName = 'normSIZ.xlsx';
+  //     workbook.xlsx
+  //       .readFile(fileName)
+  //       .then((e) => {
+  //         const sheet = e.getWorksheet('Лист1');
+
+  //         const cell = (c, i) => sheet.getCell(c + i);
+  //         let startRow = 11;
+
+  //         el.forEach((item) => {
+  //           const handleFilterTypeSIZ = convertValues.find(
+  //             (i) => i.typeSIZ === item.typeSIZ,
+  //           );
+  //           cell('A', startRow).value = item.proffId;
+  //           cell(
+  //             'B',
+  //             startRow,
+  //           ).value = `${item.num}. ${item.job}. ${item.subdivision}.`;
+  //           cell('C', startRow).value = item.typeSIZ === null ? '' : `${item.typeSIZ}`;
+  //           cell('D', startRow).value = !handleFilterTypeSIZ
+  //             ? ''
+  //             : `${item.speciesSIZ} ${handleFilterTypeSIZ.forTable}  ${
+  //               item.OperatingLevel !== null ? `${item.OperatingLevel}` : ''
+  //             }  ${item.standart !== null ? `${item.standart}` : ''}`;
+  //           cell('E', startRow).value = item.issuanceRate;
+  //           cell(
+  //             'F',
+  //             startRow,
+  //           ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
+  //           cell('G', startRow).value = item.dangerGroupId;
+  //           cell('H', startRow).value = item.dangerGroup;
+  //           cell('I', startRow).value = item.dangerEventID;
+  //           cell('J', startRow).value = item.dangerEvent;
+  //           // стили
+  //           cell('A', startRow).style = style;
+  //           cell('B', startRow).style = style;
+  //           cell('C', startRow).style = style;
+  //           cell('D', startRow).style = style;
+  //           cell('E', startRow).style = style;
+  //           cell('F', startRow).style = style;
+  //           cell('G', startRow).style = style;
+  //           cell('H', startRow).style = style;
+  //           cell('I', startRow).style = style;
+  //           cell('J', startRow).style = style;
+  //           startRow += 1;
+  //           sheet.insertRow(startRow);
+  //           if (item.proffSIZ) {
+  //             item.proffSIZ.forEach((SIZ) => {
+  //               cell('A', startRow).value = item.proffId;
+  //               cell('D', startRow).value = SIZ.vid;
+  //               cell('E', startRow).value = SIZ.norm;
+  //               cell('F', startRow).value = 'Пункт 1 Приложения 1 Приказа 767н';
+  //               cell('G', startRow).value = item.dangerGroupId;
+  //               cell('H', startRow).value = item.dangerGroup;
+  //               cell('I', startRow).value = item.dangerEventID;
+  //               cell('J', startRow).value = item.dangerEvent;
+  //               // стили
+  //               cell('A', startRow).style = style;
+  //               cell('B', startRow).style = style;
+  //               cell('C', startRow).style = style;
+  //               cell('D', startRow).style = style;
+  //               cell('E', startRow).style = style;
+  //               cell('F', startRow).style = style;
+  //               cell('G', startRow).style = style;
+  //               cell('H', startRow).style = style;
+  //               cell('I', startRow).style = style;
+  //               cell('J', startRow).style = style;
+  //               startRow += 1;
+  //               sheet.insertRow(startRow);
+  //             });
+  //           }
+  //         });
+  //         sheet.autoFilter = 'A10:J10';
+  //         res.setHeader(
+  //           'Content-Type',
+  //           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  //         );
+  //         res.setHeader(
+  //           'Content-Disposition',
+  //           `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+  //         );
+
+  //         workbook.xlsx
+  //           .write(res)
+  //           .then(() => {
+  //             res.end();
+  //           })
+  //           .catch((err) => next(err));
+  //       })
+  //       .catch((e) => next(e));
+  //   })
+  //   .catch((i) => {
+  //     next(i);
+  //   });
 };
 
 module.exports.createMapOPRTabel = (req, res, next) => {
@@ -311,9 +424,15 @@ module.exports.createMapOPRTabel = (req, res, next) => {
                 const numFilter = el.filter(
                   (filterEl) => filterEl.num === ss.name,
                 );
+
                 let i = 30;
                 const Ncell = (c) => newSheet.getCell(c);
-                numFilter.forEach((elem) => {
+
+                numFilter.forEach((elem, index) => {
+                  if (index === 0) Ncell('F14').value = elem.subdivision;
+                  if (index === 0 && elem.proffId !== null) Ncell('M8').value = elem.proffId;
+                  if (index === 0) Ncell('G8').value = elem.proff || elem.job;
+                  if (index === 0) Ncell('H18').value = elem.numWorkers;
                   Ncell('C2').value = ent.enterprise;
                   Ncell('E12').value = elem.num;
                   Ncell('H5').value = elem.num;
@@ -490,77 +609,88 @@ module.exports.createMapOPRTabel = (req, res, next) => {
 };
 
 module.exports.createListOfMeasuresTabel = (req, res, next) => {
-  Value.find({ enterpriseId: req.params.id }).then((el) => {
-    const fileName = 'ListOfMeasures.xlsx';
-    workbook.xlsx
-      .readFile(fileName)
-      .then((e) => {
-        const sheet = e.getWorksheet('TDSheet');
+  Enterprise.findById(req.params.id)
+    .then((ent) => {
+      if (!ent) {
+        next(new NotFound('Предприятие не найдено'));
+      }
+      if (
+        ent.owner.toString() === req.user._id
+      || ent.access.includes(req.user._id)
+      ) {
+        Value.find({ enterpriseId: req.params.id }).then((el) => {
+          const fileName = 'ListOfMeasures.xlsx';
+          workbook.xlsx
+            .readFile(fileName)
+            .then((e) => {
+              const sheet = e.getWorksheet('TDSheet');
 
-        let line = 21;
-        const cell = (c) => sheet.getCell(c + line);
+              let line = 21;
+              const cell = (c) => sheet.getCell(c + line);
+              sheet.getCell('C15').value = ent.enterprise;
+              el.forEach((i) => {
+                cell('A').value = line - 20;
+                cell('B').value = i.danger776Id || i.dangerGroupId;
+                cell('C').value = typeof i.danger776 === 'string'
+                  ? `${i.danger776} (Приказ776н)`
+                  : `${i.dangerGroup} (Приказ 767н)`;
+                cell('D').value = i.dangerEvent776Id || i.dangerEventID;
+                cell('E').value = i.dangerEvent776 || i.dangerEvent;
+                cell('F').value = i.obj;
+                cell('G').value = i.source;
+                cell('H').value = i.num;
+                cell('I').value = i.riskManagement;
+                cell('J').value = i.periodicity;
+                cell('L').value = i.completionMark;
+                cell('M').value = i.probability;
+                cell('N').value = i.probability1;
+                cell('O').value = i.heaviness;
+                cell('P').value = i.heaviness1;
+                cell('Q').value = i.ipr;
+                cell('R').value = i.ipr1;
 
-        el.forEach((i) => {
-          cell('A').value = line - 20;
-          cell('B').value = i.danger776Id || i.dangerGroupId;
-          cell('C').value = typeof i.danger776 === 'string'
-            ? `${i.danger776} (Приказ776н)`
-            : `${i.dangerGroup} (Приказ 767н)`;
-          cell('D').value = i.dangerEvent776Id || i.dangerEventID;
-          cell('E').value = i.dangerEvent776 || i.dangerEvent;
-          cell('F').value = i.obj;
-          cell('G').value = i.source;
-          cell('H').value = i.num;
-          cell('I').value = i.riskManagement;
-          cell('J').value = i.periodicity;
-          cell('L').value = i.completionMark;
-          cell('M').value = i.probability;
-          cell('N').value = i.probability1;
-          cell('O').value = i.heaviness;
-          cell('P').value = i.heaviness1;
-          cell('Q').value = i.ipr;
-          cell('R').value = i.ipr1;
+                cell('A').style = style;
+                cell('B').style = style;
+                cell('C').style = style;
+                cell('D').style = style;
+                cell('E').style = style;
+                cell('F').style = style;
+                cell('G').style = style;
+                cell('H').style = style;
+                cell('I').style = style;
+                cell('J').style = style;
+                cell('L').style = style;
+                cell('M').style = style;
+                cell('N').style = style;
+                cell('O').style = style;
+                cell('P').style = style;
+                cell('Q').style = style;
+                cell('R').style = style;
+                cell('K').style = style;
 
-          cell('A').style = style;
-          cell('B').style = style;
-          cell('C').style = style;
-          cell('D').style = style;
-          cell('E').style = style;
-          cell('F').style = style;
-          cell('G').style = style;
-          cell('H').style = style;
-          cell('I').style = style;
-          cell('J').style = style;
-          cell('L').style = style;
-          cell('M').style = style;
-          cell('N').style = style;
-          cell('O').style = style;
-          cell('P').style = style;
-          cell('Q').style = style;
-          cell('R').style = style;
-          cell('K').style = style;
+                line += 1;
+                sheet.insertRow(line);
+              });
 
-          line += 1;
-          sheet.insertRow(line);
+              res.setHeader(
+                'Content-Type',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              );
+              res.setHeader(
+                'Content-Disposition',
+                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+              );
+              workbook.xlsx
+                .write(res)
+                .then(() => {
+                  res.end();
+                })
+                .catch((err) => next(err));
+            })
+            .catch((e) => next(e));
         });
-
-        res.setHeader(
-          'Content-Type',
-          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        );
-        res.setHeader(
-          'Content-Disposition',
-          `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
-        );
-        workbook.xlsx
-          .write(res)
-          .then(() => {
-            res.end();
-          })
-          .catch((err) => next(err));
-      })
-      .catch((e) => next(e));
-  });
+      }
+    }).catch((e) => next(e));
 };
 
 module.exports.createListHazardsTable = (req, res, next) => {
@@ -873,7 +1003,7 @@ module.exports.createRegisterHazards = (req, res, next) => {
             .readFile(fileName)
             .then((e) => {
               const sheet = e.getWorksheet(1);
-
+              sheet.getCell('G10').value = ent.enterprise;
               const { cities } = el.reduce((acc, city) => (acc.map[city.source]
                 ? acc
                 : ((acc.map[city.source] = true), acc.cities.push(city), acc)), {
