@@ -1,3 +1,4 @@
+/* eslint-disable no-mixed-operators */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-return-assign */

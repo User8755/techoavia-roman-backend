@@ -2,6 +2,7 @@ const Excel = require('exceljs');
 const Enterprise = require('../models/enterprise');
 const Value = require('../models/value');
 const NotFound = require('../errors/NotFound');
+const ConflictError = require('../errors/ConflictError');
 
 const workbook = new Excel.Workbook();
 
@@ -24,9 +25,14 @@ module.exports.updateValue = (req, res, next) => {
             next(new NotFound('Предприятие не найдено'));
           }
 
+          if (
+            enterprise.owner.toString() !== req.user._id
+          ) next(new ConflictError('У Вас нет доступа'));
+
           for (let startRow = 2; startRow <= lastRow.number; startRow += 1) {
-            const newObj = { SIZ: [] };
+            const newObj = { proffSIZ: [] };
             const siz = {};
+
             if (cell('A', startRow).value) {
               // obj.type = cell('A', startRow).value;
               newObj.proffId = cell('B', startRow).value;
@@ -84,7 +90,7 @@ module.exports.updateValue = (req, res, next) => {
               siz.vid = cell('H', startRow).value;
               siz.norm = cell('I', startRow).value;
 
-              lastObj.SIZ.push(siz);
+              lastObj.proffSIZ.push(siz);
             }
           }
 
@@ -109,7 +115,6 @@ module.exports.newValue = (req, res, next) => {
       if (!enterprise) {
         next(new NotFound('Предприятие не найдено'));
       }
-      console.log(req.body);
       Value.create(req.body)
         .then((data) => res.send(data))
         .catch((e) => next(e));
