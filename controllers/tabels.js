@@ -756,9 +756,9 @@ module.exports.createListHazardsTable = (req, res, next) => {
           cellD16.style = textRotation;
 
           cellA16.value = '№ п/п';
-          cellB16.value = '№ опасности*';
+          cellB16.value = '№ опасности';
           cellC16.value = 'Наименование опасности';
-          cellD16.value = '№ опасного события*';
+          cellD16.value = '№ опасного события';
           cellE16.value = 'Наименование опасного события';
 
           sheet.getColumn(1).width = 6;
@@ -808,7 +808,7 @@ module.exports.createListHazardsTable = (req, res, next) => {
             rowAddress.push(currentCell + 16);
 
             sheet.getCell(currentCell + 16).value = element.num;
-            sheet.getCell(currentCell + 16).style = border;
+            sheet.getCell(currentCell + 16).style = style;
             sheet.getCell(currentCell + 16).width = 20;
             col += 1;
           });
@@ -920,18 +920,18 @@ module.exports.createPlanTimetable = (req, res, next) => {
                 cell(`K${start}`).value = value.responsiblePerson;
                 cell(`L${start}`).value = value.completionMark;
 
-                cell(`A${start}`).style = border;
-                cell(`B${start}`).style = border;
-                cell(`C${start}`).style = border;
-                cell(`D${start}`).style = border;
-                cell(`E${start}`).style = border;
-                cell(`F${start}`).style = border;
-                cell(`G${start}`).style = border;
-                cell(`H${start}`).style = border;
-                cell(`I${start}`).style = border;
-                cell(`J${start}`).style = border;
-                cell(`K${start}`).style = border;
-                cell(`L${start}`).style = border;
+                cell(`A${start}`).style = style;
+                cell(`B${start}`).style = style;
+                cell(`C${start}`).style = style;
+                cell(`D${start}`).style = style;
+                cell(`E${start}`).style = style;
+                cell(`F${start}`).style = style;
+                cell(`G${start}`).style = style;
+                cell(`H${start}`).style = style;
+                cell(`I${start}`).style = style;
+                cell(`J${start}`).style = style;
+                cell(`K${start}`).style = style;
+                cell(`L${start}`).style = style;
                 start += 1;
               });
 
@@ -951,18 +951,18 @@ module.exports.createPlanTimetable = (req, res, next) => {
                 cellSheetTwo(`K${tableTwoStart}`).value = value.responsiblePerson;
                 cellSheetTwo(`L${tableTwoStart}`).value = value.completionMark;
 
-                cellSheetTwo(`A${tableTwoStart}`).style = border;
-                cellSheetTwo(`B${tableTwoStart}`).style = borderSecondary;
-                cellSheetTwo(`C${tableTwoStart}`).style = borderSecondary;
-                cellSheetTwo(`D${tableTwoStart}`).style = borderSecondary;
-                cellSheetTwo(`E${tableTwoStart}`).style = borderSecondary;
-                cellSheetTwo(`F${tableTwoStart}`).style = borderSecondary;
-                cellSheetTwo(`G${tableTwoStart}`).style = borderSecondary;
-                cellSheetTwo(`H${tableTwoStart}`).style = borderSecondary;
-                cellSheetTwo(`I${tableTwoStart}`).style = borderSecondary;
-                cellSheetTwo(`J${tableTwoStart}`).style = borderSecondary;
-                cellSheetTwo(`K${tableTwoStart}`).style = borderSecondary;
-                cellSheetTwo(`L${tableTwoStart}`).style = borderSecondary;
+                cellSheetTwo(`A${tableTwoStart}`).style = style;
+                cellSheetTwo(`B${tableTwoStart}`).style = style;
+                cellSheetTwo(`C${tableTwoStart}`).style = style;
+                cellSheetTwo(`D${tableTwoStart}`).style = style;
+                cellSheetTwo(`E${tableTwoStart}`).style = style;
+                cellSheetTwo(`F${tableTwoStart}`).style = style;
+                cellSheetTwo(`G${tableTwoStart}`).style = style;
+                cellSheetTwo(`H${tableTwoStart}`).style = style;
+                cellSheetTwo(`I${tableTwoStart}`).style = style;
+                cellSheetTwo(`J${tableTwoStart}`).style = style;
+                cellSheetTwo(`K${tableTwoStart}`).style = style;
+                cellSheetTwo(`L${tableTwoStart}`).style = style;
                 tableTwoStart += 1;
               });
               res.setHeader(
