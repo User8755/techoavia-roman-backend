@@ -794,11 +794,11 @@ module.exports.createListHazardsTable = (req, res, next) => {
             sheet.getCell(`D${i}`).value = e1.dangerEvent776Id || e1.dangerEventID;
             sheet.getCell(`E${i}`).value = e1.dangerEvent776 || e1.dangerEvent;
 
-            sheet.getCell(`A${i}`).style = border;
-            sheet.getCell(`B${i}`).style = border;
-            sheet.getCell(`C${i}`).style = border;
-            sheet.getCell(`D${i}`).style = border;
-            sheet.getCell(`E${i}`).style = border;
+            sheet.getCell(`A${i}`).style = style;
+            sheet.getCell(`B${i}`).style = style;
+            sheet.getCell(`C${i}`).style = style;
+            sheet.getCell(`D${i}`).style = style;
+            sheet.getCell(`E${i}`).style = style;
             i += 1;
           });
           const rowAddress = [];
