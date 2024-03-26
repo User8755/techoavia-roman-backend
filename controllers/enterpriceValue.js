@@ -79,6 +79,10 @@ module.exports.updateValue = (req, res, next) => {
               newObj.responsiblePerson = cell('AT', startRow).value;
               newObj.completionMark = cell('AU', startRow).value;
               newObj.numWorkers = cell('AV', startRow).value;
+              newObj.equipment = cell('AW', startRow).value;
+              newObj.materials = cell('AX', startRow).value;
+              newObj.laborFunction = cell('AY', startRow).value;
+              newObj.code = cell('AZ', startRow).value;
               newObj.enterpriseId = req.params.id;
 
               arr.push(newObj);

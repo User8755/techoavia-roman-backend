@@ -141,6 +141,18 @@ const value = new mongoose.Schema(
     numWorkers: {
       type: String,
     },
+    equipment: {
+      type: String,
+    },
+    materials: {
+      type: String,
+    },
+    laborFunction: {
+      type: String,
+    },
+    code: {
+      type: String,
+    },
   },
   { versionKey: false },
 );

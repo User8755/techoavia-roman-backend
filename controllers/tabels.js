@@ -111,6 +111,10 @@ module.exports.createBaseTabel = (req, res, next) => {
         { header: 'Ответственное лицо', key: 'responsiblePerson', width: 20 },
         { header: 'Отметка о выполнении', key: 'completionMark', width: 20 },
         { header: 'Кол-во работников', key: 'numWorkers', width: 20 },
+        { header: 'Оборудование', key: 'equipment', width: 20 },
+        { header: 'Материалы', key: 'materials', width: 20 },
+        { header: 'Трудовая функция', key: 'laborFunction', width: 20 },
+        { header: 'Код ОК-016-94:', key: 'code', width: 20 },
       ];
       let i = 1;
       el.forEach((item) => {
@@ -122,7 +126,7 @@ module.exports.createBaseTabel = (req, res, next) => {
         }
         i += 1;
       });
-      sheet.autoFilter = 'A1:AV1';
+      sheet.autoFilter = 'A1:AZ1';
 
       res.setHeader(
         'Content-Type',
@@ -173,11 +177,11 @@ module.exports.createNormTabel = (req, res, next) => {
                 const cell = (c, i) => sheet.getCell(c + i);
                 let startRow = 11;
                 sheet.getCell('A5').value = entName;
-                el.forEach((item) => {
+                el.forEach((item, index) => {
                   const handleFilterTypeSIZ = convertValues.find(
                     (i) => i.typeSIZ === item.typeSIZ,
                   );
-                  cell('A', startRow).value = item.proffId;
+                  cell('A', startRow).value = index + 1;
                   cell(
                     'B',
                     startRow,
@@ -430,14 +434,20 @@ module.exports.createMapOPRTabel = (req, res, next) => {
                 const Ncell = (c) => newSheet.getCell(c);
 
                 numFilter.forEach((elem, index) => {
-                  if (index === 0) Ncell('F14').value = elem.subdivision;
-                  if (index === 0 && elem.proffId !== null) Ncell('M8').value = elem.proffId;
-                  if (index === 0) Ncell('G8').value = elem.proff || elem.job;
-                  if (index === 0) Ncell('H18').value = elem.numWorkers;
+                  if (index === 0) {
+                    Ncell('F14').value = elem.subdivision;
+                    Ncell('G8').value = elem.proff || elem.job;
+                    Ncell('H18').value = elem.numWorkers;
+                    Ncell('H19').value = elem.equipment;
+                    Ncell('H20').value = elem.materials;
+                    Ncell('H21').value = elem.laborFunction;
+                    Ncell('M8').value = elem.code || elem.proffId;
+                  }
+
                   Ncell('C2').value = ent.enterprise;
                   Ncell('E12').value = elem.num;
                   Ncell('H5').value = elem.num;
-                  Ncell(`B${i}`).value = elem.num;
+                  Ncell(`B${i}`).value = index + 1;
                   Ncell(`C${i}`).value = elem.danger776Id || elem.dangerGroupId;
                   Ncell(`D${i}`).value = elem.danger776 || elem.dangerGroup;
                   Ncell(`E${i}`).value = elem.dangerEvent776Id || elem.dangerEventID;
@@ -619,7 +629,7 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
         ent.owner.toString() === req.user._id
       || ent.access.includes(req.user._id)
       ) {
-        Value.find({ enterpriseId: req.params.id }).then((el) => {
+        Value.find({ enterpriseId: req.params.id }).sort({ ipr: -1 }).then((el) => {
           const fileName = 'ListOfMeasures.xlsx';
           workbook.xlsx
             .readFile(fileName)
@@ -787,8 +797,8 @@ module.exports.createListHazardsTable = (req, res, next) => {
             ({ num }) => !table2[num] && (table2[num] = 1),
           );
 
-          uniq.forEach((e1) => {
-            sheet.getCell(`A${i}`).value = e1.number;
+          uniq.forEach((e1, index) => {
+            sheet.getCell(`A${i}`).value = index + 1;
             sheet.getCell(`B${i}`).value = e1.danger776Id || e1.dangerGroupId;
             sheet.getCell(`C${i}`).value = e1.danger776 || e1.dangerGroup;
             sheet.getCell(`D${i}`).value = e1.dangerEvent776Id || e1.dangerEventID;
@@ -871,30 +881,6 @@ module.exports.createPlanTimetable = (req, res, next) => {
           workbook.xlsx
             .readFile(fileName)
             .then((e) => {
-              const border = {
-                border: {
-                  left: { style: 'medium' },
-                  top: { style: 'medium' },
-                  bottom: { style: 'medium' },
-                  right: { style: 'medium' },
-                },
-                alignment: {
-                  horizontal: 'center',
-                  vertical: 'middle',
-                  wrapText: 'true',
-                },
-              };
-              const borderSecondary = {
-                border: {
-                  bottom: { style: 'medium' },
-                  right: { style: 'medium' },
-                },
-                alignment: {
-                  horizontal: 'center',
-                  vertical: 'middle',
-                  wrapText: 'true',
-                },
-              };
               const sheet = e.getWorksheet(1);
               const sheetTwo = e.getWorksheet(2);
 
