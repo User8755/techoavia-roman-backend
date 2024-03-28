@@ -180,9 +180,9 @@ module.exports.createNormTabel = (req, res, next) => {
                 const handleFilterTypeSIZ = convertValues.find(
                   (i) => i.typeSIZ === item.typeSIZ,
                 );
-                const stingProff = item.num
-                  ? `${item.num}. ${item.job}. ${item.subdivision}.`
-                  : `${item.proffId}. ${item.proff} ${item.subdivision}`;
+                const stingProff = item.proffId
+                  ? `${item.proffId}. ${item.proff}. ${item.subdivision}`
+                  : `${item.num}. ${item.job}. ${item.subdivision}.`;
                 cell('A', startRow).value = index + 1;
                 cell('B', startRow).value = stingProff;
                 cell('C', startRow).value = item.typeSIZ === null ? '' : `${item.typeSIZ}`;
