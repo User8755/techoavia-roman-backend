@@ -31,8 +31,8 @@ module.exports.createBaseTabel = (req, res, next) => {
         { header: '№ п/п', key: 'number', width: 9 },
         { header: 'Код профессии (при наличии)', key: 'proffId', width: 20 },
         { header: 'Номер рабочего места', key: 'num', width: 20 },
-        { header: 'Профессия', key: 'proff', width: 20 },
-        { header: 'Должность', key: 'job', width: 20 },
+        { header: 'Профессия (Приказ 767н приложения 1):', key: 'proff', width: 20 },
+        { header: 'Профессия', key: 'job', width: 20 },
         { header: 'Подразделение', key: 'subdivision', width: 20 },
         { header: 'Тип средства защиты', key: 'type', width: 20 },
         {
