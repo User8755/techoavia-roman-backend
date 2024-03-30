@@ -1,6 +1,7 @@
 const Excel = require('exceljs');
 const Enterprise = require('../models/enterprise');
 const Value = require('../models/value');
+const logs = require('../models/logs');
 const NotFound = require('../errors/NotFound');
 const ConflictError = require('../errors/ConflictError');
 
@@ -25,9 +26,7 @@ module.exports.updateValue = (req, res, next) => {
             next(new NotFound('Предприятие не найдено'));
           }
 
-          if (
-            enterprise.owner.toString() !== req.user._id
-          ) next(new ConflictError('У Вас нет доступа'));
+          if (enterprise.owner.toString() !== req.user._id) next(new ConflictError('У Вас нет доступа'));
 
           for (let startRow = 2; startRow <= lastRow.number; startRow += 1) {
             const newObj = { proffSIZ: [] };
@@ -102,9 +101,18 @@ module.exports.updateValue = (req, res, next) => {
             .then(() => {
               arr.forEach((item) => {
                 Value.create(item)
-                  .then(() => res.end())
+                  .then(() => {
+                    res.end();
+                  })
                   .catch((e) => next(e));
               });
+            })
+            .catch((e) => next(e));
+          logs
+            .create({
+              action: `Пользователь ${req.user.name} обновил(а) записи для предприятия ${enterprise.enterprise}`,
+              userId: req.user._id,
+              enterpriseId: enterprise._id,
             })
             .catch((e) => next(e));
         })
@@ -120,7 +128,16 @@ module.exports.newValue = (req, res, next) => {
         next(new NotFound('Предприятие не найдено'));
       }
       Value.create(req.body)
-        .then((data) => res.send(data))
+        .then((data) => {
+          res.send(data);
+          logs
+            .create({
+              action: `Пользователь ${req.user.name} создал(а) запись для предприятия ${enterprise.enterprise}`,
+              userId: req.user._id,
+              enterpriseId: enterprise._id,
+            })
+            .catch((e) => next(e));
+        })
         .catch((e) => next(e));
     })
     .catch((e) => next(e));

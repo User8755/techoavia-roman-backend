@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/no-extraneous-dependencies
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -13,17 +12,6 @@ module.exports.createUsers = (req, res, next) => {
   const {
     name, family, email, branch, login, role,
   } = req.body;
-  let newrole;
-  if (role === 'Администратор филиала') {
-    newrole = 'admin';
-  } else if (role === 'Пользователь') {
-    newrole = 'user';
-  } else if (role === 'Нет') {
-    newrole = 'none';
-  } else if (role === 'Супер') {
-    newrole = 'sadmin';
-  }
-
   bcrypt
     .hash(req.body.password, 4) // для теста пароль 4 символа
     .then((hash) => User.create({
@@ -33,7 +21,7 @@ module.exports.createUsers = (req, res, next) => {
       password: hash,
       branch,
       login,
-      role: newrole,
+      role,
     }))
     .then((user) => {
       res.send({
@@ -69,7 +57,7 @@ module.exports.login = (req, res, next) => {
         const token = jwt.sign(
           { _id: user._id, role: user.role, name: `${user.name} ${user.family}` },
           NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
-          { expiresIn: '7d' },
+          { expiresIn: '8h' },
         );
         if (!matched) {
           throw new Unauthorized('Проверьте логин и пароль');
