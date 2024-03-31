@@ -34,7 +34,7 @@ app.use('/users', require('./routes/user'));
 // app.use('/dangerGroup', require('./routes/dangerGroup'));
 // app.use('/danger', require('./routes/danger'));
 // app.use('/dangerEvent', require('./routes/dangerEvent'));
-app.use('/update', require('./routes/update'));
+app.use('/branch', require('./routes/branch'));
 app.use('/info', require('./routes/info'));
 app.use('/enterprise', require('./routes/enterprise'));
 app.use('/tabels', require('./routes/tabels'));
