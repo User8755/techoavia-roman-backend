@@ -155,7 +155,6 @@ module.exports.updateProfile = (req, res, next) => {
 
 module.exports.newUserRole = (req, res, next) => {
   const { id } = req.body;
-  console.log(req.body)
   User.findById(req.user._id)
     .then((u) => {
       if (!u.role.includes('user')) {
