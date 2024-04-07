@@ -14,7 +14,7 @@ const {
   validationLogin,
 } = require('../middlewares/validation');
 const auth = require('../middlewares/auth');
-// const role = require('../middlewares/role');
+const role = require('../middlewares/role');
 
 router.post('/signup', auth, validationCreateUser, createUsers);
 router.post('/signin', validationLogin, login);
@@ -22,7 +22,7 @@ router.get('/me', auth, getUsersСurrent);
 router.get('/all', auth, getAllUsers);
 router.get('/all/branch', auth, getAllUsersBranch);
 router.patch('/me', auth, updateProfile);
-router.patch('/role', auth, newUserRole);
-router.delete('/role', auth, delUserRole);
+router.patch('/role', auth, role, newUserRole);
+router.delete('/role', auth, role, delUserRole);
 
 module.exports = router;

@@ -22,153 +22,173 @@ const style = {
     wrapText: 'true',
   },
 };
-
+// Базовая таблица
 module.exports.createBaseTabel = (req, res, next) => {
-  Enterprise.findById(req.params.id)
-    .then((ent) => {
-      if (!ent) {
-        next(new NotFound('Предприятие не найдено'));
-      }
-      if (
-        ent.owner.toString() === req.user._id
+  Enterprise.findById(req.params.id).then((ent) => {
+    if (!ent) {
+      next(new NotFound('Предприятие не найдено'));
+    }
+    if (
+      ent.owner.toString() === req.user._id
       || ent.access.includes(req.user._id)
-      ) {
-        Value.find({ enterpriseId: req.params.id })
-          .then((el) => {
-            const workbook = new Excel.Workbook();
-            const sheet = workbook.addWorksheet('sheet');
-            sheet.columns = [
-              { header: '№ п/п', key: 'number', width: 9 },
-              { header: 'Код профессии (при наличии)', key: 'proffId', width: 20 },
-              { header: 'Номер рабочего места', key: 'num', width: 20 },
-              { header: 'Профессия (Приказ 767н приложения 1):', key: 'proff', width: 20 },
-              { header: 'Профессия', key: 'job', width: 20 },
-              { header: 'Подразделение', key: 'subdivision', width: 20 },
-              { header: 'Тип средства защиты', key: 'type', width: 20 },
-              {
-                header:
-              'Наименование специальной одежды, специальной обуви и других средств индивидуальной защиты',
-                key: 'vid',
-                width: 20,
-              },
-              {
-                header: 'Нормы выдачи на год (период) (штуки, пары, комплекты, мл)',
-                key: 'norm',
-                width: 20,
-              },
-              { header: 'ОБЪЕКТ', key: 'obj', width: 20 },
-              { header: 'Источник', key: 'source', width: 20 },
-              { header: 'ID группы опасностей', key: 'dangerID', width: 20 },
-              { header: 'Группа опасности', key: 'danger', width: 25 },
-              { header: 'Опасность, ID 767', key: 'dangerGroupId', width: 17 },
-              { header: 'Опасности', key: 'dangerGroup', width: 25 },
-              {
-                header: 'Опасное событие, текст 767',
-                key: 'dangerEventID',
-                width: 25,
-              },
-              { header: 'Опасное событие', key: 'dangerEvent', width: 25 },
-              { header: 'Тяжесть', key: 'heaviness', width: 8 },
-              { header: 'Вероятность', key: 'probability', width: 12 },
-              { header: 'ИПР', key: 'ipr', width: 5 },
-              { header: 'Уровень риска', key: 'risk', width: 20 },
-              { header: 'Приемлемость', key: 'acceptability', width: 20 },
-              { header: 'Отношение к риску', key: 'riskAttitude', width: 20 },
-              { header: 'Тип СИЗ', key: 'typeSIZ', width: 20 },
-              { header: 'Вид СИЗ', key: 'speciesSIZ', width: 40 },
-              {
-                header:
-              'Нормы выдачи средств индивидуальной защиты на год (штуки, пары, комплекты, мл)',
-                key: 'issuanceRate',
-                width: 20,
-              },
-              { header: 'ДОП средства', key: 'additionalMeans', width: 20 },
-              {
-                header:
-              'Нормы выдачи средств индивидуальной защиты, выдаваемых дополнительно, на год (штуки, пары, комплекты, мл)',
-                key: 'AdditionalIssuanceRate',
-                width: 20,
-              },
-              { header: 'Стандарты (ГОСТ, EN)', key: 'standart', width: 20 },
-              { header: 'Экспл.уровень', key: 'OperatingLevel', width: 20 },
-              { header: 'Комментарий', key: 'commit', width: 20 },
-              { header: 'ID опасности 776н', key: 'danger776Id', width: 20 },
-              { header: 'Опасности 776н', key: 'danger776', width: 20 },
-              {
-                header: 'ID опасного события 776н',
-                key: 'dangerEvent776Id',
-                width: 20,
-              },
-              { header: 'Опасное событие 776н', key: 'dangerEvent776', width: 20 },
-              { header: 'ID мер управления', key: 'riskManagementID', width: 20 },
-              {
-                header: 'Меры управления/контроля профессиональных рисков',
-                key: 'riskManagement',
-                width: 20,
-              },
-              { header: 'Тяжесть', key: 'heaviness1', width: 8 },
-              { header: 'Вероятность', key: 'probability1', width: 12 },
-              { header: 'ИПР', key: 'ipr1', width: 5 },
-              { header: 'Уровень риска1', key: 'risk1', width: 20 },
-              { header: 'Приемлемость1', key: 'acceptability1', width: 20 },
-              { header: 'Отношение к риску1', key: 'riskAttitude1', width: 20 },
-              {
-                header: 'Существующие меры упр-я рисками',
-                key: 'existingRiskManagement',
-                width: 20,
-              },
-              { header: 'Периодичность', key: 'periodicity', width: 20 },
-              { header: 'Ответственное лицо', key: 'responsiblePerson', width: 20 },
-              { header: 'Отметка о выполнении', key: 'completionMark', width: 20 },
-              { header: 'Кол-во работников', key: 'numWorkers', width: 20 },
-              { header: 'Оборудование', key: 'equipment', width: 20 },
-              { header: 'Материалы', key: 'materials', width: 20 },
-              { header: 'Трудовая функция', key: 'laborFunction', width: 20 },
-              { header: 'Код ОК-016-94:', key: 'code', width: 20 },
-            ];
-            let i = 1;
-            el.forEach((item) => {
-              item.number = i;
-              sheet.addRow(item);
+    ) {
+      Value.find({ enterpriseId: req.params.id })
+        .then((el) => {
+          const workbook = new Excel.Workbook();
+          const sheet = workbook.addWorksheet('sheet');
+          sheet.columns = [
+            { header: '№ п/п', key: 'number', width: 9 },
+            {
+              header: 'Код профессии (при наличии)',
+              key: 'proffId',
+              width: 20,
+            },
+            { header: 'Номер рабочего места', key: 'num', width: 20 },
+            {
+              header: 'Профессия (Приказ 767н приложения 1):',
+              key: 'proff',
+              width: 20,
+            },
+            { header: 'Профессия', key: 'job', width: 20 },
+            { header: 'Подразделение', key: 'subdivision', width: 20 },
+            { header: 'Тип средства защиты', key: 'type', width: 20 },
+            {
+              header:
+                'Наименование специальной одежды, специальной обуви и других средств индивидуальной защиты',
+              key: 'vid',
+              width: 20,
+            },
+            {
+              header:
+                'Нормы выдачи на год (период) (штуки, пары, комплекты, мл)',
+              key: 'norm',
+              width: 20,
+            },
+            { header: 'ОБЪЕКТ', key: 'obj', width: 20 },
+            { header: 'Источник', key: 'source', width: 20 },
+            { header: 'ID группы опасностей', key: 'dangerID', width: 20 },
+            { header: 'Группа опасности', key: 'danger', width: 25 },
+            { header: 'Опасность, ID 767', key: 'dangerGroupId', width: 17 },
+            { header: 'Опасности', key: 'dangerGroup', width: 25 },
+            {
+              header: 'Опасное событие, текст 767',
+              key: 'dangerEventID',
+              width: 25,
+            },
+            { header: 'Опасное событие', key: 'dangerEvent', width: 25 },
+            { header: 'Тяжесть', key: 'heaviness', width: 8 },
+            { header: 'Вероятность', key: 'probability', width: 12 },
+            { header: 'ИПР', key: 'ipr', width: 5 },
+            { header: 'Уровень риска', key: 'risk', width: 20 },
+            { header: 'Приемлемость', key: 'acceptability', width: 20 },
+            { header: 'Отношение к риску', key: 'riskAttitude', width: 20 },
+            { header: 'Тип СИЗ', key: 'typeSIZ', width: 20 },
+            { header: 'Вид СИЗ', key: 'speciesSIZ', width: 40 },
+            {
+              header:
+                'Нормы выдачи средств индивидуальной защиты на год (штуки, пары, комплекты, мл)',
+              key: 'issuanceRate',
+              width: 20,
+            },
+            { header: 'ДОП средства', key: 'additionalMeans', width: 20 },
+            {
+              header:
+                'Нормы выдачи средств индивидуальной защиты, выдаваемых дополнительно, на год (штуки, пары, комплекты, мл)',
+              key: 'AdditionalIssuanceRate',
+              width: 20,
+            },
+            { header: 'Стандарты (ГОСТ, EN)', key: 'standart', width: 20 },
+            { header: 'Экспл.уровень', key: 'OperatingLevel', width: 20 },
+            { header: 'Комментарий', key: 'commit', width: 20 },
+            { header: 'ID опасности 776н', key: 'danger776Id', width: 20 },
+            { header: 'Опасности 776н', key: 'danger776', width: 20 },
+            {
+              header: 'ID опасного события 776н',
+              key: 'dangerEvent776Id',
+              width: 20,
+            },
+            {
+              header: 'Опасное событие 776н',
+              key: 'dangerEvent776',
+              width: 20,
+            },
+            { header: 'ID мер управления', key: 'riskManagementID', width: 20 },
+            {
+              header: 'Меры управления/контроля профессиональных рисков',
+              key: 'riskManagement',
+              width: 20,
+            },
+            { header: 'Тяжесть', key: 'heaviness1', width: 8 },
+            { header: 'Вероятность', key: 'probability1', width: 12 },
+            { header: 'ИПР', key: 'ipr1', width: 5 },
+            { header: 'Уровень риска1', key: 'risk1', width: 20 },
+            { header: 'Приемлемость1', key: 'acceptability1', width: 20 },
+            { header: 'Отношение к риску1', key: 'riskAttitude1', width: 20 },
+            {
+              header: 'Существующие меры упр-я рисками',
+              key: 'existingRiskManagement',
+              width: 20,
+            },
+            { header: 'Периодичность', key: 'periodicity', width: 20 },
+            {
+              header: 'Ответственное лицо',
+              key: 'responsiblePerson',
+              width: 20,
+            },
+            {
+              header: 'Отметка о выполнении',
+              key: 'completionMark',
+              width: 20,
+            },
+            { header: 'Кол-во работников', key: 'numWorkers', width: 20 },
+            { header: 'Оборудование', key: 'equipment', width: 20 },
+            { header: 'Материалы', key: 'materials', width: 20 },
+            { header: 'Трудовая функция', key: 'laborFunction', width: 20 },
+            { header: 'Код ОК-016-94:', key: 'code', width: 20 },
+          ];
+          let i = 1;
+          el.forEach((item) => {
+            item.number = i;
+            sheet.addRow(item);
 
-              if (item.proffSIZ) {
-                item.proffSIZ.forEach((SIZ) => sheet.addRow(SIZ));
-              }
-              i += 1;
-            });
-            sheet.autoFilter = 'A1:AZ1';
-
-            res.setHeader(
-              'Content-Type',
-              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            );
-            res.setHeader(
-              'Content-Disposition',
-              `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
-            );
-
-            workbook.xlsx
-              .write(res)
-              .then(() => {
-                res.end();
-              })
-              .catch((err) => next(err));
-          })
-          .catch((i) => {
-            next(i);
+            if (item.proffSIZ) {
+              item.proffSIZ.forEach((SIZ) => sheet.addRow(SIZ));
+            }
+            i += 1;
           });
-      }
-      logs
-        .create({
-          action: `Пользователь ${req.user.name} выгрузил(а) таблицу Базовая таблица  ${ent.enterprise}`,
-          userId: req.user._id,
-          enterpriseId: ent._id,
+          sheet.autoFilter = 'A1:AZ1';
+
+          res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          );
+          res.setHeader(
+            'Content-Disposition',
+            `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+          );
+
+          workbook.xlsx
+            .write(res)
+            .then(() => {
+              res.end();
+            })
+            .catch((err) => next(err));
         })
-        .catch((e) => next(e));
-    });
+        .catch((i) => {
+          next(i);
+        });
+    }
+    logs
+      .create({
+        action: `Пользователь ${req.user.name} выгрузил(а) таблицу Базовая таблица  ${ent.enterprise}`,
+        userId: req.user._id,
+        enterpriseId: ent._id,
+      })
+      .catch((e) => next(e));
+  });
 };
 const workbook = new Excel.Workbook();
-
+// Нормы выдачи
 module.exports.createNormTabel = (req, res, next) => {
   Enterprise.findById(req.params.id).then((ent) => {
     if (!ent) {
@@ -311,7 +331,7 @@ module.exports.createNormTabel = (req, res, next) => {
       .catch((e) => next(e));
   });
 };
-
+// Карты опаснстей
 module.exports.createMapOPRTabel = (req, res, next) => {
   Enterprise.findById(req.params.id)
     .then((ent) => {
@@ -576,6 +596,7 @@ module.exports.createMapOPRTabel = (req, res, next) => {
     .catch((e) => next(e));
 };
 
+// Меры управления
 module.exports.createListOfMeasuresTabel = (req, res, next) => {
   Enterprise.findById(req.params.id)
     .then((ent) => {
@@ -594,16 +615,95 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
               .readFile(fileName)
               .then((e) => {
                 const sheet = e.getWorksheet('TDSheet');
+                const arr = [];
+                el.forEach((i) => {
+                  const obj = {};
+                  if (i.dangerEventID !== '') {
+                    if (
+                      !arr.find(
+                        (n) => n.dangerEventID === i.dangerEventID
+                          && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
+                          && n.source.toLocaleLowerCase()
+                            .trim() === i.source.toLocaleLowerCase().trim()
+                          && n.ipr === i.ipr
+                          && n.ipr1 === i.ipr1,
+                      )
+                    ) {
+                      obj.dangerGroupId = i.dangerGroupId;
+                      obj.dangerGroup = `${i.dangerGroup} (Приказ 767н)`;
+                      obj.dangerEventID = i.dangerEventID;
+                      obj.dangerEvent = i.dangerEvent;
+                      obj.obj = i.obj;
+                      obj.source = i.source;
+                      obj.ipr = i.ipr;
+                      obj.ipr1 = i.ipr1;
+                      obj.riskManagement = i.riskManagement;
+                      obj.periodicity = i.periodicity;
+                      obj.completionMark = i.completionMark;
+                      obj.periodicity = i.periodicity;
+                      obj.completionMark = i.completionMark;
+                      obj.probability = i.probability;
+                      obj.probability1 = i.probability1;
+                      obj.heaviness = i.heaviness;
+                      obj.heaviness1 = i.heaviness1;
+                      arr.push(obj);
+                    }
+                  }
+                  if (i.dangerEventID === '') {
+                    if (
+                      !arr.find(
+                        (n) => n.dangerEvent776Id === i.dangerEvent776Id
+                          && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
+                          && n.source.toLocaleLowerCase()
+                            .trim() === i.source.toLocaleLowerCase().trim()
+                          && n.ipr === i.ipr
+                          && n.ipr1 === i.ipr1,
+                      )
+                    ) {
+                      obj.danger776 = `${i.danger776} (Приказ776н)`;
+                      obj.danger776Id = i.danger776Id;
+                      obj.dangerEvent776Id = i.dangerEvent776Id;
+                      obj.dangerEvent776 = i.dangerEvent776;
+                      obj.obj = i.obj;
+                      obj.source = i.source;
+                      obj.ipr = i.ipr;
+                      obj.ipr1 = i.ipr1;
+                      obj.riskManagement = i.riskManagement;
+                      obj.periodicity = i.periodicity;
+                      obj.completionMark = i.completionMark;
+                      obj.probability = i.probability;
+                      obj.probability1 = i.probability1;
+                      obj.heaviness = i.heaviness;
+                      obj.heaviness1 = i.heaviness1;
+                      arr.push(obj);
+                    }
+                  }
+                });
+                arr.forEach((i) => {
+                  let numResult = '';
+                  const numArr = [];
+                  if (el.filter((n) => {
+                    if (n.dangerEventID === i.dangerEventID
+                    && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
+                    && n.source.toLocaleLowerCase()
+                      .trim() === i.source.toLocaleLowerCase().trim()
+                    && n.ipr === i.ipr
+                    && n.ipr1 === i.ipr1) {
+                      if (!numArr.includes(n.num)) numArr.push(n.num);
+                      // numArr.forEach((nu) => { numResult += `${nu.num}; `; });
+                      i.num = numResult += `${n.num}; `;
+                    }
+                  })) console.log();
+                });
 
                 let line = 21;
                 const cell = (c) => sheet.getCell(c + line);
                 sheet.getCell('C15').value = ent.enterprise;
-                el.forEach((i) => {
+                arr.forEach((i) => {
                   cell('A').value = line - 20;
                   cell('B').value = i.danger776Id || i.dangerGroupId;
-                  cell('C').value = typeof i.danger776 === 'string'
-                    ? `${i.danger776} (Приказ776н)`
-                    : `${i.dangerGroup} (Приказ 767н)`;
+                  cell('C').value = i.danger776
+                    || i.dangerGroup;
                   cell('D').value = i.dangerEvent776Id || i.dangerEventID;
                   cell('E').value = i.dangerEvent776 || i.dangerEvent;
                   cell('F').value = i.obj;
@@ -760,8 +860,9 @@ module.exports.createListHazardsTable = (req, res, next) => {
                 if (
                   accumulator.every(
                     (item) => !(
-                      item.dangerEvent776Id === currentValue.dangerEvent776Id
-                      && item.dangerEventID === currentValue.dangerEventID
+                      item.dangerEvent776Id
+                          === currentValue.dangerEvent776Id
+                        && item.dangerEventID === currentValue.dangerEventID
                     ),
                   )
                 ) accumulator.push(currentValue);
@@ -806,12 +907,17 @@ module.exports.createListHazardsTable = (req, res, next) => {
                 filterJobValue.forEach((v) => {
                   let colStr = i;
                   while (colStr >= 17) {
-                    if (sheet.getCell(`D${colStr}`).value === v.dangerEvent776Id && sheet.getCell(`D${colStr}`).value !== null) {
+                    if (
+                      sheet.getCell(`D${colStr}`).value
+                        === v.dangerEvent776Id
+                      && sheet.getCell(`D${colStr}`).value !== null
+                    ) {
                       sheet.getCell(
                         sheet.getCell(address)._column.letter + colStr,
                       ).value = '+';
                     } else if (
-                      sheet.getCell(`D${colStr}`).value === v.dangerEventID && sheet.getCell(`D${colStr}`).value !== null
+                      sheet.getCell(`D${colStr}`).value === v.dangerEventID
+                      && sheet.getCell(`D${colStr}`).value !== null
                     ) {
                       sheet.getCell(
                         sheet.getCell(address)._column.letter + colStr,

@@ -5,7 +5,7 @@ const ConflictError = require('../errors/ConflictError');
 module.exports = (req, res, next) => {
   User.findById({ _id: req.query._id })
     .then((user) => {
-      if (user.role === 'admin') {
+      if (user.role.includes('admin')) {
         next();
       } else {
         throw new ConflictError('Недоcтаточно прав доустпа');
