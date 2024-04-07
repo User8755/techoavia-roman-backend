@@ -55,7 +55,11 @@ module.exports.login = (req, res, next) => {
       }
       return bcrypt.compare(password, user.password).then((matched) => {
         const token = jwt.sign(
-          { _id: user._id, role: user.role, name: `${user.name} ${user.family}` },
+          {
+            _id: user._id,
+            role: user.role,
+            name: `${user.name} ${user.family}`,
+          },
           NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
           { expiresIn: '8h' },
         );
@@ -101,7 +105,9 @@ module.exports.getAllUsers = (req, res, next) => {
       if (!user) {
         next(new NotFoundError('Пользователь с данным Id не найден'));
       }
-      User.find({}).then((allUsers) => res.send(allUsers)).catch((e) => next(e));
+      User.find({})
+        .then((allUsers) => res.send(allUsers))
+        .catch((e) => next(e));
     })
     .catch((e) => next(e));
 };
@@ -147,19 +153,54 @@ module.exports.updateProfile = (req, res, next) => {
     .catch((e) => next(e));
 };
 
-module.exports.updateUserRole = (req, res, next) => {
-  const { role, id } = req.body;
-  User.findByIdAndUpdate(
-    id,
-    { $addToSet: [role] },
-    { new: true, runValidators: true },
-  )
-    .then((user) => {
-      if (!user) {
-        next(new NotFoundError('Пользователь с данным Id не найден'));
-      } else {
-        res.send(user);
+module.exports.newUserRole = (req, res, next) => {
+  const { id } = req.body;
+  console.log(req.body)
+  User.findById(req.user._id)
+    .then((u) => {
+      if (!u.role.includes('user')) {
+        next(new ConflictError('У Вас нет доступа'));
       }
+
+      User.findByIdAndUpdate(
+        id,
+        { $addToSet: { role: req.body.role } },
+        { new: true, runValidators: true },
+      )
+        .then((user) => {
+          if (!user) {
+            next(new NotFoundError('Пользователь с данным Id не найден'));
+          } else {
+            res.send(user);
+          }
+        })
+        .catch((e) => next(e));
+    })
+    .catch((e) => next(e));
+};
+
+module.exports.delUserRole = (req, res, next) => {
+  const { id } = req.body;
+
+  User.findById(req.user._id)
+    .then((u) => {
+      if (!u.role.includes('user')) {
+        next(new ConflictError('У Вас нет доступа'));
+      }
+
+      User.findByIdAndUpdate(
+        id,
+        { $pull: { role: req.body.role } },
+        { new: true },
+      )
+        .then((user) => {
+          if (!user) {
+            next(new NotFoundError('Пользователь с данным Id не найден'));
+          } else {
+            res.send(user);
+          }
+        })
+        .catch((e) => next(e));
     })
     .catch((e) => next(e));
 };

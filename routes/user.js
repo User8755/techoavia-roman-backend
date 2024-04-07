@@ -5,8 +5,9 @@ const {
   getUsersСurrent,
   getAllUsers,
   updateProfile,
-  updateUserRole,
+  newUserRole,
   getAllUsersBranch,
+  delUserRole,
 } = require('../controllers/user');
 const {
   validationCreateUser,
@@ -21,6 +22,7 @@ router.get('/me', auth, getUsersСurrent);
 router.get('/all', auth, getAllUsers);
 router.get('/all/branch', auth, getAllUsersBranch);
 router.patch('/me', auth, updateProfile);
-router.patch('/role', auth, updateUserRole);
+router.patch('/role', auth, newUserRole);
+router.delete('/role', auth, delUserRole);
 
 module.exports = router;
