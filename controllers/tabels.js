@@ -680,7 +680,6 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                   }
                 });
                 arr.forEach((i) => {
-                  let numResult = '';
                   const numArr = [];
                   if (el.filter((n) => {
                     if (n.dangerEventID === i.dangerEventID
@@ -690,10 +689,24 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                     && n.ipr === i.ipr
                     && n.ipr1 === i.ipr1) {
                       if (!numArr.includes(n.num)) numArr.push(n.num);
-                      // numArr.forEach((nu) => { numResult += `${nu.num}; `; });
-                      i.num = numResult += `${n.num}; `;
+                      let numResult = '';
+                      numArr.forEach((nu) => { numResult += `${nu}; `; });
+                      i.num = numResult;
                     }
-                  })) console.log();
+                  }));
+                  if (el.filter((n) => {
+                    if (n.dangerEvent776Id === i.dangerEvent776Id
+                    && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
+                    && n.source.toLocaleLowerCase()
+                      .trim() === i.source.toLocaleLowerCase().trim()
+                    && n.ipr === i.ipr
+                    && n.ipr1 === i.ipr1) {
+                      if (!numArr.includes(n.num)) numArr.push(n.num);
+                      let numResult = '';
+                      numArr.forEach((nu) => { numResult += `${nu}; `; });
+                      i.num = numResult;
+                    }
+                  }));
                 });
 
                 let line = 21;
@@ -955,7 +968,7 @@ module.exports.createListHazardsTable = (req, res, next) => {
       .catch((e) => next(e));
   });
 };
-
+// План-график мер
 module.exports.createPlanTimetable = (req, res, next) => {
   Enterprise.findById(req.params.id).then((ent) => {
     if (!ent) {
@@ -980,7 +993,90 @@ module.exports.createPlanTimetable = (req, res, next) => {
               sheetTwo.autoFilter = 'A3:L3';
               cell('B10').value = ent.enterprise;
               let start = 16;
-              el.forEach((value) => {
+              const arr = [];
+              el.forEach((i) => {
+                const obj = {};
+                if (i.dangerEventID !== '') {
+                  if (
+                    !arr.find(
+                      (n) => n.dangerEventID === i.dangerEventID
+                        && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
+                        && n.source.toLocaleLowerCase()
+                          .trim() === i.source.toLocaleLowerCase().trim(),
+                    )
+                  ) {
+                    obj.dangerGroupId = i.dangerGroupId;
+                    obj.dangerGroup = i.dangerGroup;
+                    obj.dangerEventID = i.dangerEventID;
+                    obj.dangerEvent = i.dangerEvent;
+                    obj.obj = i.obj;
+                    obj.source = i.source;
+                    obj.riskManagement = i.riskManagement;
+                    obj.periodicity = i.periodicity;
+                    obj.completionMark = i.completionMark;
+                    obj.periodicity = i.periodicity;
+                    obj.completionMark = i.completionMark;
+                    obj.riskManagement = i.riskManagement;
+                    obj.responsiblePerson = i.responsiblePerson;
+                    obj.typeSIZ = `Выдавать: ${i.typeSIZ}`;
+                    obj.issuanceRate = i.issuanceRate;
+                    arr.push(obj);
+                  }
+                }
+                if (i.dangerEventID === '') {
+                  if (
+                    !arr.find(
+                      (n) => n.dangerEvent776Id === i.dangerEvent776Id
+                        && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
+                        && n.source.toLocaleLowerCase()
+                          .trim() === i.source.toLocaleLowerCase().trim(),
+                    )
+                  ) {
+                    obj.danger776 = i.danger776;
+                    obj.danger776Id = i.danger776Id;
+                    obj.dangerEvent776Id = i.dangerEvent776Id;
+                    obj.dangerEvent776 = i.dangerEvent776;
+                    obj.obj = i.obj;
+                    obj.source = i.source;
+                    obj.riskManagement = i.riskManagement;
+                    obj.periodicity = i.periodicity;
+                    obj.completionMark = i.completionMark;
+                    obj.probability = i.probability;
+                    obj.probability1 = i.probability1;
+                    obj.heaviness = i.heaviness;
+                    obj.heaviness1 = i.heaviness1;
+                    obj.riskManagement = i.riskManagement;
+                    obj.responsiblePerson = i.responsiblePerson;
+                    obj.typeSIZ = `Выдавать: ${i.typeSIZ}`;
+                    obj.issuanceRate = i.issuanceRate;
+                    arr.push(obj);
+                  }
+                }
+              });
+
+              arr.forEach((i) => {
+                const numArr = [];
+                el.filter((n) => n.dangerEventID === i.dangerEventID
+                  && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
+                  && n.source.toLocaleLowerCase()
+                    .trim() === i.source.toLocaleLowerCase().trim()).forEach((nu) => {
+                  if (!numArr.includes(nu.num)) numArr.push(nu.num);
+                  let numResult = '';
+                  numArr.forEach((num) => { numResult += `${num}; `; });
+                  i.num = numResult;
+                });
+                el.filter((n) => n.dangerEvent776Id === i.dangerEvent776Id
+                && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
+                && n.source.toLocaleLowerCase()
+                  .trim() === i.source.toLocaleLowerCase().trim()).forEach((nu) => {
+                  if (!numArr.includes(nu.num)) numArr.push(nu.num);
+                  let numResult = '';
+                  numArr.forEach((num) => { numResult += `${num}; `; });
+                  i.num = numResult;
+                });
+              });
+
+              arr.forEach((value) => {
                 cell(`A${start}`).value = start - 15;
                 cell(`B${start}`).value = value.danger776Id || value.dangerGroupId;
                 cell(`C${start}`).value = value.danger776 || value.dangerGroup;
@@ -1013,7 +1109,7 @@ module.exports.createPlanTimetable = (req, res, next) => {
 
               let tableTwoStart = 4;
 
-              el.forEach((value, index) => {
+              arr.forEach((value, index) => {
                 cellSheetTwo(`A${tableTwoStart}`).value = index + 1;
                 cellSheetTwo(`B${tableTwoStart}`).value = value.dangerGroupId;
                 cellSheetTwo(`C${tableTwoStart}`).value = value.dangerGroup;
@@ -1022,7 +1118,7 @@ module.exports.createPlanTimetable = (req, res, next) => {
                 cellSheetTwo(`F${tableTwoStart}`).value = value.obj;
                 cellSheetTwo(`G${tableTwoStart}`).value = value.source;
                 cellSheetTwo(`H${tableTwoStart}`).value = value.num;
-                cellSheetTwo(`I${tableTwoStart}`).value = value.typeSIZ === null ? '' : `Выдавать: ${value.typeSIZ}`;
+                cellSheetTwo(`I${tableTwoStart}`).value = value.typeSIZ;
                 cellSheetTwo(`J${tableTwoStart}`).value = value.issuanceRate;
                 cellSheetTwo(`K${tableTwoStart}`).value = value.responsiblePerson;
                 cellSheetTwo(`L${tableTwoStart}`).value = value.completionMark;
