@@ -9,6 +9,36 @@ const NotFound = require('../errors/NotFound');
 const convertValues = require('../forNormTable');
 const logs = require('../models/logs');
 
+const darkGeen = {
+  type: 'pattern',
+  pattern: 'solid',
+  fgColor: { argb: 'FF00B050' },
+};
+
+const green = {
+  type: 'pattern',
+  pattern: 'solid',
+  fgColor: { argb: 'FF92D050' },
+};
+
+const yellow = {
+  type: 'pattern',
+  pattern: 'solid',
+  fgColor: { argb: 'FFFFFF00' },
+};
+
+const orange = {
+  type: 'pattern',
+  pattern: 'solid',
+  fgColor: { argb: 'FFFFC000' },
+};
+
+const red = {
+  type: 'pattern',
+  pattern: 'solid',
+  fgColor: { argb: 'FFFF0000' },
+};
+
 const style = {
   border: {
     left: { style: 'thin' },
@@ -219,44 +249,34 @@ module.exports.createNormTabel = (req, res, next) => {
                 const handleFilterTypeSIZ = convertValues.find(
                   (i) => i.typeSIZ === item.typeSIZ,
                 );
-                const stingProff = item.proffId
+
+                const stringProff = item.proffId
                   ? `${item.proffId}. ${item.proff}. ${item.subdivision}`
                   : `${item.num}. ${item.job}. ${item.subdivision}.`;
-                cell('A', startRow).value = index + 1;
-                cell('B', startRow).value = stingProff;
-                cell('C', startRow).value = item.typeSIZ === null ? '' : `${item.typeSIZ}`;
-                cell('D', startRow).value = !handleFilterTypeSIZ
-                  ? ''
-                  : `${item.speciesSIZ} ${handleFilterTypeSIZ.forTable}  ${
-                    item.OperatingLevel !== null
-                      ? `${item.OperatingLevel}`
-                      : ''
-                  }  ${item.standart !== null ? `${item.standart}` : ''}`;
-                cell('E', startRow).value = item.issuanceRate;
-                cell(
-                  'F',
-                  startRow,
-                ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
-                cell('G', startRow).value = item.dangerGroupId;
-                cell('H', startRow).value = item.dangerGroup;
-                cell('I', startRow).value = item.dangerEventID;
-                cell('J', startRow).value = item.dangerEvent;
-                // стили
-                cell('A', startRow).style = style;
-                cell('B', startRow).style = style;
-                cell('C', startRow).style = style;
-                cell('D', startRow).style = style;
-                cell('E', startRow).style = style;
-                cell('F', startRow).style = style;
-                cell('G', startRow).style = style;
-                cell('H', startRow).style = style;
-                cell('I', startRow).style = style;
-                cell('J', startRow).style = style;
-                startRow += 1;
-                sheet.insertRow(startRow);
-                if (item.additionalMeans) {
-                  cell('D', startRow).value = item.additionalMeans;
-                  cell('E', startRow).value = item.AdditionalIssuanceRate;
+                if (item.typeSIZ) {
+                  cell('A', startRow).value = index + 1;
+                  cell('B', startRow).value = stringProff;
+                  cell('C', startRow).value = `${item.typeSIZ}`;
+                  cell('D', startRow).value = !handleFilterTypeSIZ
+                    ? `${item.speciesSIZ} ${
+                      item.OperatingLevel
+                        ? `${item.OperatingLevel}`
+                        : ''
+                    }  ${item.standart ? `${item.standart}` : ''}`
+                    : `${item.speciesSIZ} ${handleFilterTypeSIZ.forTable}  ${
+                      item.OperatingLevel
+                        ? `${item.OperatingLevel}`
+                        : ''
+                    }  ${item.standart ? `${item.standart}` : ''}`;
+                  cell('E', startRow).value = item.issuanceRate;
+                  cell(
+                    'F',
+                    startRow,
+                  ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
+                  cell('G', startRow).value = item.dangerGroupId;
+                  cell('H', startRow).value = item.dangerGroup;
+                  cell('I', startRow).value = item.dangerEventID;
+                  cell('J', startRow).value = item.dangerEvent;
                   // стили
                   cell('A', startRow).style = style;
                   cell('B', startRow).style = style;
@@ -270,19 +290,9 @@ module.exports.createNormTabel = (req, res, next) => {
                   cell('J', startRow).style = style;
                   startRow += 1;
                   sheet.insertRow(startRow);
-                }
-                if (item.proffSIZ) {
-                  item.proffSIZ.forEach((SIZ) => {
-                    cell('D', startRow).value = SIZ.vid;
-                    cell('E', startRow).value = SIZ.norm;
-                    cell(
-                      'F',
-                      startRow,
-                    ).value = `Пункт ${item.proffId} Приложения 1 Приказа 767н`;
-                    cell('G', startRow).value = item.dangerGroupId;
-                    cell('H', startRow).value = item.dangerGroup;
-                    cell('I', startRow).value = item.dangerEventID;
-                    cell('J', startRow).value = item.dangerEvent;
+                  if (item.additionalMeans) {
+                    cell('D', startRow).value = item.additionalMeans;
+                    cell('E', startRow).value = item.AdditionalIssuanceRate;
                     // стили
                     cell('A', startRow).style = style;
                     cell('B', startRow).style = style;
@@ -296,7 +306,34 @@ module.exports.createNormTabel = (req, res, next) => {
                     cell('J', startRow).style = style;
                     startRow += 1;
                     sheet.insertRow(startRow);
-                  });
+                  }
+                  if (item.proffSIZ) {
+                    item.proffSIZ.forEach((SIZ) => {
+                      cell('D', startRow).value = SIZ.vid;
+                      cell('E', startRow).value = SIZ.norm;
+                      cell(
+                        'F',
+                        startRow,
+                      ).value = `Пункт ${item.proffId} Приложения 1 Приказа 767н`;
+                      cell('G', startRow).value = item.dangerGroupId;
+                      cell('H', startRow).value = item.dangerGroup;
+                      cell('I', startRow).value = item.dangerEventID;
+                      cell('J', startRow).value = item.dangerEvent;
+                      // стили
+                      cell('A', startRow).style = style;
+                      cell('B', startRow).style = style;
+                      cell('C', startRow).style = style;
+                      cell('D', startRow).style = style;
+                      cell('E', startRow).style = style;
+                      cell('F', startRow).style = style;
+                      cell('G', startRow).style = style;
+                      cell('H', startRow).style = style;
+                      cell('I', startRow).style = style;
+                      cell('J', startRow).style = style;
+                      startRow += 1;
+                      sheet.insertRow(startRow);
+                    });
+                  }
                 }
               });
               sheet.autoFilter = 'A10:J10';
@@ -333,36 +370,6 @@ module.exports.createNormTabel = (req, res, next) => {
 };
 // Карты опаснстей
 module.exports.createMapOPRTabel = (req, res, next) => {
-  const darkGeen = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: 'FF00B050' },
-  };
-
-  const green = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: 'FF92D050' },
-  };
-
-  const yellow = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: 'FFFFFF00' },
-  };
-
-  const orange = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: 'FFFFC000' },
-  };
-
-  const red = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: 'FFFF0000' },
-  };
-
   Enterprise.findById(req.params.id)
     .then((ent) => {
       if (!ent) {
@@ -838,6 +845,68 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                   cell('Q').style = style;
                   cell('R').style = style;
                   cell('K').style = style;
+
+                  if (i.ipr <= 2) {
+                    cell('Q').style = {
+                      ...(cell('Q').style || {}),
+                      fill: darkGeen,
+                    };
+                  }
+                  if (i.ipr >= 3 && i.ipr <= 6) {
+                    cell('Q').style = {
+                      ...(cell('Q').style || {}),
+                      fill: green,
+                    };
+                  }
+                  if (i.ipr >= 8 && i.ipr <= 12) {
+                    cell('Q').style = {
+                      ...(cell('Q').style || {}),
+                      fill: yellow,
+                    };
+                  }
+                  if (i.ipr >= 15 && i.ipr <= 16) {
+                    cell('Q').style = {
+                      ...(cell('Q').style || {}),
+                      fill: orange,
+                    };
+                  }
+                  if (i.ipr >= 20) {
+                    cell('Q').style = {
+                      ...(cell('Q').style || {}),
+                      fill: red,
+                    };
+                  }
+
+                  if (i.ipr1 <= 2) {
+                    cell('R').style = {
+                      ...(cell('R').style || {}),
+                      fill: darkGeen,
+                    };
+                  }
+                  if (i.ipr1 >= 3 && i.ipr1 <= 6) {
+                    cell('R').style = {
+                      ...(cell('R').style || {}),
+                      fill: green,
+                    };
+                  }
+                  if (i.ipr1 >= 8 && i.ipr1 <= 12) {
+                    cell('R').style = {
+                      ...(cell('R').style || {}),
+                      fill: yellow,
+                    };
+                  }
+                  if (i.ipr1 >= 15 && i.ipr1 <= 16) {
+                    cell('R').style = {
+                      ...(cell('R').style || {}),
+                      fill: orange,
+                    };
+                  }
+                  if (i.ipr1 >= 20) {
+                    cell('R').style = {
+                      ...(cell('R').style || {}),
+                      fill: red,
+                    };
+                  }
 
                   line += 1;
                   sheet.insertRow(line);
