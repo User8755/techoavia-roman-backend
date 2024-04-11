@@ -333,6 +333,36 @@ module.exports.createNormTabel = (req, res, next) => {
 };
 // Карты опаснстей
 module.exports.createMapOPRTabel = (req, res, next) => {
+  const darkGeen = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FF00B050' },
+  };
+
+  const green = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FF92D050' },
+  };
+
+  const yellow = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFFFFF00' },
+  };
+
+  const orange = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFFFC000' },
+  };
+
+  const red = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFFF0000' },
+  };
+
   Enterprise.findById(req.params.id)
     .then((ent) => {
       if (!ent) {
@@ -352,10 +382,15 @@ module.exports.createMapOPRTabel = (req, res, next) => {
           workbook.xlsx
             .readFile(fileName)
             .then((e) => {
-              const sheet = e.getWorksheet('Лист1');
+              const sheet = workbook.getWorksheet('Лист1');
 
               uniq.forEach((w) => {
-                e.addWorksheet(w.num);
+                const sheet1 = workbook.addWorksheet(w.num);
+                sheet1.getCell('B30').fill = {
+                  type: 'pattern',
+                  pattern: 'solid',
+                  fgColor: { argb: 'FFFF0000' },
+                };
               });
 
               workbook.worksheets.forEach((ss) => {
@@ -443,9 +478,62 @@ module.exports.createMapOPRTabel = (req, res, next) => {
                   Ncell(`L${i}`).style = style;
                   Ncell(`M${i}`).style = style;
                   Ncell(`N${i}`).style = style;
+
+                  if (elem.ipr <= 2) {
+                    Ncell(`L${i}`).style = {
+                      ...(Ncell(`L${i}`).style || {}),
+                      fill: darkGeen,
+                    };
+                    Ncell(`M${i}`).style = {
+                      ...(Ncell(`M${i}`).style || {}),
+                      fill: darkGeen,
+                    };
+                  }
+                  if (elem.ipr >= 3 && elem.ipr <= 6) {
+                    Ncell(`L${i}`).style = {
+                      ...(Ncell(`L${i}`).style || {}),
+                      fill: green,
+                    };
+                    Ncell(`M${i}`).style = {
+                      ...(Ncell(`M${i}`).style || {}),
+                      fill: green,
+                    };
+                  }
+                  if (elem.ipr >= 8 && elem.ipr <= 12) {
+                    Ncell(`L${i}`).style = {
+                      ...(Ncell(`L${i}`).style || {}),
+                      fill: yellow,
+                    };
+                    Ncell(`M${i}`).style = {
+                      ...(Ncell(`M${i}`).style || {}),
+                      fill: yellow,
+                    };
+                  }
+                  if (elem.ipr >= 15 && elem.ipr <= 16) {
+                    Ncell(`L${i}`).style = {
+                      ...(Ncell(`L${i}`).style || {}),
+                      fill: orange,
+                    };
+                    Ncell(`M${i}`).style = {
+                      ...(Ncell(`M${i}`).style || {}),
+                      fill: orange,
+                    };
+                  }
+                  if (elem.ipr >= 20) {
+                    Ncell(`L${i}`).style = {
+                      ...(Ncell(`L${i}`).style || {}),
+                      fill: red,
+                    };
+                    Ncell(`M${i}`).style = {
+                      ...(Ncell(`M${i}`).style || {}),
+                      fill: red,
+                    };
+                  }
+
                   i += 1;
                   sheet.insertRow(i);
                 });
+
                 const styleFooterTitle = {
                   font: {
                     bold: true,
@@ -902,7 +990,13 @@ module.exports.createListHazardsTable = (req, res, next) => {
               });
               const rowAddress = [];
 
-              resProff.forEach((element) => {
+              resProff.sort((a, b) => {
+                const nameA = Number(a.num);
+                const nameB = Number(b.num);
+                if (nameA > nameB) return 1;
+                if (nameA < nameB) return -1;
+                return 0;
+              }).forEach((element) => {
                 const currentCell = sheet.getColumn(col).letter;
                 rowAddress.push(currentCell + 16);
 
@@ -918,8 +1012,11 @@ module.exports.createListHazardsTable = (req, res, next) => {
                 );
 
                 filterJobValue.forEach((v) => {
-                  let colStr = i;
+                  let colStr = i - 1;
                   while (colStr >= 17) {
+                    sheet.getCell(
+                      sheet.getCell(address)._column.letter + colStr,
+                    ).style = style;
                     if (
                       sheet.getCell(`D${colStr}`).value
                         === v.dangerEvent776Id
