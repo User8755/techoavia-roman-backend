@@ -1411,7 +1411,7 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   i.IPR += t.ipr;
                   switch (t.risk) {
                     case 'Незначительный':
-                      i.veryLowPlace += Number(t.numWorkers);
+                      i.veryLowWorker += Number(t.numWorkers);
                       break;
                     case 'Низкий':
                       i.lowWorker += Number(t.numWorkers);
@@ -1471,6 +1471,73 @@ module.exports.createRegisterHazards = (req, res, next) => {
                 })
                 .forEach((item, index) => {
                   const startRow = index + 15;
+                  // Работники
+                  const a = item.veryLowWorker
+                  + item.lowWorker + item.midWorker + item.highWorker + item.criticalWorker;
+                  if (item.veryLowWorker !== 0) {
+                    item.vlp = item.veryLowWorker / a;
+                  } else {
+                    item.vlp = 0;
+                  }
+                  if (item.lowWorker !== 0) {
+                    item.lp = item.lowWorker / a;
+                  } else {
+                    item.lp = 0;
+                  }
+                  if (item.midWorker !== 0) {
+                    item.mp = item.midWorker / a;
+                  } else {
+                    item.mp = 0;
+                  }
+                  if (item.highWorker !== 0) {
+                    item.hp = item.highWorker / a;
+                  } else {
+                    item.hp = 0;
+                  }
+                  if (item.criticalWorker !== 0) {
+                    item.cp = item.criticalWorker / a;
+                  } else {
+                    item.cp = 0;
+                  }
+                  item.vl = Math.round(item.vlp * item.numWorkers);
+                  item.l = Math.round(item.lp * item.numWorkers);
+                  item.m = Math.round(item.mp * item.numWorkers);
+                  item.h = Math.round(item.hp * item.numWorkers);
+                  item.c = Math.round(item.cp * item.numWorkers);
+                  // Рабочие места
+                  const b = item.veryLowPlace
+                  + item.lowPlace + item.midPlace + item.highPlace + item.criticalPlace;
+                  if (item.veryLowPlace !== 0) {
+                    item.pvlp = item.veryLowPlace / b;
+                  } else {
+                    item.pvlp = 0;
+                  }
+                  if (item.lowPlace !== 0) {
+                    item.plp = item.lowPlace / b;
+                  } else {
+                    item.plp = 0;
+                  }
+                  if (item.midPlace !== 0) {
+                    item.pmp = item.midPlace / b;
+                  } else {
+                    item.pmp = 0;
+                  }
+                  if (item.highPlace !== 0) {
+                    item.php = item.highPlace / b;
+                  } else {
+                    item.php = 0;
+                  }
+                  if (item.criticalPlace !== 0) {
+                    item.pcp = item.criticalPlace / b;
+                  } else {
+                    item.pcp = 0;
+                  }
+                  item.pvl = Math.round(item.pvlp * item.countWorkPlaces);
+                  item.pl = Math.round(item.plp * item.countWorkPlaces);
+                  item.pm = Math.round(item.pmp * item.countWorkPlaces);
+                  item.ph = Math.round(item.php * item.countWorkPlaces);
+                  item.pc = Math.round(item.pcp * item.countWorkPlaces);
+
                   sheet.getCell(`A${startRow}`).value = index + 1;
                   sheet.getCell(`B${startRow}`).value = item.source;
                   sheet.getCell(`C${startRow}`).value = item.dangerGroupId || item.danger776Id;
@@ -1482,19 +1549,19 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   ).value = `${item.numWorkers}/${item.countWorkPlaces}`;
                   sheet.getCell(
                     `T${startRow}`,
-                  ).value = `${item.veryLowWorker}/${item.veryLowPlace}`;
+                  ).value = `${item.vl}/${item.pvl}`;
                   sheet.getCell(
                     `X${startRow}`,
-                  ).value = `${item.lowWorker}/${item.lowPlace}`;
+                  ).value = `${item.l}/${item.pl}`;
                   sheet.getCell(
                     `AA${startRow}`,
-                  ).value = `${item.midWorker}/${item.midPlace}`;
+                  ).value = `${item.m}/${item.pm}`;
                   sheet.getCell(
                     `AD${startRow}`,
-                  ).value = `${item.highWorker}/${item.highPlace}`;
+                  ).value = `${item.h}/${item.ph}`;
                   sheet.getCell(
                     `AG${startRow}`,
-                  ).value = `${item.criticalWorker}/${item.criticalPlace}`;
+                  ).value = `${item.c}/${item.pc}`;
                   sheet.getCell(`AI${startRow}`).value = item.IPR;
                   sheet.getCell(`A${startRow}`).style = style;
                   sheet.getCell(`B${startRow}`).style = style;
@@ -1520,7 +1587,36 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   sheet.mergeCells(`AD${startRow} : AF${startRow}`);
                   sheet.mergeCells(`AG${startRow} : AH${startRow}`);
                   sheet.mergeCells(`AI${startRow} : AJ${startRow}`);
-
+                  if (sheet.getCell(`T${startRow}`).value !== '0/0') {
+                    sheet.getCell(`T${startRow}`).style = {
+                      ...(sheet.getCell(`T${startRow}`).style || {}),
+                      fill: green,
+                    };
+                  }
+                  if (sheet.getCell(`X${startRow}`).value !== '0/0') {
+                    sheet.getCell(`X${startRow}`).style = {
+                      ...(sheet.getCell(`X${startRow}`).style || {}),
+                      fill: darkGeen,
+                    };
+                  }
+                  if (sheet.getCell(`AA${startRow}`).value !== '0/0') {
+                    sheet.getCell(`AA${startRow}`).style = {
+                      ...(sheet.getCell(`AA${startRow}`).style || {}),
+                      fill: yellow,
+                    };
+                  }
+                  if (sheet.getCell(`AD${startRow}`).value !== '0/0') {
+                    sheet.getCell(`AD${startRow}`).style = {
+                      ...(sheet.getCell(`AD${startRow}`).style || {}),
+                      fill: orange,
+                    };
+                  }
+                  if (sheet.getCell(`AG${startRow}`).value !== '0/0') {
+                    sheet.getCell(`AG${startRow}`).style = {
+                      ...(sheet.getCell(`AG${startRow}`).style || {}),
+                      fill: red,
+                    };
+                  }
                   sheet.insertRow(index + 16);
                 });
 
