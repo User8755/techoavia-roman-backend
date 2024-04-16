@@ -1349,6 +1349,11 @@ module.exports.createRegisterHazards = (req, res, next) => {
             .readFile(fileName)
             .then((e) => {
               const sheet = e.getWorksheet(1);
+              const sheetDiagramma = e.getWorksheet(2);
+              const diagrammaValue = {
+                veryLow: 0, low: 0, mid: 0, height: 0, critical: 0,
+              };
+
               sheet.getCell('G10').value = ent.enterprise;
               const { cities } = el.reduce(
                 (acc, city) => (acc.map[city.source]
@@ -1588,30 +1593,35 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   sheet.mergeCells(`AG${startRow} : AH${startRow}`);
                   sheet.mergeCells(`AI${startRow} : AJ${startRow}`);
                   if (sheet.getCell(`T${startRow}`).value !== '0/0') {
+                    diagrammaValue.veryLow += 1;
                     sheet.getCell(`T${startRow}`).style = {
                       ...(sheet.getCell(`T${startRow}`).style || {}),
                       fill: green,
                     };
                   }
                   if (sheet.getCell(`X${startRow}`).value !== '0/0') {
+                    diagrammaValue.low += 1;
                     sheet.getCell(`X${startRow}`).style = {
                       ...(sheet.getCell(`X${startRow}`).style || {}),
                       fill: darkGeen,
                     };
                   }
                   if (sheet.getCell(`AA${startRow}`).value !== '0/0') {
+                    diagrammaValue.mid += 1;
                     sheet.getCell(`AA${startRow}`).style = {
                       ...(sheet.getCell(`AA${startRow}`).style || {}),
                       fill: yellow,
                     };
                   }
                   if (sheet.getCell(`AD${startRow}`).value !== '0/0') {
+                    diagrammaValue.height += 1;
                     sheet.getCell(`AD${startRow}`).style = {
                       ...(sheet.getCell(`AD${startRow}`).style || {}),
                       fill: orange,
                     };
                   }
                   if (sheet.getCell(`AG${startRow}`).value !== '0/0') {
+                    diagrammaValue.critical += 1;
                     sheet.getCell(`AG${startRow}`).style = {
                       ...(sheet.getCell(`AG${startRow}`).style || {}),
                       fill: red,
@@ -1619,6 +1629,11 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   }
                   sheet.insertRow(index + 16);
                 });
+              sheetDiagramma.getCell('B3').value = diagrammaValue.veryLow;
+              sheetDiagramma.getCell('B4').value = diagrammaValue.low;
+              sheetDiagramma.getCell('B5').value = diagrammaValue.mid;
+              sheetDiagramma.getCell('B6').value = diagrammaValue.height;
+              sheetDiagramma.getCell('B7').value = diagrammaValue.critical;
 
               res.setHeader(
                 'Content-Type',
