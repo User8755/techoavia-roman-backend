@@ -1596,14 +1596,14 @@ module.exports.createRegisterHazards = (req, res, next) => {
                     diagrammaValue.veryLow += 1;
                     sheet.getCell(`T${startRow}`).style = {
                       ...(sheet.getCell(`T${startRow}`).style || {}),
-                      fill: green,
+                      fill: darkGeen,
                     };
                   }
                   if (sheet.getCell(`X${startRow}`).value !== '0/0') {
                     diagrammaValue.low += 1;
                     sheet.getCell(`X${startRow}`).style = {
                       ...(sheet.getCell(`X${startRow}`).style || {}),
-                      fill: darkGeen,
+                      fill: green,
                     };
                   }
                   if (sheet.getCell(`AA${startRow}`).value !== '0/0') {
