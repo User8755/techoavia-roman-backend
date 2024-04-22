@@ -379,7 +379,7 @@ module.exports.createMapOPRTabel = (req, res, next) => {
         ent.owner.toString() === req.user._id
         || ent.access.includes(req.user._id)
       ) {
-        Value.find({ enterpriseId: req.params.id }).then((el) => {
+        Value.find({ enterpriseId: req.params.id }).sort({ ipr: -1 }).then((el) => {
           const uniq = el.reduce((accumulator, value) => {
             if (accumulator.every((item) => !(item.num === value.num))) accumulator.push(value);
             return accumulator;
@@ -1186,6 +1186,7 @@ module.exports.createPlanTimetable = (req, res, next) => {
                     obj.responsiblePerson = i.responsiblePerson;
                     obj.typeSIZ = `Выдавать: ${i.typeSIZ}`;
                     obj.issuanceRate = i.issuanceRate;
+                    obj.existingRiskManagement = i.existingRiskManagement;
                     arr.push(obj);
                   }
                 }
@@ -1215,6 +1216,7 @@ module.exports.createPlanTimetable = (req, res, next) => {
                     obj.responsiblePerson = i.responsiblePerson;
                     obj.typeSIZ = `Выдавать: ${i.typeSIZ}`;
                     obj.issuanceRate = i.issuanceRate;
+                    obj.existingRiskManagement = i.existingRiskManagement;
                     arr.push(obj);
                   }
                 }

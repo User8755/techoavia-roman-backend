@@ -61,7 +61,7 @@ module.exports.login = (req, res, next) => {
             name: `${user.name} ${user.family}`,
           },
           NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
-          { expiresIn: '8h' },
+          { expiresIn: '9h' },
         );
         if (!matched) {
           throw new Unauthorized('Проверьте логин и пароль');
