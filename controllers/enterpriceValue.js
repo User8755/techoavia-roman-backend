@@ -31,8 +31,7 @@ module.exports.updateValue = (req, res, next) => {
           for (let startRow = 2; startRow <= lastRow.number; startRow += 1) {
             const newObj = { proffSIZ: [] };
             const siz = {};
-
-            if (cell('A', startRow).value) {
+            if (cell('C', startRow).value) {
               // obj.type = cell('A', startRow).value;
               newObj.proffId = cell('B', startRow).value || '';
               newObj.num = cell('C', startRow).value || '';
@@ -87,12 +86,11 @@ module.exports.updateValue = (req, res, next) => {
               arr.push(newObj);
             }
 
-            if (!cell('A', startRow).value) {
+            if (!cell('A', startRow).value && cell('G', startRow).value) {
               const lastObj = arr.at(-1);
               siz.type = cell('G', startRow).value;
               siz.vid = cell('H', startRow).value;
               siz.norm = cell('I', startRow).value;
-
               lastObj.proffSIZ.push(siz);
             }
           }
