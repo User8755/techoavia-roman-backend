@@ -259,14 +259,10 @@ module.exports.createNormTabel = (req, res, next) => {
                   cell('C', startRow).value = `${item.typeSIZ}`;
                   cell('D', startRow).value = !handleFilterTypeSIZ
                     ? `${item.speciesSIZ} ${
-                      item.OperatingLevel
-                        ? `${item.OperatingLevel}`
-                        : ''
+                      item.OperatingLevel ? `${item.OperatingLevel}` : ''
                     }  ${item.standart ? `${item.standart}` : ''}`
                     : `${item.speciesSIZ} ${handleFilterTypeSIZ.forTable}  ${
-                      item.OperatingLevel
-                        ? `${item.OperatingLevel}`
-                        : ''
+                      item.OperatingLevel ? `${item.OperatingLevel}` : ''
                     }  ${item.standart ? `${item.standart}` : ''}`;
                   cell('E', startRow).value = item.issuanceRate;
                   cell(
@@ -379,306 +375,313 @@ module.exports.createMapOPRTabel = (req, res, next) => {
         ent.owner.toString() === req.user._id
         || ent.access.includes(req.user._id)
       ) {
-        Value.find({ enterpriseId: req.params.id }).sort({ ipr: -1 }).then((el) => {
-          const uniq = el.reduce((accumulator, value) => {
-            if (accumulator.every((item) => !(item.num === value.num))) accumulator.push(value);
-            return accumulator;
-          }, []);
+        Value.find({ enterpriseId: req.params.id })
+          .sort({ ipr: -1 })
+          .then((el) => {
+            const uniq = el.reduce((accumulator, value) => {
+              if (accumulator.every((item) => !(item.num === value.num))) accumulator.push(value);
+              return accumulator;
+            }, []);
 
-          const fileName = 'mapOPR.xlsx';
-          workbook.xlsx
-            .readFile(fileName)
-            .then((e) => {
-              const sheet = workbook.getWorksheet('Лист1');
+            const fileName = 'mapOPR.xlsx';
+            workbook.xlsx
+              .readFile(fileName)
+              .then((e) => {
+                const sheet = workbook.getWorksheet('Лист1');
 
-              uniq.forEach((w) => {
-                const sheet1 = workbook.addWorksheet(w.num);
-                sheet1.getCell('B30').fill = {
-                  type: 'pattern',
-                  pattern: 'solid',
-                  fgColor: { argb: 'FFFF0000' },
-                };
-              });
-
-              workbook.worksheets.forEach((ss) => {
-                const newSheet = e.getWorksheet(ss.name);
-                newSheet.getColumn(1).width = 2.33203125;
-                newSheet.getColumn(2).width = 10.66;
-                newSheet.getColumn(3).width = 10.5;
-                newSheet.getColumn(4).width = 20.5;
-                newSheet.getColumn(5).width = 9.6640625;
-                newSheet.getColumn(6).width = 23;
-                newSheet.getColumn(7).width = 23;
-                newSheet.getColumn(8).width = 23;
-                newSheet.getColumn(9).width = 37;
-                newSheet.getColumn(10).width = 13.83203125;
-                newSheet.getColumn(11).width = 14.33203125;
-                newSheet.getColumn(12).width = 18.83203125;
-                newSheet.getColumn(13).width = 21.5;
-                newSheet.getColumn(14).width = 18.140625;
-                for (let a = 1; a <= 30; a += 1) {
-                  if (ss.name !== 'Лист1') {
-                    const sheetRow2 = sheet.getRow(a);
-                    newSheet.getRow(2).height = sheetRow2.height;
-                    sheetRow2.eachCell({ includeEmpty: true }, (sourceCell) => {
-                      const targetCell = newSheet.getCell(sourceCell.address);
-
-                      // style
-                      targetCell.style = sourceCell.style;
-                      targetCell.height = sheetRow2.height;
-                      // value
-                      targetCell.value = sourceCell.value;
-
-                      // merge cell
-                      const range = `${
-                        sourceCell.model.master || sourceCell.address
-                      }:${targetCell.address}`;
-                      newSheet.unMergeCells(range);
-                      newSheet.mergeCells(range);
-                    });
-                  }
-                }
-                const numFilter = el.filter(
-                  (filterEl) => filterEl.num === ss.name,
-                );
-
-                let i = 30;
-                const Ncell = (c) => newSheet.getCell(c);
-
-                numFilter.forEach((elem, index) => {
-                  if (index === 0) {
-                    Ncell('F14').value = elem.subdivision;
-                    Ncell('G8').value = elem.proff || elem.job;
-                    Ncell('H18').value = elem.numWorkers;
-                    Ncell('H19').value = elem.equipment;
-                    Ncell('H20').value = elem.materials;
-                    Ncell('H21').value = elem.laborFunction;
-                    Ncell('M8').value = elem.code || elem.proffId;
-                  }
-
-                  Ncell('C2').value = ent.enterprise;
-                  Ncell('E12').value = elem.num;
-                  Ncell('H5').value = elem.num;
-                  Ncell(`B${i}`).value = index + 1;
-                  Ncell(`C${i}`).value = elem.danger776Id || elem.dangerGroupId;
-                  Ncell(`D${i}`).value = elem.danger776 || elem.dangerGroup;
-                  Ncell(`E${i}`).value = elem.dangerEvent776Id || elem.dangerEventID;
-                  Ncell(`F${i}`).value = elem.dangerEvent776 || elem.dangerEvent;
-                  Ncell(`G${i}`).value = elem.obj;
-                  Ncell(`H${i}`).value = elem.source;
-                  Ncell(`I${i}`).value = elem.existingRiskManagement;
-                  Ncell(`J${i}`).value = elem.probability;
-                  Ncell(`K${i}`).value = elem.heaviness;
-                  Ncell(`L${i}`).value = elem.ipr;
-                  Ncell(`M${i}`).value = elem.riskAttitude;
-                  Ncell(`N${i}`).value = elem.acceptability;
-                  Ncell(`B${i}`).style = style;
-                  Ncell(`C${i}`).style = style;
-                  Ncell(`D${i}`).style = style;
-                  Ncell(`E${i}`).style = style;
-                  Ncell(`F${i}`).style = style;
-                  Ncell(`G${i}`).style = style;
-                  Ncell(`H${i}`).style = style;
-                  Ncell(`I${i}`).style = style;
-                  Ncell(`J${i}`).style = style;
-                  Ncell(`K${i}`).style = style;
-                  Ncell(`L${i}`).style = style;
-                  Ncell(`M${i}`).style = style;
-                  Ncell(`N${i}`).style = style;
-
-                  if (elem.ipr <= 2) {
-                    Ncell(`L${i}`).style = {
-                      ...(Ncell(`L${i}`).style || {}),
-                      fill: darkGeen,
-                    };
-                    Ncell(`M${i}`).style = {
-                      ...(Ncell(`M${i}`).style || {}),
-                      fill: darkGeen,
-                    };
-                  }
-                  if (elem.ipr >= 3 && elem.ipr <= 6) {
-                    Ncell(`L${i}`).style = {
-                      ...(Ncell(`L${i}`).style || {}),
-                      fill: green,
-                    };
-                    Ncell(`M${i}`).style = {
-                      ...(Ncell(`M${i}`).style || {}),
-                      fill: green,
-                    };
-                  }
-                  if (elem.ipr >= 8 && elem.ipr <= 12) {
-                    Ncell(`L${i}`).style = {
-                      ...(Ncell(`L${i}`).style || {}),
-                      fill: yellow,
-                    };
-                    Ncell(`M${i}`).style = {
-                      ...(Ncell(`M${i}`).style || {}),
-                      fill: yellow,
-                    };
-                  }
-                  if (elem.ipr >= 15 && elem.ipr <= 16) {
-                    Ncell(`L${i}`).style = {
-                      ...(Ncell(`L${i}`).style || {}),
-                      fill: orange,
-                    };
-                    Ncell(`M${i}`).style = {
-                      ...(Ncell(`M${i}`).style || {}),
-                      fill: orange,
-                    };
-                  }
-                  if (elem.ipr >= 20) {
-                    Ncell(`L${i}`).style = {
-                      ...(Ncell(`L${i}`).style || {}),
-                      fill: red,
-                    };
-                    Ncell(`M${i}`).style = {
-                      ...(Ncell(`M${i}`).style || {}),
-                      fill: red,
-                    };
-                  }
-
-                  i += 1;
-                  sheet.insertRow(i);
+                uniq.forEach((w) => {
+                  const sheet1 = workbook.addWorksheet(w.num);
+                  sheet1.getCell('B30').fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFFF0000' },
+                  };
                 });
 
-                const styleFooterTitle = {
-                  font: {
-                    bold: true,
-                    size: 12,
-                    name: 'Arial',
-                    family: 2,
-                  },
-                  fill: { type: 'pattern', pattern: 'none' },
-                  alignment: { horizontal: 'left' },
-                };
-                const styleFooterSubTitle = {
-                  font: { size: 12, name: 'Arial', family: 2 },
-                  fill: { type: 'pattern', pattern: 'none' },
-                  alignment: { horizontal: 'right', vertical: 'top' },
-                };
-                const styleBorder = {
-                  border: {
-                    bottom: { style: 'thin' },
-                  },
-                };
-                const job = '(должность)';
-                const signature = '(подпись)';
-                const date = '(дата)';
-                const FIO = '(Ф.И.О.)';
-                const last = newSheet.lastRow;
-                Ncell(`B${last.number + 3}`).value = '3. Рекомендации работникам:';
-                Ncell(`B${last.number + 7}`).value = '4. Комиссия по оценке профессиональных рисков:';
-                Ncell(`B${last.number + 21}`).value = 'С результатами оценки профессиональных рисков на рабочем месте ознакомлен(ы):';
-                Ncell(`B${last.number + 3}`).style = styleFooterTitle;
-                Ncell(`B${last.number + 7}`).style = styleFooterTitle;
-                Ncell(`B${last.number + 21}`).style = styleFooterTitle;
-                Ncell(`E${last.number + 9}`).value = 'Председатель комиссии:';
-                Ncell(`E${last.number + 12}`).value = 'Члены комиссии:';
-                Ncell(`E${last.number + 9}`).style = styleFooterSubTitle;
-                Ncell(`E${last.number + 12}`).style = styleFooterSubTitle;
-                Ncell(`F${last.number + 10}`).style = styleBorder;
-                Ncell(`G${last.number + 10}`).style = styleBorder;
-                Ncell(`I${last.number + 10}`).style = styleBorder;
-                Ncell(`K${last.number + 10}`).style = styleBorder;
-                Ncell(`N${last.number + 10}`).style = styleBorder;
-                Ncell(`F${last.number + 11}`).value = job;
-                Ncell(`F${last.number + 14}`).value = job;
-                Ncell(`F${last.number + 16}`).value = job;
-                Ncell(`F${last.number + 13}`).style = styleBorder;
-                Ncell(`G${last.number + 13}`).style = styleBorder;
-                Ncell(`I${last.number + 13}`).style = styleBorder;
-                Ncell(`K${last.number + 13}`).style = styleBorder;
-                Ncell(`N${last.number + 13}`).style = styleBorder;
-                Ncell(`F${last.number + 15}`).style = styleBorder;
-                Ncell(`G${last.number + 15}`).style = styleBorder;
-                Ncell(`I${last.number + 15}`).style = styleBorder;
-                Ncell(`K${last.number + 15}`).style = styleBorder;
-                Ncell(`N${last.number + 15}`).style = styleBorder;
+                workbook.worksheets.forEach((ss) => {
+                  const newSheet = e.getWorksheet(ss.name);
+                  newSheet.getColumn(1).width = 2.33203125;
+                  newSheet.getColumn(2).width = 10.66;
+                  newSheet.getColumn(3).width = 10.5;
+                  newSheet.getColumn(4).width = 20.5;
+                  newSheet.getColumn(5).width = 9.6640625;
+                  newSheet.getColumn(6).width = 23;
+                  newSheet.getColumn(7).width = 23;
+                  newSheet.getColumn(8).width = 23;
+                  newSheet.getColumn(9).width = 37;
+                  newSheet.getColumn(10).width = 13.83203125;
+                  newSheet.getColumn(11).width = 14.33203125;
+                  newSheet.getColumn(12).width = 18.83203125;
+                  newSheet.getColumn(13).width = 21.5;
+                  newSheet.getColumn(14).width = 18.140625;
+                  for (let a = 1; a <= 30; a += 1) {
+                    if (ss.name !== 'Лист1') {
+                      const sheetRow2 = sheet.getRow(a);
+                      newSheet.getRow(2).height = sheetRow2.height;
+                      sheetRow2.eachCell(
+                        { includeEmpty: true },
+                        (sourceCell) => {
+                          const targetCell = newSheet.getCell(
+                            sourceCell.address,
+                          );
 
-                Ncell(`I${last.number + 11}`).value = FIO;
-                Ncell(`K${last.number + 11}`).value = signature;
-                Ncell(`N${last.number + 11}`).value = date;
+                          // style
+                          targetCell.style = sourceCell.style;
+                          targetCell.height = sheetRow2.height;
+                          // value
+                          targetCell.value = sourceCell.value;
 
-                Ncell(`I${last.number + 14}`).value = FIO;
-                Ncell(`K${last.number + 14}`).value = signature;
-                Ncell(`N${last.number + 14}`).value = date;
+                          // merge cell
+                          const range = `${
+                            sourceCell.model.master || sourceCell.address
+                          }:${targetCell.address}`;
+                          newSheet.unMergeCells(range);
+                          newSheet.mergeCells(range);
+                        },
+                      );
+                    }
+                  }
+                  const numFilter = el.filter(
+                    (filterEl) => filterEl.num === ss.name,
+                  );
 
-                Ncell(`I${last.number + 16}`).value = FIO;
-                Ncell(`K${last.number + 16}`).value = signature;
-                Ncell(`N${last.number + 16}`).value = date;
-                Ncell(`I${last.number + 15}`).style = styleBorder;
-                Ncell(`K${last.number + 15}`).style = styleBorder;
-                Ncell(`N${last.number + 15}`).style = styleBorder;
+                  let i = 30;
+                  const Ncell = (c) => newSheet.getCell(c);
 
-                Ncell(`I${last.number + 29}`).value = FIO;
-                Ncell(`K${last.number + 29}`).value = signature;
-                Ncell(`N${last.number + 29}`).value = date;
-                Ncell(`I${last.number + 28}`).style = styleBorder;
-                Ncell(`K${last.number + 28}`).style = styleBorder;
-                Ncell(`N${last.number + 28}`).style = styleBorder;
+                  numFilter.forEach((elem, index) => {
+                    if (index === 0) {
+                      Ncell('F14').value = elem.subdivision;
+                      Ncell('G8').value = elem.proff || elem.job;
+                      Ncell('H18').value = elem.numWorkers;
+                      Ncell('H19').value = elem.equipment;
+                      Ncell('H20').value = elem.materials;
+                      Ncell('H21').value = elem.laborFunction;
+                      Ncell('M8').value = elem.code || elem.proffId;
+                    }
 
-                Ncell(`I${last.number + 26}`).value = FIO;
-                Ncell(`K${last.number + 26}`).value = signature;
-                Ncell(`N${last.number + 26}`).value = date;
-                Ncell(`I${last.number + 25}`).style = styleBorder;
-                Ncell(`K${last.number + 25}`).style = styleBorder;
-                Ncell(`N${last.number + 25}`).style = styleBorder;
+                    Ncell('C2').value = ent.enterprise;
+                    Ncell('E12').value = elem.num;
+                    Ncell('H5').value = elem.num;
+                    Ncell(`B${i}`).value = index + 1;
+                    Ncell(`C${i}`).value = elem.danger776Id || elem.dangerGroupId;
+                    Ncell(`D${i}`).value = elem.danger776 || elem.dangerGroup;
+                    Ncell(`E${i}`).value = elem.dangerEvent776Id || elem.dangerEventID;
+                    Ncell(`F${i}`).value = elem.dangerEvent776 || elem.dangerEvent;
+                    Ncell(`G${i}`).value = elem.obj;
+                    Ncell(`H${i}`).value = elem.source;
+                    Ncell(`I${i}`).value = elem.existingRiskManagement;
+                    Ncell(`J${i}`).value = elem.probability;
+                    Ncell(`K${i}`).value = elem.heaviness;
+                    Ncell(`L${i}`).value = elem.ipr;
+                    Ncell(`M${i}`).value = elem.riskAttitude;
+                    Ncell(`N${i}`).value = elem.acceptability;
+                    Ncell(`B${i}`).style = style;
+                    Ncell(`C${i}`).style = style;
+                    Ncell(`D${i}`).style = style;
+                    Ncell(`E${i}`).style = style;
+                    Ncell(`F${i}`).style = style;
+                    Ncell(`G${i}`).style = style;
+                    Ncell(`H${i}`).style = style;
+                    Ncell(`I${i}`).style = style;
+                    Ncell(`J${i}`).style = style;
+                    Ncell(`K${i}`).style = style;
+                    Ncell(`L${i}`).style = style;
+                    Ncell(`M${i}`).style = style;
+                    Ncell(`N${i}`).style = style;
 
-                Ncell(`I${last.number + 32}`).value = FIO;
-                Ncell(`K${last.number + 32}`).value = signature;
-                Ncell(`N${last.number + 32}`).value = date;
-                Ncell(`I${last.number + 31}`).style = styleBorder;
-                Ncell(`K${last.number + 31}`).style = styleBorder;
-                Ncell(`N${last.number + 31}`).style = styleBorder;
+                    if (elem.ipr <= 2) {
+                      Ncell(`L${i}`).style = {
+                        ...(Ncell(`L${i}`).style || {}),
+                        fill: darkGeen,
+                      };
+                      Ncell(`M${i}`).style = {
+                        ...(Ncell(`M${i}`).style || {}),
+                        fill: darkGeen,
+                      };
+                    }
+                    if (elem.ipr >= 3 && elem.ipr <= 6) {
+                      Ncell(`L${i}`).style = {
+                        ...(Ncell(`L${i}`).style || {}),
+                        fill: green,
+                      };
+                      Ncell(`M${i}`).style = {
+                        ...(Ncell(`M${i}`).style || {}),
+                        fill: green,
+                      };
+                    }
+                    if (elem.ipr >= 8 && elem.ipr <= 12) {
+                      Ncell(`L${i}`).style = {
+                        ...(Ncell(`L${i}`).style || {}),
+                        fill: yellow,
+                      };
+                      Ncell(`M${i}`).style = {
+                        ...(Ncell(`M${i}`).style || {}),
+                        fill: yellow,
+                      };
+                    }
+                    if (elem.ipr >= 15 && elem.ipr <= 16) {
+                      Ncell(`L${i}`).style = {
+                        ...(Ncell(`L${i}`).style || {}),
+                        fill: orange,
+                      };
+                      Ncell(`M${i}`).style = {
+                        ...(Ncell(`M${i}`).style || {}),
+                        fill: orange,
+                      };
+                    }
+                    if (elem.ipr >= 20) {
+                      Ncell(`L${i}`).style = {
+                        ...(Ncell(`L${i}`).style || {}),
+                        fill: red,
+                      };
+                      Ncell(`M${i}`).style = {
+                        ...(Ncell(`M${i}`).style || {}),
+                        fill: red,
+                      };
+                    }
 
-                Ncell(`I${last.number + 35}`).value = FIO;
-                Ncell(`K${last.number + 35}`).value = signature;
-                Ncell(`N${last.number + 35}`).value = date;
-                Ncell(`I${last.number + 34}`).style = styleBorder;
-                Ncell(`K${last.number + 34}`).style = styleBorder;
-                Ncell(`N${last.number + 34}`).style = styleBorder;
+                    i += 1;
+                    sheet.insertRow(i);
+                  });
 
-                Ncell(`I${last.number + 38}`).value = FIO;
-                Ncell(`K${last.number + 38}`).value = signature;
-                Ncell(`N${last.number + 38}`).value = date;
-                Ncell(`I${last.number + 37}`).style = styleBorder;
-                Ncell(`K${last.number + 37}`).style = styleBorder;
-                Ncell(`N${last.number + 37}`).style = styleBorder;
-              });
+                  const styleFooterTitle = {
+                    font: {
+                      bold: true,
+                      size: 12,
+                      name: 'Arial',
+                      family: 2,
+                    },
+                    fill: { type: 'pattern', pattern: 'none' },
+                    alignment: { horizontal: 'left' },
+                  };
+                  const styleFooterSubTitle = {
+                    font: { size: 12, name: 'Arial', family: 2 },
+                    fill: { type: 'pattern', pattern: 'none' },
+                    alignment: { horizontal: 'right', vertical: 'top' },
+                  };
+                  const styleBorder = {
+                    border: {
+                      bottom: { style: 'thin' },
+                    },
+                  };
+                  const job = '(должность)';
+                  const signature = '(подпись)';
+                  const date = '(дата)';
+                  const FIO = '(Ф.И.О.)';
+                  const last = newSheet.lastRow;
+                  Ncell(`B${last.number + 3}`).value = '3. Рекомендации работникам:';
+                  Ncell(`B${last.number + 7}`).value = '4. Комиссия по оценке профессиональных рисков:';
+                  Ncell(`B${last.number + 21}`).value = 'С результатами оценки профессиональных рисков на рабочем месте ознакомлен(ы):';
+                  Ncell(`B${last.number + 3}`).style = styleFooterTitle;
+                  Ncell(`B${last.number + 7}`).style = styleFooterTitle;
+                  Ncell(`B${last.number + 21}`).style = styleFooterTitle;
+                  Ncell(`E${last.number + 9}`).value = 'Председатель комиссии:';
+                  Ncell(`E${last.number + 12}`).value = 'Члены комиссии:';
+                  Ncell(`E${last.number + 9}`).style = styleFooterSubTitle;
+                  Ncell(`E${last.number + 12}`).style = styleFooterSubTitle;
+                  Ncell(`F${last.number + 10}`).style = styleBorder;
+                  Ncell(`G${last.number + 10}`).style = styleBorder;
+                  Ncell(`I${last.number + 10}`).style = styleBorder;
+                  Ncell(`K${last.number + 10}`).style = styleBorder;
+                  Ncell(`N${last.number + 10}`).style = styleBorder;
+                  Ncell(`F${last.number + 11}`).value = job;
+                  Ncell(`F${last.number + 14}`).value = job;
+                  Ncell(`F${last.number + 16}`).value = job;
+                  Ncell(`F${last.number + 13}`).style = styleBorder;
+                  Ncell(`G${last.number + 13}`).style = styleBorder;
+                  Ncell(`I${last.number + 13}`).style = styleBorder;
+                  Ncell(`K${last.number + 13}`).style = styleBorder;
+                  Ncell(`N${last.number + 13}`).style = styleBorder;
+                  Ncell(`F${last.number + 15}`).style = styleBorder;
+                  Ncell(`G${last.number + 15}`).style = styleBorder;
+                  Ncell(`I${last.number + 15}`).style = styleBorder;
+                  Ncell(`K${last.number + 15}`).style = styleBorder;
+                  Ncell(`N${last.number + 15}`).style = styleBorder;
 
-              sheet.getColumn(1).width = 2.33203125;
-              sheet.getColumn(2).width = 10.66;
-              sheet.getColumn(3).width = 10.5;
-              sheet.getColumn(4).width = 20.5;
-              sheet.getColumn(5).width = 9.6640625;
-              sheet.getColumn(6).width = 23;
-              sheet.getColumn(7).width = 23;
-              sheet.getColumn(8).width = 23;
-              sheet.getColumn(9).width = 37;
-              sheet.getColumn(10).width = 13.83203125;
-              sheet.getColumn(11).width = 14.33203125;
-              sheet.getColumn(12).width = 18.83203125;
-              sheet.getColumn(13).width = 21.5;
+                  Ncell(`I${last.number + 11}`).value = FIO;
+                  Ncell(`K${last.number + 11}`).value = signature;
+                  Ncell(`N${last.number + 11}`).value = date;
 
-              workbook.removeWorksheet(1);
+                  Ncell(`I${last.number + 14}`).value = FIO;
+                  Ncell(`K${last.number + 14}`).value = signature;
+                  Ncell(`N${last.number + 14}`).value = date;
 
-              res.setHeader(
-                'Content-Type',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-              );
-              res.setHeader(
-                'Content-Disposition',
-                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
-              );
-              workbook.xlsx
-                .write(res)
-                .then(() => {
-                  res.end();
-                })
-                .catch((err) => next(err));
-            })
-            .catch((e) => next(e));
-        });
+                  Ncell(`I${last.number + 16}`).value = FIO;
+                  Ncell(`K${last.number + 16}`).value = signature;
+                  Ncell(`N${last.number + 16}`).value = date;
+                  Ncell(`I${last.number + 15}`).style = styleBorder;
+                  Ncell(`K${last.number + 15}`).style = styleBorder;
+                  Ncell(`N${last.number + 15}`).style = styleBorder;
+
+                  Ncell(`I${last.number + 29}`).value = FIO;
+                  Ncell(`K${last.number + 29}`).value = signature;
+                  Ncell(`N${last.number + 29}`).value = date;
+                  Ncell(`I${last.number + 28}`).style = styleBorder;
+                  Ncell(`K${last.number + 28}`).style = styleBorder;
+                  Ncell(`N${last.number + 28}`).style = styleBorder;
+
+                  Ncell(`I${last.number + 26}`).value = FIO;
+                  Ncell(`K${last.number + 26}`).value = signature;
+                  Ncell(`N${last.number + 26}`).value = date;
+                  Ncell(`I${last.number + 25}`).style = styleBorder;
+                  Ncell(`K${last.number + 25}`).style = styleBorder;
+                  Ncell(`N${last.number + 25}`).style = styleBorder;
+
+                  Ncell(`I${last.number + 32}`).value = FIO;
+                  Ncell(`K${last.number + 32}`).value = signature;
+                  Ncell(`N${last.number + 32}`).value = date;
+                  Ncell(`I${last.number + 31}`).style = styleBorder;
+                  Ncell(`K${last.number + 31}`).style = styleBorder;
+                  Ncell(`N${last.number + 31}`).style = styleBorder;
+
+                  Ncell(`I${last.number + 35}`).value = FIO;
+                  Ncell(`K${last.number + 35}`).value = signature;
+                  Ncell(`N${last.number + 35}`).value = date;
+                  Ncell(`I${last.number + 34}`).style = styleBorder;
+                  Ncell(`K${last.number + 34}`).style = styleBorder;
+                  Ncell(`N${last.number + 34}`).style = styleBorder;
+
+                  Ncell(`I${last.number + 38}`).value = FIO;
+                  Ncell(`K${last.number + 38}`).value = signature;
+                  Ncell(`N${last.number + 38}`).value = date;
+                  Ncell(`I${last.number + 37}`).style = styleBorder;
+                  Ncell(`K${last.number + 37}`).style = styleBorder;
+                  Ncell(`N${last.number + 37}`).style = styleBorder;
+                });
+
+                sheet.getColumn(1).width = 2.33203125;
+                sheet.getColumn(2).width = 10.66;
+                sheet.getColumn(3).width = 10.5;
+                sheet.getColumn(4).width = 20.5;
+                sheet.getColumn(5).width = 9.6640625;
+                sheet.getColumn(6).width = 23;
+                sheet.getColumn(7).width = 23;
+                sheet.getColumn(8).width = 23;
+                sheet.getColumn(9).width = 37;
+                sheet.getColumn(10).width = 13.83203125;
+                sheet.getColumn(11).width = 14.33203125;
+                sheet.getColumn(12).width = 18.83203125;
+                sheet.getColumn(13).width = 21.5;
+
+                workbook.removeWorksheet(1);
+
+                res.setHeader(
+                  'Content-Type',
+                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                );
+                res.setHeader(
+                  'Content-Disposition',
+                  `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+                );
+                workbook.xlsx
+                  .write(res)
+                  .then(() => {
+                    res.end();
+                  })
+                  .catch((err) => next(err));
+              })
+              .catch((e) => next(e));
+          });
       }
       logs
         .create({
@@ -717,9 +720,10 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                     if (
                       !arr.find(
                         (n) => n.dangerEventID === i.dangerEventID
-                          && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
-                          && n.source.toLocaleLowerCase()
-                            .trim() === i.source.toLocaleLowerCase().trim()
+                          && n.obj.toLocaleLowerCase().trim()
+                            === i.obj.toLocaleLowerCase().trim()
+                          && n.source.toLocaleLowerCase().trim()
+                            === i.source.toLocaleLowerCase().trim()
                           && n.ipr === i.ipr
                           && n.ipr1 === i.ipr1,
                       )
@@ -748,9 +752,10 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                     if (
                       !arr.find(
                         (n) => n.dangerEvent776Id === i.dangerEvent776Id
-                          && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
-                          && n.source.toLocaleLowerCase()
-                            .trim() === i.source.toLocaleLowerCase().trim()
+                          && n.obj.toLocaleLowerCase().trim()
+                            === i.obj.toLocaleLowerCase().trim()
+                          && n.source.toLocaleLowerCase().trim()
+                            === i.source.toLocaleLowerCase().trim()
                           && n.ipr === i.ipr
                           && n.ipr1 === i.ipr1,
                       )
@@ -776,32 +781,46 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                 });
                 arr.forEach((i) => {
                   const numArr = [];
-                  if (el.filter((n) => {
-                    if (n.dangerEventID === i.dangerEventID
-                    && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
-                    && n.source.toLocaleLowerCase()
-                      .trim() === i.source.toLocaleLowerCase().trim()
-                    && n.ipr === i.ipr
-                    && n.ipr1 === i.ipr1) {
-                      if (!numArr.includes(n.num)) numArr.push(n.num);
-                      let numResult = '';
-                      numArr.forEach((nu) => { numResult += `${nu}; `; });
-                      i.num = numResult;
-                    }
-                  }));
-                  if (el.filter((n) => {
-                    if (n.dangerEvent776Id === i.dangerEvent776Id
-                    && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
-                    && n.source.toLocaleLowerCase()
-                      .trim() === i.source.toLocaleLowerCase().trim()
-                    && n.ipr === i.ipr
-                    && n.ipr1 === i.ipr1) {
-                      if (!numArr.includes(n.num)) numArr.push(n.num);
-                      let numResult = '';
-                      numArr.forEach((nu) => { numResult += `${nu}; `; });
-                      i.num = numResult;
-                    }
-                  }));
+                  if (
+                    el.filter((n) => {
+                      if (
+                        n.dangerEventID === i.dangerEventID
+                        && n.obj.toLocaleLowerCase().trim()
+                          === i.obj.toLocaleLowerCase().trim()
+                        && n.source.toLocaleLowerCase().trim()
+                          === i.source.toLocaleLowerCase().trim()
+                        && n.ipr === i.ipr
+                        && n.ipr1 === i.ipr1
+                      ) {
+                        if (!numArr.includes(n.num)) numArr.push(n.num);
+                        let numResult = '';
+                        numArr.forEach((nu) => {
+                          numResult += `${nu}; `;
+                        });
+                        i.num = numResult;
+                      }
+                    })
+                  );
+                  if (
+                    el.filter((n) => {
+                      if (
+                        n.dangerEvent776Id === i.dangerEvent776Id
+                        && n.obj.toLocaleLowerCase().trim()
+                          === i.obj.toLocaleLowerCase().trim()
+                        && n.source.toLocaleLowerCase().trim()
+                          === i.source.toLocaleLowerCase().trim()
+                        && n.ipr === i.ipr
+                        && n.ipr1 === i.ipr1
+                      ) {
+                        if (!numArr.includes(n.num)) numArr.push(n.num);
+                        let numResult = '';
+                        numArr.forEach((nu) => {
+                          numResult += `${nu}; `;
+                        });
+                        i.num = numResult;
+                      }
+                    })
+                  );
                 });
 
                 let line = 21;
@@ -810,8 +829,7 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                 arr.forEach((i) => {
                   cell('A').value = line - 20;
                   cell('B').value = i.danger776Id || i.dangerGroupId;
-                  cell('C').value = i.danger776
-                    || i.dangerGroup;
+                  cell('C').value = i.danger776 || i.dangerGroup;
                   cell('D').value = i.dangerEvent776Id || i.dangerEventID;
                   cell('E').value = i.dangerEvent776 || i.dangerEvent;
                   cell('F').value = i.obj;
@@ -1059,21 +1077,23 @@ module.exports.createListHazardsTable = (req, res, next) => {
               });
               const rowAddress = [];
 
-              resProff.sort((a, b) => {
-                const nameA = Number(a.num);
-                const nameB = Number(b.num);
-                if (nameA > nameB) return 1;
-                if (nameA < nameB) return -1;
-                return 0;
-              }).forEach((element) => {
-                const currentCell = sheet.getColumn(col).letter;
-                rowAddress.push(currentCell + 16);
+              resProff
+                .sort((a, b) => {
+                  const nameA = Number(a.num);
+                  const nameB = Number(b.num);
+                  if (nameA > nameB) return 1;
+                  if (nameA < nameB) return -1;
+                  return 0;
+                })
+                .forEach((element) => {
+                  const currentCell = sheet.getColumn(col).letter;
+                  rowAddress.push(currentCell + 16);
 
-                sheet.getCell(currentCell + 16).value = element.num;
-                sheet.getCell(currentCell + 16).style = style;
-                sheet.getCell(currentCell + 16).width = 20;
-                col += 1;
-              });
+                  sheet.getCell(currentCell + 16).value = element.num;
+                  sheet.getCell(currentCell + 16).style = style;
+                  sheet.getCell(currentCell + 16).width = 20;
+                  col += 1;
+                });
 
               rowAddress.forEach((address) => {
                 const filterJobValue = el.filter(
@@ -1166,9 +1186,10 @@ module.exports.createPlanTimetable = (req, res, next) => {
                   if (
                     !arr.find(
                       (n) => n.dangerEventID === i.dangerEventID
-                        && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
-                        && n.source.toLocaleLowerCase()
-                          .trim() === i.source.toLocaleLowerCase().trim(),
+                        && n.obj.toLocaleLowerCase().trim()
+                          === i.obj.toLocaleLowerCase().trim()
+                        && n.source.toLocaleLowerCase().trim()
+                          === i.source.toLocaleLowerCase().trim(),
                     )
                   ) {
                     obj.dangerGroupId = i.dangerGroupId;
@@ -1194,9 +1215,10 @@ module.exports.createPlanTimetable = (req, res, next) => {
                   if (
                     !arr.find(
                       (n) => n.dangerEvent776Id === i.dangerEvent776Id
-                        && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
-                        && n.source.toLocaleLowerCase()
-                          .trim() === i.source.toLocaleLowerCase().trim(),
+                        && n.obj.toLocaleLowerCase().trim()
+                          === i.obj.toLocaleLowerCase().trim()
+                        && n.source.toLocaleLowerCase().trim()
+                          === i.source.toLocaleLowerCase().trim(),
                     )
                   ) {
                     obj.danger776 = i.danger776;
@@ -1224,22 +1246,32 @@ module.exports.createPlanTimetable = (req, res, next) => {
 
               arr.forEach((i) => {
                 const numArr = [];
-                el.filter((n) => n.dangerEventID === i.dangerEventID
-                  && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
-                  && n.source.toLocaleLowerCase()
-                    .trim() === i.source.toLocaleLowerCase().trim()).forEach((nu) => {
+                el.filter(
+                  (n) => n.dangerEventID === i.dangerEventID
+                    && n.obj.toLocaleLowerCase().trim()
+                      === i.obj.toLocaleLowerCase().trim()
+                    && n.source.toLocaleLowerCase().trim()
+                      === i.source.toLocaleLowerCase().trim(),
+                ).forEach((nu) => {
                   if (!numArr.includes(nu.num)) numArr.push(nu.num);
                   let numResult = '';
-                  numArr.forEach((num) => { numResult += `${num}; `; });
+                  numArr.forEach((num) => {
+                    numResult += `${num}; `;
+                  });
                   i.num = numResult;
                 });
-                el.filter((n) => n.dangerEvent776Id === i.dangerEvent776Id
-                && n.obj.toLocaleLowerCase().trim() === i.obj.toLocaleLowerCase().trim()
-                && n.source.toLocaleLowerCase()
-                  .trim() === i.source.toLocaleLowerCase().trim()).forEach((nu) => {
+                el.filter(
+                  (n) => n.dangerEvent776Id === i.dangerEvent776Id
+                    && n.obj.toLocaleLowerCase().trim()
+                      === i.obj.toLocaleLowerCase().trim()
+                    && n.source.toLocaleLowerCase().trim()
+                      === i.source.toLocaleLowerCase().trim(),
+                ).forEach((nu) => {
                   if (!numArr.includes(nu.num)) numArr.push(nu.num);
                   let numResult = '';
-                  numArr.forEach((num) => { numResult += `${num}; `; });
+                  numArr.forEach((num) => {
+                    numResult += `${num}; `;
+                  });
                   i.num = numResult;
                 });
               });
@@ -1344,7 +1376,24 @@ module.exports.createRegisterHazards = (req, res, next) => {
       ent.owner.toString() === req.user._id
       || ent.access.includes(req.user._id)
     ) {
-      Value.find({ enterpriseId: req.params.id })
+      Value.find(
+        { enterpriseId: req.params.id },
+        {
+          source: true,
+          dangerEventID: true,
+          dangerEvent776Id: true,
+          dangerGroup: true,
+          danger776: true,
+          dangerEvent: true,
+          dangerGroupId: true,
+          danger776Id: true,
+          numWorkers: true,
+          ipr: true,
+          risk: true,
+          dangerEvent776: true,
+          num: true,
+        },
+      )
         .then((el) => {
           const fileName = 'Реестр оцененных опасностей_ИОУПР.xlsx';
           workbook.xlsx
@@ -1353,24 +1402,24 @@ module.exports.createRegisterHazards = (req, res, next) => {
               const sheet = e.getWorksheet(1);
               const sheetDiagramma = e.getWorksheet(2);
               const diagrammaValue = {
-                veryLow: 0, low: 0, mid: 0, height: 0, critical: 0,
+                veryLow: 0,
+                low: 0,
+                mid: 0,
+                height: 0,
+                critical: 0,
               };
 
               sheet.getCell('G10').value = ent.enterprise;
-              const { cities } = el.reduce(
-                (acc, city) => (acc.map[city.source]
-                  ? acc
-                  : ((acc.map[city.source] = true),
-                  acc.cities.push(city),
-                  acc)),
-                {
-                  map: {},
-                  cities: [],
-                },
-              );
+
+              // Получаем уникальные источники
+              const uniqSource = [];
+              el.forEach((i) => {
+                if (!uniqSource.includes(i.source)) uniqSource.push(i.source);
+              });
+
               const arr = [];
-              cities.forEach((item) => {
-                const filter = el.filter((i) => i.source === item.source);
+              uniqSource.forEach((item) => {
+                const filter = el.filter((i) => i.source === item);
                 filter.forEach((o) => {
                   if (
                     !arr.some(
@@ -1379,6 +1428,7 @@ module.exports.createRegisterHazards = (req, res, next) => {
                     )
                   ) {
                     arr.push({
+                      risk: o.risk,
                       source: o.source,
                       dangerEventID: o.dangerEventID,
                       dangerEvent776Id: o.dangerEvent776Id,
@@ -1408,64 +1458,130 @@ module.exports.createRegisterHazards = (req, res, next) => {
                 });
               });
 
-              arr.forEach((i) => {
-                const filter = el.filter(
-                  (n) => (n.source === i.source
-                      && n.dangerEvent776Id === i.dangerEvent776Id)
-                    || n.dangerEventID === i.dangerEventID,
-                );
-                filter.forEach((t) => {
-                  i.IPR += t.ipr;
-                  switch (t.risk) {
-                    case 'Незначительный':
-                      i.veryLowWorker += Number(t.numWorkers);
-                      break;
-                    case 'Низкий':
-                      i.lowWorker += Number(t.numWorkers);
-                      break;
-                    case 'Средний':
-                      i.midWorker += Number(t.numWorkers);
-                      break;
-                    case 'Высокий':
-                      i.highWorker += Number(t.numWorkers);
-                      break;
-                    default:
-                      i.criticalWorker += Number(t.numWorkers);
+              arr.forEach((i, index) => {
+                // const filter = el.filter(
+                //   (n) => n.source === i.source
+                //       && n.dangerEvent776Id === i.dangerEvent776Id
+                //     || n.dangerEventID === i.dangerEventID,
+                // );
+                el.forEach((c) => {
+                  if (c.dangerEventID) {
+                    if (c.source === i.source && c.dangerEventID === i.dangerEventID) {
+                      i.IPR += c.ipr;
+                      i.numWorkers += Number(c.numWorkers);
+                      i.countWorkPlaces += 1;
+                      switch (c.risk) {
+                        case 'Незначительный':
+                          i.veryLowWorker += Number(c.numWorkers);
+                          i.veryLowPlace += 1;
+                          break;
+                        case 'Низкий':
+                          i.lowWorker += Number(c.numWorkers);
+                          i.lowPlace += 1;
+                          break;
+                        case 'Средний':
+                          i.midWorker += Number(c.numWorkers);
+                          i.midPlace += 1;
+                          break;
+                        case 'Высокий':
+                          i.highWorker += Number(c.numWorkers);
+                          i.highPlace += 1;
+                          break;
+                        case '':
+                          break;
+                        default:
+                          i.criticalWorker += Number(c.numWorkers);
+                          i.criticalPlace += 1;
+                      }
+                    }
+                  }
+                  if (!c.dangerEventID) {
+                    if (c.source === i.source && c.dangerEvent776Id === i.dangerEvent776Id) {
+                      i.IPR += c.ipr;
+                      i.numWorkers += Number(c.numWorkers);
+                      i.countWorkPlaces += 1;
+                      switch (c.risk) {
+                        case 'Незначительный':
+                          i.veryLowWorker += Number(c.numWorkers);
+                          i.veryLowPlace += 1;
+                          break;
+                        case 'Низкий':
+                          i.lowWorker += Number(c.numWorkers);
+                          i.lowPlace += 1;
+                          break;
+                        case 'Средний':
+                          i.midWorker += Number(c.numWorkers);
+                          i.midPlace += 1;
+                          break;
+                        case 'Высокий':
+                          i.highWorker += Number(c.numWorkers);
+                          i.highPlace += 1;
+                          break;
+                        case '':
+                          break;
+                        default:
+                          i.criticalWorker += Number(c.numWorkers);
+                          i.criticalPlace += 1;
+                      }
+                    }
                   }
                 });
+                // filter.forEach((t) => {
+                //   // i.IPR += t.ipr;
+                //   // switch (t.risk) {
+                //   //   case 'Незначительный':
+                //   //     i.veryLowWorker += Number(t.numWorkers);
+                //   //     break;
+                //   //   case 'Низкий':
+                //   //     i.lowWorker += Number(t.numWorkers);
+                //   //     break;
+                //   //   case 'Средний':
+                //   //     i.midWorker += Number(t.numWorkers);
+                //   //     break;
+                //   //   case 'Высокий':
+                //   //     i.highWorker += Number(t.numWorkers);
+                //   //     break;
+                //   //   case '':
+                //   //     break;
+                //   //   default:
+                //   //     i.criticalWorker += Number(t.numWorkers);
+                //   // }
+                // });
 
-                const { uniqNum } = filter.reduce(
-                  (acc, city) => (acc.map[city.num]
-                    ? acc
-                    : ((acc.map[city.num] = true),
-                    acc.uniqNum.push(city),
-                    acc)),
-                  {
-                    map: {},
-                    uniqNum: [],
-                  },
-                );
+                // const { uniqNum } = filter.reduce(
+                //   (acc, city) => (acc.map[city.num]
+                //     ? acc
+                //     : ((acc.map[city.num] = true),
+                //     acc.uniqNum.push(city),
+                //     acc)),
+                //   {
+                //     map: {},
+                //     uniqNum: [],
+                //   },
+                // );
 
-                uniqNum.forEach((w) => {
-                  i.numWorkers += Number(w.numWorkers);
-                  i.countWorkPlaces += 1;
-                  switch (w.risk) {
-                    case 'Незначительный':
-                      i.veryLowPlace += 1;
-                      break;
-                    case 'Низкий':
-                      i.lowPlace += 1;
-                      break;
-                    case 'Средний':
-                      i.midPlace += 1;
-                      break;
-                    case 'Высокий':
-                      i.highPlace += 1;
-                      break;
-                    default:
-                      i.criticalPlace += 1;
-                  }
-                });
+                // uniqNum.forEach((w) => {
+                //   arr[index].numWorkers += Number(w.numWorkers);
+                //   arr[index].countWorkPlaces += 1;
+                //   switch (w.risk) {
+                //     case 'Незначительный':
+                //       arr[index].veryLowPlace += 1;
+                //       break;
+                //     case 'Низкий':
+                //       arr[index].lowPlace += 1;
+                //       break;
+                //     case 'Средний':
+                //       arr[index].midPlace += 1;
+                //       break;
+                //     case 'Высокий':
+                //       arr[index].highPlace += 1;
+                //       break;
+                //     case '':
+                //       break;
+                //     default:
+                //       arr[index].criticalPlace += 1;
+                //   }
+                // });
               });
 
               arr
@@ -1480,7 +1596,10 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   const startRow = index + 15;
                   // Работники
                   const a = item.veryLowWorker
-                  + item.lowWorker + item.midWorker + item.highWorker + item.criticalWorker;
+                    + item.lowWorker
+                    + item.midWorker
+                    + item.highWorker
+                    + item.criticalWorker;
                   if (item.veryLowWorker !== 0) {
                     item.vlp = item.veryLowWorker / a;
                   } else {
@@ -1513,7 +1632,10 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   item.c = Math.round(item.cp * item.numWorkers);
                   // Рабочие места
                   const b = item.veryLowPlace
-                  + item.lowPlace + item.midPlace + item.highPlace + item.criticalPlace;
+                    + item.lowPlace
+                    + item.midPlace
+                    + item.highPlace
+                    + item.criticalPlace;
                   if (item.veryLowPlace !== 0) {
                     item.pvlp = item.veryLowPlace / b;
                   } else {
@@ -1539,6 +1661,7 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   } else {
                     item.pcp = 0;
                   }
+
                   item.pvl = Math.round(item.pvlp * item.countWorkPlaces);
                   item.pl = Math.round(item.plp * item.countWorkPlaces);
                   item.pm = Math.round(item.pmp * item.countWorkPlaces);
@@ -1557,18 +1680,10 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   sheet.getCell(
                     `T${startRow}`,
                   ).value = `${item.vl}/${item.pvl}`;
-                  sheet.getCell(
-                    `X${startRow}`,
-                  ).value = `${item.l}/${item.pl}`;
-                  sheet.getCell(
-                    `AA${startRow}`,
-                  ).value = `${item.m}/${item.pm}`;
-                  sheet.getCell(
-                    `AD${startRow}`,
-                  ).value = `${item.h}/${item.ph}`;
-                  sheet.getCell(
-                    `AG${startRow}`,
-                  ).value = `${item.c}/${item.pc}`;
+                  sheet.getCell(`X${startRow}`).value = `${item.l}/${item.pl}`;
+                  sheet.getCell(`AA${startRow}`).value = `${item.m}/${item.pm}`;
+                  sheet.getCell(`AD${startRow}`).value = `${item.h}/${item.ph}`;
+                  sheet.getCell(`AG${startRow}`).value = `${item.c}/${item.pc}`;
                   sheet.getCell(`AI${startRow}`).value = item.IPR;
                   sheet.getCell(`A${startRow}`).style = style;
                   sheet.getCell(`B${startRow}`).style = style;
