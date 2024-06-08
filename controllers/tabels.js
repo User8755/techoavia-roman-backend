@@ -1183,6 +1183,7 @@ module.exports.createPlanTimetable = (req, res, next) => {
               el.forEach((i) => {
                 const obj = {};
                 if (i.dangerEventID !== '') {
+                  console.log(i.obj);
                   if (
                     !arr.find(
                       (n) => n.dangerEventID === i.dangerEventID
