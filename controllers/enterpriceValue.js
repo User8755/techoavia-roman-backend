@@ -8,6 +8,17 @@ const ConflictError = require('../errors/ConflictError');
 const workbook = new Excel.Workbook();
 
 module.exports.updateValue = (req, res, next) => {
+  const handleStyleString = (valueStr) => {
+    if (typeof valueStr === 'string') {
+      const str = valueStr.charAt(0).toUpperCase() + valueStr.substr(1);
+      return str.trim();
+    }
+    if (typeof valueStr === 'number') {
+      return valueStr;
+    }
+    return '';
+  };
+
   workbook.xlsx
     .load(req.files.file.data)
     .then(() => {
@@ -32,55 +43,54 @@ module.exports.updateValue = (req, res, next) => {
             const newObj = { proffSIZ: [] };
             const siz = {};
             if (cell('C', startRow).value) {
-              // obj.type = cell('A', startRow).value;
-              newObj.proffId = cell('B', startRow).value || '';
-              newObj.num = cell('C', startRow).value || '';
-              newObj.proff = cell('D', startRow).value || '';
-              newObj.job = cell('E', startRow).value || '';
-              newObj.subdivision = cell('F', startRow).value || '';
-              newObj.obj = cell('J', startRow).value || '';
-              newObj.source = cell('K', startRow).value || '';
-              newObj.dangerID = cell('L', startRow).value || '';
-              newObj.danger = cell('M', startRow).value || '';
-              newObj.dangerGroupId = cell('N', startRow).value || '';
-              newObj.dangerGroup = cell('O', startRow).value || '';
-              newObj.dangerEventID = cell('P', startRow).value || '';
-              newObj.dangerEvent = cell('Q', startRow).value || '';
-              newObj.heaviness = cell('R', startRow).value || '';
-              newObj.probability = cell('S', startRow).value || '';
-              newObj.ipr = cell('T', startRow).value || '';
-              newObj.risk = cell('U', startRow).value || '';
-              newObj.acceptability = cell('V', startRow).value || '';
-              newObj.riskAttitude = cell('W', startRow).value || '';
-              newObj.typeSIZ = cell('X', startRow).value || '';
-              newObj.speciesSIZ = cell('Y', startRow).value || '';
-              newObj.issuanceRate = cell('Z', startRow).value || '';
-              newObj.additionalMeans = cell('AA', startRow).value || '';
-              newObj.AdditionalIssuanceRate = cell('AB', startRow).value || '';
-              newObj.standart = cell('AC', startRow).value || '';
-              newObj.OperatingLevel = cell('AD', startRow).value || '';
-              newObj.commit = cell('AE', startRow).value || '';
-              newObj.danger776Id = cell('AF', startRow).value || '';
-              newObj.danger776 = cell('AG', startRow).value || '';
-              newObj.dangerEvent776Id = cell('AH', startRow).value || '';
-              newObj.dangerEvent776 = cell('AI', startRow).value || '';
-              newObj.riskManagementID = cell('AJ', startRow).value || '';
-              newObj.riskManagement = cell('AK', startRow).value || '';
-              newObj.heaviness1 = cell('AL', startRow).value || '';
-              newObj.probability1 = cell('AM', startRow).value || '';
-              newObj.ipr1 = cell('AN', startRow).value || '';
-              newObj.risk1 = cell('AO', startRow).value || '';
-              newObj.acceptability1 = cell('AP', startRow).value || '';
-              newObj.riskAttitude1 = cell('AQ', startRow).value || '';
-              newObj.existingRiskManagement = cell('AR', startRow).value || '';
-              newObj.periodicity = cell('AS', startRow).value || '';
-              newObj.responsiblePerson = cell('AT', startRow).value || '';
-              newObj.completionMark = cell('AU', startRow).value || '';
-              newObj.numWorkers = cell('AV', startRow).value || '';
-              newObj.equipment = cell('AW', startRow).value || '';
-              newObj.materials = cell('AX', startRow).value || '';
-              newObj.laborFunction = cell('AY', startRow).value || '';
-              newObj.code = cell('AZ', startRow).value;
+              newObj.proffId = handleStyleString(cell('B', startRow).value) || '';
+              newObj.num = handleStyleString(cell('C', startRow).value) || '';
+              newObj.proff = handleStyleString(cell('D', startRow).value) || '';
+              newObj.job = handleStyleString(cell('E', startRow).value) || '';
+              newObj.subdivision = handleStyleString(cell('F', startRow).value) || '';
+              newObj.obj = handleStyleString(cell('J', startRow).value) || '';
+              newObj.source = handleStyleString(cell('K', startRow).value) || '';
+              newObj.dangerID = handleStyleString(cell('L', startRow).value) || '';
+              newObj.danger = handleStyleString(cell('M', startRow).value) || '';
+              newObj.dangerGroupId = handleStyleString(cell('N', startRow).value) || '';
+              newObj.dangerGroup = handleStyleString(cell('O', startRow).value) || '';
+              newObj.dangerEventID = handleStyleString(cell('P', startRow).value) || '';
+              newObj.dangerEvent = handleStyleString(cell('Q', startRow).value) || '';
+              newObj.heaviness = handleStyleString(cell('R', startRow).value) || '';
+              newObj.probability = handleStyleString(cell('S', startRow).value) || '';
+              newObj.ipr = handleStyleString(cell('T', startRow).value) || '';
+              newObj.risk = handleStyleString(cell('U', startRow).value) || '';
+              newObj.acceptability = handleStyleString(cell('V', startRow).value) || '';
+              newObj.riskAttitude = handleStyleString(cell('W', startRow).value) || '';
+              newObj.typeSIZ = handleStyleString(cell('X', startRow).value) || '';
+              newObj.speciesSIZ = handleStyleString(cell('Y', startRow).value) || '';
+              newObj.issuanceRate = handleStyleString(cell('Z', startRow).value) || '';
+              newObj.additionalMeans = handleStyleString(cell('AA', startRow)).value || '';
+              newObj.AdditionalIssuanceRate = handleStyleString(cell('AB', startRow).value) || '';
+              newObj.standart = handleStyleString(cell('AC', startRow).value) || '';
+              newObj.OperatingLevel = handleStyleString(cell('AD', startRow).value) || '';
+              newObj.commit = handleStyleString(cell('AE', startRow).value) || '';
+              newObj.danger776Id = handleStyleString(cell('AF', startRow).value) || '';
+              newObj.danger776 = handleStyleString(cell('AG', startRow).value) || '';
+              newObj.dangerEvent776Id = handleStyleString(cell('AH', startRow).value) || '';
+              newObj.dangerEvent776 = handleStyleString(cell('AI', startRow).value) || '';
+              newObj.riskManagementID = handleStyleString(cell('AJ', startRow).value) || '';
+              newObj.riskManagement = handleStyleString(cell('AK', startRow).value) || '';
+              newObj.heaviness1 = handleStyleString(cell('AL', startRow).value) || '';
+              newObj.probability1 = handleStyleString(cell('AM', startRow).value) || '';
+              newObj.ipr1 = handleStyleString(cell('AN', startRow).value) || '';
+              newObj.risk1 = handleStyleString(cell('AO', startRow).value) || '';
+              newObj.acceptability1 = handleStyleString(cell('AP', startRow).value) || '';
+              newObj.riskAttitude1 = handleStyleString(cell('AQ', startRow).value) || '';
+              newObj.existingRiskManagement = handleStyleString(cell('AR', startRow).value) || '';
+              newObj.periodicity = handleStyleString(cell('AS', startRow).value) || '';
+              newObj.responsiblePerson = handleStyleString(cell('AT', startRow).value) || '';
+              newObj.completionMark = handleStyleString(cell('AU', startRow).value) || '';
+              newObj.numWorkers = handleStyleString(cell('AV', startRow).value) || '';
+              newObj.equipment = handleStyleString(cell('AW', startRow).value) || '';
+              newObj.materials = handleStyleString(cell('AX', startRow).value) || '';
+              newObj.laborFunction = handleStyleString(cell('AY', startRow).value) || '';
+              newObj.code = handleStyleString(cell('AZ', startRow).value);
               newObj.enterpriseId = req.params.id;
 
               arr.push(newObj);

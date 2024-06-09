@@ -1183,7 +1183,6 @@ module.exports.createPlanTimetable = (req, res, next) => {
               el.forEach((i) => {
                 const obj = {};
                 if (i.dangerEventID !== '') {
-                  console.log(i.obj);
                   if (
                     !arr.find(
                       (n) => n.dangerEventID === i.dangerEventID
@@ -1417,14 +1416,13 @@ module.exports.createRegisterHazards = (req, res, next) => {
               el.forEach((i) => {
                 if (!uniqSource.includes(i.source)) uniqSource.push(i.source);
               });
-
               const arr = [];
               uniqSource.forEach((item) => {
                 const filter = el.filter((i) => i.source === item);
                 filter.forEach((o) => {
                   if (
                     !arr.some(
-                      (l) => l.source === o.source
+                      (l) => l.source.toLocaleLowerCase() === o.source.toLocaleLowerCase()
                         && l.dangerEventID === o.dangerEventID,
                     )
                   ) {
@@ -1459,18 +1457,20 @@ module.exports.createRegisterHazards = (req, res, next) => {
                 });
               });
 
-              arr.forEach((i, index) => {
-                // const filter = el.filter(
-                //   (n) => n.source === i.source
-                //       && n.dangerEvent776Id === i.dangerEvent776Id
-                //     || n.dangerEventID === i.dangerEventID,
-                // );
+              arr.forEach((i) => {
+                const countWorker = [];
                 el.forEach((c) => {
                   if (c.dangerEventID) {
-                    if (c.source === i.source && c.dangerEventID === i.dangerEventID) {
-                      i.IPR += c.ipr;
-                      i.numWorkers += Number(c.numWorkers);
-                      i.countWorkPlaces += 1;
+                    if (c.source.toLocaleLowerCase() === i.source.toLocaleLowerCase()
+                      && c.dangerEventID === i.dangerEventID) {
+                      if (!countWorker.includes(c.num)) {
+                        if (!countWorker.includes(c.num)) {
+                          countWorker.push(c.num);
+                          i.numWorkers += Number(c.numWorkers);
+                          i.IPR += c.ipr;
+                        }
+                      }
+                      i.countWorkPlaces = countWorker.length;
                       switch (c.risk) {
                         case 'Незначительный':
                           i.veryLowWorker += Number(c.numWorkers);
@@ -1497,10 +1497,14 @@ module.exports.createRegisterHazards = (req, res, next) => {
                     }
                   }
                   if (!c.dangerEventID) {
-                    if (c.source === i.source && c.dangerEvent776Id === i.dangerEvent776Id) {
-                      i.IPR += c.ipr;
-                      i.numWorkers += Number(c.numWorkers);
-                      i.countWorkPlaces += 1;
+                    if (c.source.toLocaleLowerCase() === i.source.toLocaleLowerCase()
+                      && c.dangerEvent776Id === i.dangerEvent776Id) {
+                      if (!countWorker.includes(c.num)) {
+                        countWorker.push(c.num);
+                        i.numWorkers += Number(c.numWorkers);
+                        i.IPR += c.ipr;
+                      }
+                      i.countWorkPlaces = countWorker.length;
                       switch (c.risk) {
                         case 'Незначительный':
                           i.veryLowWorker += Number(c.numWorkers);
@@ -1527,62 +1531,6 @@ module.exports.createRegisterHazards = (req, res, next) => {
                     }
                   }
                 });
-                // filter.forEach((t) => {
-                //   // i.IPR += t.ipr;
-                //   // switch (t.risk) {
-                //   //   case 'Незначительный':
-                //   //     i.veryLowWorker += Number(t.numWorkers);
-                //   //     break;
-                //   //   case 'Низкий':
-                //   //     i.lowWorker += Number(t.numWorkers);
-                //   //     break;
-                //   //   case 'Средний':
-                //   //     i.midWorker += Number(t.numWorkers);
-                //   //     break;
-                //   //   case 'Высокий':
-                //   //     i.highWorker += Number(t.numWorkers);
-                //   //     break;
-                //   //   case '':
-                //   //     break;
-                //   //   default:
-                //   //     i.criticalWorker += Number(t.numWorkers);
-                //   // }
-                // });
-
-                // const { uniqNum } = filter.reduce(
-                //   (acc, city) => (acc.map[city.num]
-                //     ? acc
-                //     : ((acc.map[city.num] = true),
-                //     acc.uniqNum.push(city),
-                //     acc)),
-                //   {
-                //     map: {},
-                //     uniqNum: [],
-                //   },
-                // );
-
-                // uniqNum.forEach((w) => {
-                //   arr[index].numWorkers += Number(w.numWorkers);
-                //   arr[index].countWorkPlaces += 1;
-                //   switch (w.risk) {
-                //     case 'Незначительный':
-                //       arr[index].veryLowPlace += 1;
-                //       break;
-                //     case 'Низкий':
-                //       arr[index].lowPlace += 1;
-                //       break;
-                //     case 'Средний':
-                //       arr[index].midPlace += 1;
-                //       break;
-                //     case 'Высокий':
-                //       arr[index].highPlace += 1;
-                //       break;
-                //     case '':
-                //       break;
-                //     default:
-                //       arr[index].criticalPlace += 1;
-                //   }
-                // });
               });
 
               arr
@@ -1668,7 +1616,6 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   item.pm = Math.round(item.pmp * item.countWorkPlaces);
                   item.ph = Math.round(item.php * item.countWorkPlaces);
                   item.pc = Math.round(item.pcp * item.countWorkPlaces);
-
                   sheet.getCell(`A${startRow}`).value = index + 1;
                   sheet.getCell(`B${startRow}`).value = item.source;
                   sheet.getCell(`C${startRow}`).value = item.dangerGroupId || item.danger776Id;

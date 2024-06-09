@@ -56,8 +56,8 @@ module.exports.validationEnterprise = celebrate({
 
 module.exports.validationEnterpriseValue = celebrate({
   body: Joi.object().keys({
-    proff: Joi.string().default('').min(0),
-    proffId: Joi.number(),
+    proff: Joi.string().default('').min(0).max(200),
+    proffId: Joi.number().min(1).max(1000),
     danger: Joi.string().default('').min(0),
     dangerID: Joi.string().default('').min(0),
     dangerGroup: Joi.string().default('').min(0),
