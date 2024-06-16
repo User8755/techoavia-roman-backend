@@ -681,7 +681,10 @@ module.exports.createMapOPRTabel = (req, res, next) => {
                   .then(() => {
                     res.end();
                   })
-                  .catch((err) => next(err));
+                  .catch((err) => {
+                    res.setHeader('content-type', 'application/json');
+                    next(err);
+                  });
               })
               .catch((e) => next(e));
           });
