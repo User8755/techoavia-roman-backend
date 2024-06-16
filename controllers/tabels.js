@@ -194,7 +194,7 @@ module.exports.createBaseTabel = (req, res, next) => {
           );
           res.setHeader(
             'Content-Disposition',
-            `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+            'attachment; filename="Workbook.xlsx"',
           );
 
           workbook.xlsx
@@ -202,7 +202,10 @@ module.exports.createBaseTabel = (req, res, next) => {
             .then(() => {
               res.end();
             })
-            .catch((err) => next(err));
+            .catch((err) => {
+              res.setHeader('content-type', 'application/json');
+              next(err);
+            });
         })
         .catch((i) => {
           next(i);
@@ -1613,7 +1616,9 @@ module.exports.createRegisterHazards = (req, res, next) => {
 
                   item.pvl = Math.round(item.pvlp * item.countWorkPlaces);
                   item.pl = Math.round(item.plp * item.countWorkPlaces);
-                  item.pm = Math.round(item.pmp * item.countWorkPlaces);
+                  item.pm = item.pmp > 0 && item.pmp < 1
+                    ? 1
+                    : Math.round(item.pmp * item.countWorkPlaces);
                   item.ph = Math.round(item.php * item.countWorkPlaces);
                   item.pc = Math.round(item.pcp * item.countWorkPlaces);
                   sheet.getCell(`A${startRow}`).value = index + 1;
