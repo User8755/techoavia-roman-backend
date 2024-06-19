@@ -203,7 +203,6 @@ module.exports.createBaseTabel = (req, res, next) => {
               res.end();
             })
             .catch((err) => {
-              res.setHeader('content-type', 'application/json');
               next(err);
             });
         })
@@ -682,11 +681,12 @@ module.exports.createMapOPRTabel = (req, res, next) => {
                     res.end();
                   })
                   .catch((err) => {
-                    res.setHeader('content-type', 'application/json');
                     next(err);
                   });
               })
-              .catch((e) => next(e));
+              .catch((err) => {
+                next(err);
+              });
           });
       }
       logs
@@ -1428,7 +1428,8 @@ module.exports.createRegisterHazards = (req, res, next) => {
                 filter.forEach((o) => {
                   if (
                     !arr.some(
-                      (l) => l.source.toLocaleLowerCase() === o.source.toLocaleLowerCase()
+                      (l) => l.source.toLocaleLowerCase()
+                          === o.source.toLocaleLowerCase()
                         && l.dangerEventID === o.dangerEventID,
                     )
                   ) {
@@ -1467,8 +1468,11 @@ module.exports.createRegisterHazards = (req, res, next) => {
                 const countWorker = [];
                 el.forEach((c) => {
                   if (c.dangerEventID) {
-                    if (c.source.toLocaleLowerCase() === i.source.toLocaleLowerCase()
-                      && c.dangerEventID === i.dangerEventID) {
+                    if (
+                      c.source.toLocaleLowerCase()
+                        === i.source.toLocaleLowerCase()
+                      && c.dangerEventID === i.dangerEventID
+                    ) {
                       if (!countWorker.includes(c.num)) {
                         if (!countWorker.includes(c.num)) {
                           countWorker.push(c.num);
@@ -1503,8 +1507,11 @@ module.exports.createRegisterHazards = (req, res, next) => {
                     }
                   }
                   if (!c.dangerEventID) {
-                    if (c.source.toLocaleLowerCase() === i.source.toLocaleLowerCase()
-                      && c.dangerEvent776Id === i.dangerEvent776Id) {
+                    if (
+                      c.source.toLocaleLowerCase()
+                        === i.source.toLocaleLowerCase()
+                      && c.dangerEvent776Id === i.dangerEvent776Id
+                    ) {
                       if (!countWorker.includes(c.num)) {
                         countWorker.push(c.num);
                         i.numWorkers += Number(c.numWorkers);
