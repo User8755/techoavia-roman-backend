@@ -65,7 +65,7 @@ module.exports.updateValue = (req, res, next) => {
               newObj.typeSIZ = handleStyleString(cell('X', startRow).value);
               newObj.speciesSIZ = handleStyleString(cell('Y', startRow).value);
               newObj.issuanceRate = handleStyleString(cell('Z', startRow).value);
-              newObj.additionalMeans = handleStyleString(cell('AA', startRow)).value;
+              newObj.additionalMeans = handleStyleString(cell('AA', startRow).value);
               newObj.AdditionalIssuanceRate = handleStyleString(cell('AB', startRow).value);
               newObj.standart = handleStyleString(cell('AC', startRow).value);
               newObj.OperatingLevel = handleStyleString(cell('AD', startRow).value);
