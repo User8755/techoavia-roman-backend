@@ -289,8 +289,17 @@ module.exports.createNormTabel = (req, res, next) => {
                   startRow += 1;
                   sheet.insertRow(startRow);
                   if (item.additionalMeans) {
+                    cell('B', startRow).value = stringProff;
                     cell('D', startRow).value = item.additionalMeans;
                     cell('E', startRow).value = item.AdditionalIssuanceRate;
+                    cell(
+                      'F',
+                      startRow,
+                    ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
+                    cell('G', startRow).value = item.dangerGroupId;
+                    cell('H', startRow).value = item.dangerGroup;
+                    cell('I', startRow).value = item.dangerEventID;
+                    cell('J', startRow).value = item.dangerEvent;
                     // стили
                     cell('A', startRow).style = style;
                     cell('B', startRow).style = style;
@@ -307,6 +316,7 @@ module.exports.createNormTabel = (req, res, next) => {
                   }
                   if (item.proffSIZ) {
                     item.proffSIZ.forEach((SIZ) => {
+                      cell('B', startRow).value = stringProff;
                       cell('D', startRow).value = SIZ.vid;
                       cell('E', startRow).value = SIZ.norm;
                       cell(
