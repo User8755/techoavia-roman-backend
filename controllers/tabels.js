@@ -67,7 +67,24 @@ module.exports.createBaseTabel = (req, res, next) => {
           const workbook = new Excel.Workbook();
           const sheet = workbook.addWorksheet('sheet');
           sheet.columns = [
-            { header: '№ п/п', key: 'number', width: 9 },
+            {
+              header: '№ п/п',
+              key: 'number',
+              width: 9,
+              style: {
+                fill: {
+                  type: 'pattern',
+                  pattern: 'solid',
+                  fgColor: { argb: 'E0E0E0' },
+                },
+              },
+              border: {
+                left: { style: 'thin' },
+                right: { style: 'thin' },
+                bottom: { style: 'thin' },
+                top: { style: 'thin' },
+              },
+            },
             {
               header: 'Код профессии (при наличии)',
               key: 'proffId',
@@ -1491,6 +1508,7 @@ module.exports.createRegisterHazards = (req, res, next) => {
                         }
                       }
                       i.countWorkPlaces = countWorker.length;
+
                       switch (c.risk) {
                         case 'Незначительный':
                           i.veryLowWorker += Number(c.numWorkers);
@@ -1597,11 +1615,11 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   } else {
                     item.cp = 0;
                   }
-                  item.vl = Math.round(item.vlp * item.numWorkers);
-                  item.l = Math.round(item.lp * item.numWorkers);
-                  item.m = Math.round(item.mp * item.numWorkers);
-                  item.h = Math.round(item.hp * item.numWorkers);
-                  item.c = Math.round(item.cp * item.numWorkers);
+                  item.vl = Math.ceil(item.vlp * item.numWorkers);
+                  item.l = Math.ceil(item.lp * item.numWorkers);
+                  item.m = Math.ceil(item.mp * item.numWorkers);
+                  item.h = Math.ceil(item.hp * item.numWorkers);
+                  item.c = Math.ceil(item.cp * item.numWorkers);
                   // Рабочие места
                   const b = item.veryLowPlace
                     + item.lowPlace
