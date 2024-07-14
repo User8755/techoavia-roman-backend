@@ -8,57 +8,96 @@ const value = new mongoose.Schema(
     },
     proffId: {
       type: Number,
+      minlength: 0,
+      maxlength: 30,
     },
     num: {
       type: String,
+      required: true,
+      minlength: 1,
+      maxlength: 30,
     },
     proff: {
       type: String,
+      minlength: 0,
+      maxlength: 300,
     },
     job: {
       type: String,
+      minlength: 0,
+      maxlength: 300,
     },
     subdivision: {
       type: String,
+      minlength: 0,
+      maxlength: 300,
     },
     obj: {
       type: String,
+      minlength: 0,
+      maxlength: 300,
+      required: true,
     },
     source: {
       type: String,
+      minlength: 1,
+      maxlength: 300,
+      required: true,
     },
     dangerID: {
       type: String,
+      minlength: 0,
+      maxlength: 10,
     },
     danger: {
       type: String,
+      minlength: 0,
+      maxlength: 300,
     },
     dangerGroupId: {
       type: String,
+      minlength: 0,
+      maxlength: 10,
     },
     dangerGroup: {
       type: String,
+      minlength: 0,
+      maxlength: 300,
     },
     dangerEventID: {
       type: String,
+      minlength: 0,
+      maxlength: 10,
     },
     dangerEvent: {
       type: String,
+      minlength: 0,
+      maxlength: 400,
     },
     heaviness: {
       type: Number,
+      minlength: 1,
+      maxlength: 2,
     },
     probability: {
       type: Number,
+      minlength: 1,
+      maxlength: 2,
     },
     ipr: {
       type: Number,
+      minlength: 1,
+      maxlength: 2,
     },
     risk: {
       type: String,
+      minlength: 2,
+      maxlength: 20,
     },
     acceptability: {
       type: String,
+      minlength: 1,
+      maxlength: 50,
     },
     riskAttitude: {
       type: String,

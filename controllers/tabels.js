@@ -52,6 +52,13 @@ const style = {
     wrapText: 'true',
   },
 };
+
+const borderCell = {
+  left: { style: 'thin' },
+  right: { style: 'thin' },
+  bottom: { style: 'thin' },
+  top: { style: 'thin' },
+};
 // Базовая таблица
 module.exports.createBaseTabel = (req, res, next) => {
   Enterprise.findById(req.params.id).then((ent) => {
@@ -194,9 +201,15 @@ module.exports.createBaseTabel = (req, res, next) => {
             { header: 'Код ОК-016-94:', key: 'code', width: 20 },
           ];
           let i = 1;
-          el.forEach((item) => {
+          el.forEach((item, index) => {
             item.number = i;
             sheet.addRow(item);
+            if (!sheet.getCell(`J${index + 2}`).value) {
+              sheet.getCell(`J${index + 2}`).style = {
+                ...(sheet.getCell(`J${index + 2}`).style || {}),
+                fill: red,
+              };
+            }
 
             if (item.proffSIZ) {
               item.proffSIZ.forEach((SIZ) => sheet.addRow(SIZ));
@@ -1766,6 +1779,77 @@ module.exports.createRegisterHazards = (req, res, next) => {
     logs
       .create({
         action: `Пользователь ${req.user.name} выгрузил(а) таблицу Реестр оцененных опасностей_ИОУПР  ${ent.enterprise}`,
+        userId: req.user._id,
+        enterpriseId: ent._id,
+      })
+      .catch((e) => next(e));
+  });
+};
+
+module.exports.createListSiz = (req, res, next) => {
+  const fileName = 'ПЕРЕЧЕНЬ СИЗ.xlsx';
+  Enterprise.findById(req.params.id).then((ent) => {
+    if (!ent) {
+      next(new NotFound('Предприятие не найдено'));
+    }
+    if (
+      ent.owner.toString() === req.user._id
+      || ent.access.includes(req.user._id)
+    ) {
+      Value.find({ enterpriseId: req.params.id })
+        .then((el) => {
+          workbook.xlsx
+            .readFile(fileName)
+            .then((e) => {
+              let startRow = 14;
+              const sheet = e.getWorksheet(1);
+              const cell = (c, i) => sheet.getCell(c + i);
+              cell('B',11).value = ent.enterprise;
+              el.forEach((s) => {
+                if (s.typeSIZ) {
+                  cell('A', startRow).value = s.num;
+                  cell('B', startRow).value = s.proffId;
+                  cell('C', startRow).value = s.prof || s.job;
+                  cell('D', startRow).value = s.subdivision;
+                  cell('E', startRow).value = s.dangerEventID;
+                  cell('F', startRow).value = s.typeSIZ;
+                  cell('G', startRow).value = s.speciesSIZ;
+                  cell('H', startRow).value = s.issuanceRate;
+                  cell('A', startRow).border = borderCell;
+                  cell('B', startRow).border = borderCell;
+                  cell('C', startRow).border = borderCell;
+                  cell('D', startRow).border = borderCell;
+                  cell('E', startRow).border = borderCell;
+                  cell('F', startRow).border = borderCell;
+                  cell('G', startRow).border = borderCell;
+                  cell('H', startRow).border = borderCell;
+                  startRow += 1;
+                  sheet.insertRow(startRow);
+                }
+              });
+              res.setHeader(
+                'Content-Type',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              );
+              res.setHeader(
+                'Content-Disposition',
+                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+              );
+
+              workbook.xlsx
+                .write(res)
+                .then(() => {
+                  res.end();
+                })
+                .catch((err) => next(err));
+            })
+            .catch((e) => next(e));
+        })
+        .catch((e) => next(e));
+    }
+    logs
+      .create({
+        action: `Пользователь ${req.user.name} выгрузил(а) таблицу Перечень СИЗ  ${ent.enterprise}`,
         userId: req.user._id,
         enterpriseId: ent._id,
       })
