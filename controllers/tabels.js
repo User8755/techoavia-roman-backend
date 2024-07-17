@@ -1804,7 +1804,7 @@ module.exports.createListSiz = (req, res, next) => {
               let startRow = 14;
               const sheet = e.getWorksheet(1);
               const cell = (c, i) => sheet.getCell(c + i);
-              cell('B',11).value = ent.enterprise;
+              cell('B', 11).value = ent.enterprise;
               el.forEach((s) => {
                 if (s.typeSIZ) {
                   cell('A', startRow).value = s.num;

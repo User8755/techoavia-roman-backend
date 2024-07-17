@@ -76,3 +76,15 @@ module.exports.updateCloseAccess = (req, res, next) => {
     })
     .catch((e) => next(e));
 };
+
+module.exports.statusHiden = (req, res, next) => {
+  Enterprise.findByIdAndUpdate(
+    req.params.id,
+    { isHiden: req.body.isHiden },
+    { new: true },
+  )
+    .then((i) => {
+      res.send(i);
+    })
+    .catch((e) => next(e));
+};
