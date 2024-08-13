@@ -35,6 +35,62 @@ const enterprise = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  chairman: {
+    type: String,
+    maxlength: 30,
+  },
+  chairmanJob: {
+    type: String,
+    maxlength: 30,
+  },
+  member1: {
+    type: String,
+    maxlength: 30,
+  },
+  member1Job: {
+    type: String,
+    maxlength: 30,
+  },
+  member2: {
+    type: String,
+    maxlength: 30,
+  },
+  member2Job: {
+    type: String,
+    maxlength: 30,
+  },
+  member3: {
+    type: String,
+    maxlength: 30,
+  },
+  member3Job: {
+    type: String,
+    maxlength: 30,
+  },
+  member4: {
+    type: String,
+    maxlength: 30,
+  },
+  member4Job: {
+    type: String,
+    maxlength: 30,
+  },
+  member5: {
+    type: String,
+    maxlength: 30,
+  },
+  member5Job: {
+    type: String,
+    maxlength: 30,
+  },
+  member6: {
+    type: String,
+    maxlength: 30,
+  },
+  member6Job: {
+    type: String,
+    maxlength: 30,
+  },
 });
 
 module.exports = mongoose.model('enterprise', enterprise);

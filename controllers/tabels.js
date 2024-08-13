@@ -1005,6 +1005,7 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
     .catch((e) => next(e));
 };
 
+// Перечень идентифицированных опасностей
 module.exports.createListHazardsTable = (req, res, next) => {
   Enterprise.findById(req.params.id).then((ent) => {
     if (!ent) {
@@ -1014,7 +1015,17 @@ module.exports.createListHazardsTable = (req, res, next) => {
       ent.owner.toString() === req.user._id
       || ent.access.includes(req.user._id)
     ) {
-      Value.find({ enterpriseId: req.params.id })
+      Value.find({ enterpriseId: req.params.id }, {
+        dangerEvent776Id: 1,
+        dangerEventID: 1,
+        num: 1,
+        danger776Id: 1,
+        dangerGroupId: 1,
+        danger776: 1,
+        dangerGroup: 1,
+        dangerEvent776: 1,
+        dangerEvent: 1,
+      })
         .then((el) => {
           const fileName = 'Реестр опасностей.xlsx';
           workbook.xlsx
@@ -1102,24 +1113,26 @@ module.exports.createListHazardsTable = (req, res, next) => {
                 ) accumulator.push(currentValue);
                 return accumulator;
               }, []);
-
+              console.log(uniq);
               const resProff = el.filter(
                 ({ num }) => !table2[num] && (table2[num] = 1),
               );
 
-              uniq.forEach((e1, index) => {
-                sheet.getCell(`A${i}`).value = index + 1;
-                sheet.getCell(`B${i}`).value = e1.danger776Id || e1.dangerGroupId;
-                sheet.getCell(`C${i}`).value = e1.danger776 || e1.dangerGroup;
-                sheet.getCell(`D${i}`).value = e1.dangerEvent776Id || e1.dangerEventID;
-                sheet.getCell(`E${i}`).value = e1.dangerEvent776 || e1.dangerEvent;
+              uniq.forEach((e1) => {
+                if (e1.dangerEvent776Id || e1.dangerEventID) {
+                  sheet.getCell(`A${i}`).value = i - 16;
+                  sheet.getCell(`B${i}`).value = e1.danger776Id || e1.dangerGroupId;
+                  sheet.getCell(`C${i}`).value = e1.danger776 || e1.dangerGroup;
+                  sheet.getCell(`D${i}`).value = e1.dangerEvent776Id || e1.dangerEventID;
+                  sheet.getCell(`E${i}`).value = e1.dangerEvent776 || e1.dangerEvent;
 
-                sheet.getCell(`A${i}`).style = style;
-                sheet.getCell(`B${i}`).style = style;
-                sheet.getCell(`C${i}`).style = style;
-                sheet.getCell(`D${i}`).style = style;
-                sheet.getCell(`E${i}`).style = style;
-                i += 1;
+                  sheet.getCell(`A${i}`).style = style;
+                  sheet.getCell(`B${i}`).style = style;
+                  sheet.getCell(`C${i}`).style = style;
+                  sheet.getCell(`D${i}`).style = style;
+                  sheet.getCell(`E${i}`).style = style;
+                  i += 1;
+                }
               });
               const rowAddress = [];
 
@@ -1331,9 +1344,7 @@ module.exports.createPlanTimetable = (req, res, next) => {
                 cell(`F${start}`).value = value.obj;
                 cell(`G${start}`).value = value.source;
                 cell(`H${start}`).value = value.num;
-                cell(
-                  `I${start}`,
-                ).value = `${value.riskManagement} \n ${value.existingRiskManagement}`;
+                cell(`I${start}`).value = value.riskManagement;
                 cell(`J${start}`).value = value.periodicity;
                 cell(`K${start}`).value = value.responsiblePerson;
                 cell(`L${start}`).value = value.completionMark;
@@ -1356,32 +1367,34 @@ module.exports.createPlanTimetable = (req, res, next) => {
               let tableTwoStart = 4;
 
               arr.forEach((value, index) => {
-                cellSheetTwo(`A${tableTwoStart}`).value = index + 1;
-                cellSheetTwo(`B${tableTwoStart}`).value = value.dangerGroupId;
-                cellSheetTwo(`C${tableTwoStart}`).value = value.dangerGroup;
-                cellSheetTwo(`D${tableTwoStart}`).value = value.dangerEventID;
-                cellSheetTwo(`E${tableTwoStart}`).value = value.dangerEvent;
-                cellSheetTwo(`F${tableTwoStart}`).value = value.obj;
-                cellSheetTwo(`G${tableTwoStart}`).value = value.source;
-                cellSheetTwo(`H${tableTwoStart}`).value = value.num;
-                cellSheetTwo(`I${tableTwoStart}`).value = value.typeSIZ;
-                cellSheetTwo(`J${tableTwoStart}`).value = value.issuanceRate;
-                cellSheetTwo(`K${tableTwoStart}`).value = value.responsiblePerson;
-                cellSheetTwo(`L${tableTwoStart}`).value = value.completionMark;
+                if (value.typeSIZ.length > 10) {
+                  cellSheetTwo(`A${tableTwoStart}`).value = index + 1;
+                  cellSheetTwo(`B${tableTwoStart}`).value = value.dangerGroupId;
+                  cellSheetTwo(`C${tableTwoStart}`).value = value.dangerGroup;
+                  cellSheetTwo(`D${tableTwoStart}`).value = value.dangerEventID;
+                  cellSheetTwo(`E${tableTwoStart}`).value = value.dangerEvent;
+                  cellSheetTwo(`F${tableTwoStart}`).value = value.obj;
+                  cellSheetTwo(`G${tableTwoStart}`).value = value.source;
+                  cellSheetTwo(`H${tableTwoStart}`).value = value.num;
+                  cellSheetTwo(`I${tableTwoStart}`).value = value.typeSIZ;
+                  cellSheetTwo(`J${tableTwoStart}`).value = value.issuanceRate;
+                  cellSheetTwo(`K${tableTwoStart}`).value = value.responsiblePerson;
+                  cellSheetTwo(`L${tableTwoStart}`).value = value.completionMark;
 
-                cellSheetTwo(`A${tableTwoStart}`).style = style;
-                cellSheetTwo(`B${tableTwoStart}`).style = style;
-                cellSheetTwo(`C${tableTwoStart}`).style = style;
-                cellSheetTwo(`D${tableTwoStart}`).style = style;
-                cellSheetTwo(`E${tableTwoStart}`).style = style;
-                cellSheetTwo(`F${tableTwoStart}`).style = style;
-                cellSheetTwo(`G${tableTwoStart}`).style = style;
-                cellSheetTwo(`H${tableTwoStart}`).style = style;
-                cellSheetTwo(`I${tableTwoStart}`).style = style;
-                cellSheetTwo(`J${tableTwoStart}`).style = style;
-                cellSheetTwo(`K${tableTwoStart}`).style = style;
-                cellSheetTwo(`L${tableTwoStart}`).style = style;
-                tableTwoStart += 1;
+                  cellSheetTwo(`A${tableTwoStart}`).style = style;
+                  cellSheetTwo(`B${tableTwoStart}`).style = style;
+                  cellSheetTwo(`C${tableTwoStart}`).style = style;
+                  cellSheetTwo(`D${tableTwoStart}`).style = style;
+                  cellSheetTwo(`E${tableTwoStart}`).style = style;
+                  cellSheetTwo(`F${tableTwoStart}`).style = style;
+                  cellSheetTwo(`G${tableTwoStart}`).style = style;
+                  cellSheetTwo(`H${tableTwoStart}`).style = style;
+                  cellSheetTwo(`I${tableTwoStart}`).style = style;
+                  cellSheetTwo(`J${tableTwoStart}`).style = style;
+                  cellSheetTwo(`K${tableTwoStart}`).style = style;
+                  cellSheetTwo(`L${tableTwoStart}`).style = style;
+                  tableTwoStart += 1;
+                }
               });
               res.setHeader(
                 'Content-Type',
