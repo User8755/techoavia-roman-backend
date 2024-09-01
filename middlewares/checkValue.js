@@ -140,7 +140,7 @@ module.exports = (req, res, next) => {
             // }
             arr.push(newObj);
           }
-          if (typeof cell('C', startRow).value !== 'string' && cell('G', startRow).value) {
+          if (typeof cell('C', startRow).value !== 'string' || 'number' && cell('G', startRow).value) {
             const lastObj = arr.at(-1);
             siz.type = cell('G', startRow).value;
             siz.vid = cell('H', startRow).value;
