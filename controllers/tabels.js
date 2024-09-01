@@ -1113,7 +1113,7 @@ module.exports.createListHazardsTable = (req, res, next) => {
                 ) accumulator.push(currentValue);
                 return accumulator;
               }, []);
-              console.log(uniq);
+
               const resProff = el.filter(
                 ({ num }) => !table2[num] && (table2[num] = 1),
               );

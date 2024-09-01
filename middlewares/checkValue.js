@@ -34,7 +34,7 @@ module.exports = (req, res, next) => {
         for (let startRow = 2; startRow <= lastRow.number; startRow += 1) {
           const newObj = { proffSIZ: [] };
           const siz = {};
-          if (typeof cell('C', startRow).value === 'string') {
+          if (typeof cell('C', startRow).value === 'string' || 'number') {
             newObj.proffId = handleStyleString(cell('B', startRow).value);
             newObj.num = handleStyleString(cell('C', startRow).value);
             newObj.proff = handleStyleString(cell('D', startRow).value);
