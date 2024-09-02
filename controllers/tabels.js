@@ -201,15 +201,9 @@ module.exports.createBaseTabel = (req, res, next) => {
             { header: 'Код ОК-016-94:', key: 'code', width: 20 },
           ];
           let i = 1;
-          el.forEach((item, index) => {
+          el.forEach((item) => {
             item.number = i;
             sheet.addRow(item);
-            if (!sheet.getCell(`J${index + 2}`).value) {
-              sheet.getCell(`J${index + 2}`).style = {
-                ...(sheet.getCell(`J${index + 2}`).style || {}),
-                fill: red,
-              };
-            }
 
             if (item.proffSIZ) {
               item.proffSIZ.forEach((SIZ) => sheet.addRow(SIZ));

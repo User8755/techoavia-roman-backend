@@ -34,7 +34,7 @@ module.exports = (req, res, next) => {
         for (let startRow = 2; startRow <= lastRow.number; startRow += 1) {
           const newObj = { proffSIZ: [] };
           const siz = {};
-          if (typeof cell('C', startRow).value === 'string' || 'number') {
+          if (cell('C', startRow).value) {
             newObj.proffId = handleStyleString(cell('B', startRow).value);
             newObj.num = handleStyleString(cell('C', startRow).value);
             newObj.proff = handleStyleString(cell('D', startRow).value);
@@ -140,7 +140,7 @@ module.exports = (req, res, next) => {
             // }
             arr.push(newObj);
           }
-          if (typeof cell('C', startRow).value !== 'string' || 'number' && cell('G', startRow).value) {
+          if (cell('C', startRow).value === null) {
             const lastObj = arr.at(-1);
             siz.type = cell('G', startRow).value;
             siz.vid = cell('H', startRow).value;

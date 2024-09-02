@@ -37,7 +37,6 @@ module.exports.updateValue = (req, res, next) => {
                   })
                   .catch((e) => {
                     if (e.name === 'ValidationError') {
-                      console.log(e);
                       next(new BadRequestError('Не все обязательные поля заполнены'));
                     } else {
                       next(e);
