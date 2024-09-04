@@ -269,18 +269,18 @@ module.exports.createNormTabel = (req, res, next) => {
               const sheet = e.getWorksheet('Лист1');
 
               const cell = (c, i) => sheet.getCell(c + i);
-              let startRow = 11;
+              let startRow = 10;
               sheet.getCell('A5').value = entName;
-              el.forEach((item, index) => {
+              el.forEach((item) => {
                 const handleFilterTypeSIZ = convertValues.find(
                   (i) => i.typeSIZ === item.typeSIZ,
                 );
 
                 const stringProff = item.proffId
-                  ? `${item.proffId}. ${item.proff}. ${item.subdivision}`
+                  ? `${item.num}. ${item.proff}. ${item.subdivision}`
                   : `${item.num}. ${item.job}. ${item.subdivision}.`;
                 if (item.typeSIZ) {
-                  cell('A', startRow).value = index + 1;
+                  cell('A', startRow).value = startRow - 9;
                   cell('B', startRow).value = stringProff;
                   cell('C', startRow).value = `${item.typeSIZ}`;
                   cell('D', startRow).value = !handleFilterTypeSIZ
@@ -368,7 +368,7 @@ module.exports.createNormTabel = (req, res, next) => {
                   }
                 }
               });
-              sheet.autoFilter = 'A10:J10';
+              sheet.autoFilter = 'A9:J9';
               res.setHeader(
                 'Content-Type',
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -426,31 +426,12 @@ module.exports.createMapOPRTabel = (req, res, next) => {
                 const sheet = workbook.getWorksheet('Лист1');
 
                 uniq.forEach((w) => {
-                  const sheet1 = workbook.addWorksheet(w.num);
-                  sheet1.getCell('B30').fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: 'FFFF0000' },
-                  };
+                  workbook.addWorksheet(w.num);
                 });
 
                 workbook.worksheets.forEach((ss) => {
                   const newSheet = e.getWorksheet(ss.name);
-                  newSheet.getColumn(1).width = 2.33203125;
-                  newSheet.getColumn(2).width = 10.66;
-                  newSheet.getColumn(3).width = 10.5;
-                  newSheet.getColumn(4).width = 20.5;
-                  newSheet.getColumn(5).width = 9.6640625;
-                  newSheet.getColumn(6).width = 23;
-                  newSheet.getColumn(7).width = 23;
-                  newSheet.getColumn(8).width = 23;
-                  newSheet.getColumn(9).width = 37;
-                  newSheet.getColumn(10).width = 13.83203125;
-                  newSheet.getColumn(11).width = 14.33203125;
-                  newSheet.getColumn(12).width = 18.83203125;
-                  newSheet.getColumn(13).width = 21.5;
-                  newSheet.getColumn(14).width = 18.140625;
-                  for (let a = 1; a <= 30; a += 1) {
+                  for (let a = 1; a <= 43; a += 1) {
                     if (ss.name !== 'Лист1') {
                       const sheetRow2 = sheet.getRow(a);
                       newSheet.getRow(2).height = sheetRow2.height;
@@ -464,9 +445,9 @@ module.exports.createMapOPRTabel = (req, res, next) => {
                           // style
                           targetCell.style = sourceCell.style;
                           targetCell.height = sheetRow2.height;
+                          targetCell._column.width = sourceCell._column.width;
                           // value
                           targetCell.value = sourceCell.value;
-
                           // merge cell
                           const range = `${
                             sourceCell.model.master || sourceCell.address
@@ -481,36 +462,44 @@ module.exports.createMapOPRTabel = (req, res, next) => {
                     (filterEl) => filterEl.num === ss.name,
                   );
 
-                  let i = 30;
+                  let i = 20;
                   const Ncell = (c) => newSheet.getCell(c);
+
+                  Ncell('E25').value = ent.chairmanJob;
+                  Ncell('H25').value = ent.chairman;
+                  Ncell('E28').value = ent.member1Job;
+                  Ncell('H28').value = ent.member1;
+                  Ncell('E30').value = ent.member2Job;
+                  Ncell('H30').value = ent.member2;
 
                   numFilter.forEach((elem, index) => {
                     if (index === 0) {
-                      Ncell('F14').value = elem.subdivision;
-                      Ncell('G8').value = elem.proff || elem.job;
-                      Ncell('H18').value = elem.numWorkers;
-                      Ncell('H19').value = elem.equipment;
-                      Ncell('H20').value = elem.materials;
-                      Ncell('H21').value = elem.laborFunction;
-                      Ncell('M8').value = elem.code || elem.proffId;
+                      Ncell('F8').value = elem.subdivision;
+                      Ncell('F6').value = elem.proff || elem.job;
+                      Ncell('G11').value = elem.numWorkers;
+                      Ncell('G12').value = elem.equipment;
+                      Ncell('G13').value = elem.materials;
+                      Ncell('G14').value = elem.laborFunction;
+                      Ncell('L6').value = elem.code || elem.proffId;
+                      Ncell('B1').value = ent.enterprise;
+                      Ncell('C7').value = elem.num;
+                      Ncell('G4').value = elem.num;
                     }
 
-                    Ncell('C2').value = ent.enterprise;
-                    Ncell('E12').value = elem.num;
-                    Ncell('H5').value = elem.num;
-                    Ncell(`B${i}`).value = index + 1;
-                    Ncell(`C${i}`).value = elem.danger776Id || elem.dangerGroupId;
-                    Ncell(`D${i}`).value = elem.danger776 || elem.dangerGroup;
-                    Ncell(`E${i}`).value = elem.dangerEvent776Id || elem.dangerEventID;
-                    Ncell(`F${i}`).value = elem.dangerEvent776 || elem.dangerEvent;
-                    Ncell(`G${i}`).value = elem.obj;
-                    Ncell(`H${i}`).value = elem.source;
-                    Ncell(`I${i}`).value = elem.existingRiskManagement;
-                    Ncell(`J${i}`).value = elem.probability;
-                    Ncell(`K${i}`).value = elem.heaviness;
-                    Ncell(`L${i}`).value = elem.ipr;
-                    Ncell(`M${i}`).value = elem.riskAttitude;
-                    Ncell(`N${i}`).value = elem.acceptability;
+                    Ncell(`A${i}`).value = index + 1;
+                    Ncell(`B${i}`).value = elem.danger776Id || elem.dangerGroupId;
+                    Ncell(`C${i}`).value = elem.danger776 || elem.dangerGroup;
+                    Ncell(`D${i}`).value = elem.dangerEvent776Id || elem.dangerEventID;
+                    Ncell(`E${i}`).value = elem.dangerEvent776 || elem.dangerEvent;
+                    Ncell(`F${i}`).value = elem.obj;
+                    Ncell(`G${i}`).value = elem.source;
+                    Ncell(`H${i}`).value = elem.existingRiskManagement;
+                    Ncell(`I${i}`).value = elem.probability;
+                    Ncell(`J${i}`).value = elem.heaviness;
+                    Ncell(`K${i}`).value = elem.ipr;
+                    Ncell(`L${i}`).value = elem.riskAttitude;
+                    Ncell(`M${i}`).value = elem.acceptability;
+                    Ncell(`A${i}`).style = style;
                     Ncell(`B${i}`).style = style;
                     Ncell(`C${i}`).style = style;
                     Ncell(`D${i}`).style = style;
@@ -523,181 +512,62 @@ module.exports.createMapOPRTabel = (req, res, next) => {
                     Ncell(`K${i}`).style = style;
                     Ncell(`L${i}`).style = style;
                     Ncell(`M${i}`).style = style;
-                    Ncell(`N${i}`).style = style;
 
                     if (elem.ipr <= 2) {
-                      Ncell(`L${i}`).style = {
+                      Ncell(`K${i}`).style = {
                         ...(Ncell(`L${i}`).style || {}),
                         fill: darkGeen,
                       };
-                      Ncell(`M${i}`).style = {
+                      Ncell(`L${i}`).style = {
                         ...(Ncell(`M${i}`).style || {}),
                         fill: darkGeen,
                       };
                     }
                     if (elem.ipr >= 3 && elem.ipr <= 6) {
-                      Ncell(`L${i}`).style = {
+                      Ncell(`K${i}`).style = {
                         ...(Ncell(`L${i}`).style || {}),
                         fill: green,
                       };
-                      Ncell(`M${i}`).style = {
+                      Ncell(`L${i}`).style = {
                         ...(Ncell(`M${i}`).style || {}),
                         fill: green,
                       };
                     }
                     if (elem.ipr >= 8 && elem.ipr <= 12) {
-                      Ncell(`L${i}`).style = {
+                      Ncell(`K${i}`).style = {
                         ...(Ncell(`L${i}`).style || {}),
                         fill: yellow,
                       };
-                      Ncell(`M${i}`).style = {
+                      Ncell(`L${i}`).style = {
                         ...(Ncell(`M${i}`).style || {}),
                         fill: yellow,
                       };
                     }
                     if (elem.ipr >= 15 && elem.ipr <= 16) {
-                      Ncell(`L${i}`).style = {
+                      Ncell(`K${i}`).style = {
                         ...(Ncell(`L${i}`).style || {}),
                         fill: orange,
                       };
-                      Ncell(`M${i}`).style = {
+                      Ncell(`L${i}`).style = {
                         ...(Ncell(`M${i}`).style || {}),
                         fill: orange,
                       };
                     }
                     if (elem.ipr >= 20) {
-                      Ncell(`L${i}`).style = {
+                      Ncell(`K${i}`).style = {
                         ...(Ncell(`L${i}`).style || {}),
                         fill: red,
                       };
-                      Ncell(`M${i}`).style = {
+                      Ncell(`L${i}`).style = {
                         ...(Ncell(`M${i}`).style || {}),
                         fill: red,
                       };
                     }
 
                     i += 1;
-                    sheet.insertRow(i);
+                    newSheet.insertRow(i);
                   });
-
-                  const styleFooterTitle = {
-                    font: {
-                      bold: true,
-                      size: 12,
-                      name: 'Arial',
-                      family: 2,
-                    },
-                    fill: { type: 'pattern', pattern: 'none' },
-                    alignment: { horizontal: 'left' },
-                  };
-                  const styleFooterSubTitle = {
-                    font: { size: 12, name: 'Arial', family: 2 },
-                    fill: { type: 'pattern', pattern: 'none' },
-                    alignment: { horizontal: 'right', vertical: 'top' },
-                  };
-                  const styleBorder = {
-                    border: {
-                      bottom: { style: 'thin' },
-                    },
-                  };
-                  const job = '(должность)';
-                  const signature = '(подпись)';
-                  const date = '(дата)';
-                  const FIO = '(Ф.И.О.)';
-                  const last = newSheet.lastRow;
-                  Ncell(`B${last.number + 3}`).value = '3. Рекомендации работникам:';
-                  Ncell(`B${last.number + 7}`).value = '4. Комиссия по оценке профессиональных рисков:';
-                  Ncell(`B${last.number + 21}`).value = 'С результатами оценки профессиональных рисков на рабочем месте ознакомлен(ы):';
-                  Ncell(`B${last.number + 3}`).style = styleFooterTitle;
-                  Ncell(`B${last.number + 7}`).style = styleFooterTitle;
-                  Ncell(`B${last.number + 21}`).style = styleFooterTitle;
-                  Ncell(`E${last.number + 9}`).value = 'Председатель комиссии:';
-                  Ncell(`E${last.number + 12}`).value = 'Члены комиссии:';
-                  Ncell(`E${last.number + 9}`).style = styleFooterSubTitle;
-                  Ncell(`E${last.number + 12}`).style = styleFooterSubTitle;
-                  Ncell(`F${last.number + 10}`).style = styleBorder;
-                  Ncell(`G${last.number + 10}`).style = styleBorder;
-                  Ncell(`I${last.number + 10}`).style = styleBorder;
-                  Ncell(`K${last.number + 10}`).style = styleBorder;
-                  Ncell(`N${last.number + 10}`).style = styleBorder;
-                  Ncell(`F${last.number + 11}`).value = job;
-                  Ncell(`F${last.number + 14}`).value = job;
-                  Ncell(`F${last.number + 16}`).value = job;
-                  Ncell(`F${last.number + 13}`).style = styleBorder;
-                  Ncell(`G${last.number + 13}`).style = styleBorder;
-                  Ncell(`I${last.number + 13}`).style = styleBorder;
-                  Ncell(`K${last.number + 13}`).style = styleBorder;
-                  Ncell(`N${last.number + 13}`).style = styleBorder;
-                  Ncell(`F${last.number + 15}`).style = styleBorder;
-                  Ncell(`G${last.number + 15}`).style = styleBorder;
-                  Ncell(`I${last.number + 15}`).style = styleBorder;
-                  Ncell(`K${last.number + 15}`).style = styleBorder;
-                  Ncell(`N${last.number + 15}`).style = styleBorder;
-
-                  Ncell(`I${last.number + 11}`).value = FIO;
-                  Ncell(`K${last.number + 11}`).value = signature;
-                  Ncell(`N${last.number + 11}`).value = date;
-
-                  Ncell(`I${last.number + 14}`).value = FIO;
-                  Ncell(`K${last.number + 14}`).value = signature;
-                  Ncell(`N${last.number + 14}`).value = date;
-
-                  Ncell(`I${last.number + 16}`).value = FIO;
-                  Ncell(`K${last.number + 16}`).value = signature;
-                  Ncell(`N${last.number + 16}`).value = date;
-                  Ncell(`I${last.number + 15}`).style = styleBorder;
-                  Ncell(`K${last.number + 15}`).style = styleBorder;
-                  Ncell(`N${last.number + 15}`).style = styleBorder;
-
-                  Ncell(`I${last.number + 29}`).value = FIO;
-                  Ncell(`K${last.number + 29}`).value = signature;
-                  Ncell(`N${last.number + 29}`).value = date;
-                  Ncell(`I${last.number + 28}`).style = styleBorder;
-                  Ncell(`K${last.number + 28}`).style = styleBorder;
-                  Ncell(`N${last.number + 28}`).style = styleBorder;
-
-                  Ncell(`I${last.number + 26}`).value = FIO;
-                  Ncell(`K${last.number + 26}`).value = signature;
-                  Ncell(`N${last.number + 26}`).value = date;
-                  Ncell(`I${last.number + 25}`).style = styleBorder;
-                  Ncell(`K${last.number + 25}`).style = styleBorder;
-                  Ncell(`N${last.number + 25}`).style = styleBorder;
-
-                  Ncell(`I${last.number + 32}`).value = FIO;
-                  Ncell(`K${last.number + 32}`).value = signature;
-                  Ncell(`N${last.number + 32}`).value = date;
-                  Ncell(`I${last.number + 31}`).style = styleBorder;
-                  Ncell(`K${last.number + 31}`).style = styleBorder;
-                  Ncell(`N${last.number + 31}`).style = styleBorder;
-
-                  Ncell(`I${last.number + 35}`).value = FIO;
-                  Ncell(`K${last.number + 35}`).value = signature;
-                  Ncell(`N${last.number + 35}`).value = date;
-                  Ncell(`I${last.number + 34}`).style = styleBorder;
-                  Ncell(`K${last.number + 34}`).style = styleBorder;
-                  Ncell(`N${last.number + 34}`).style = styleBorder;
-
-                  Ncell(`I${last.number + 38}`).value = FIO;
-                  Ncell(`K${last.number + 38}`).value = signature;
-                  Ncell(`N${last.number + 38}`).value = date;
-                  Ncell(`I${last.number + 37}`).style = styleBorder;
-                  Ncell(`K${last.number + 37}`).style = styleBorder;
-                  Ncell(`N${last.number + 37}`).style = styleBorder;
                 });
-
-                sheet.getColumn(1).width = 2.33203125;
-                sheet.getColumn(2).width = 10.66;
-                sheet.getColumn(3).width = 10.5;
-                sheet.getColumn(4).width = 20.5;
-                sheet.getColumn(5).width = 9.6640625;
-                sheet.getColumn(6).width = 23;
-                sheet.getColumn(7).width = 23;
-                sheet.getColumn(8).width = 23;
-                sheet.getColumn(9).width = 37;
-                sheet.getColumn(10).width = 13.83203125;
-                sheet.getColumn(11).width = 14.33203125;
-                sheet.getColumn(12).width = 18.83203125;
-                sheet.getColumn(13).width = 21.5;
 
                 workbook.removeWorksheet(1);
 
@@ -785,6 +655,7 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                       obj.probability1 = i.probability1;
                       obj.heaviness = i.heaviness;
                       obj.heaviness1 = i.heaviness1;
+                      obj.existingRiskManagement = i.existingRiskManagement;
                       arr.push(obj);
                     }
                   }
@@ -815,6 +686,7 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                       obj.probability1 = i.probability1;
                       obj.heaviness = i.heaviness;
                       obj.heaviness1 = i.heaviness1;
+                      obj.existingRiskManagement = i.existingRiskManagement;
                       arr.push(obj);
                     }
                   }
@@ -863,11 +735,19 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                   );
                 });
 
-                let line = 21;
+                let line = 13;
                 const cell = (c) => sheet.getCell(c + line);
-                sheet.getCell('C15').value = ent.enterprise;
+                sheet.getCell('C8').value = ent.enterprise;
+                sheet.getCell('P3').value = ent.chairman;
+                sheet.getCell('B14').value = ent.member1Job;
+                sheet.getCell('G14').value = ent.member1;
+                sheet.getCell('B16').value = ent.member2Job;
+                sheet.getCell('G16').value = ent.member2;
+                sheet.getCell('B18').value = ent.member3Job;
+                sheet.getCell('G18').value = ent.member3;
+
                 arr.forEach((i) => {
-                  cell('A').value = line - 20;
+                  cell('A').value = line - 12;
                   cell('B').value = i.danger776Id || i.dangerGroupId;
                   cell('C').value = i.danger776 || i.dangerGroup;
                   cell('D').value = i.dangerEvent776Id || i.dangerEventID;
@@ -875,15 +755,17 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                   cell('F').value = i.obj;
                   cell('G').value = i.source;
                   cell('H').value = i.num;
-                  cell('I').value = i.riskManagement;
-                  cell('J').value = i.periodicity;
-                  cell('L').value = i.completionMark;
-                  cell('M').value = i.probability;
-                  cell('N').value = i.probability1;
-                  cell('O').value = i.heaviness;
-                  cell('P').value = i.heaviness1;
-                  cell('Q').value = i.ipr;
-                  cell('R').value = i.ipr1;
+                  cell('I').value = i.existingRiskManagement;
+                  cell('K').value = i.periodicity;
+                  cell('J').value = i.riskManagement;
+                  cell('L').value = i.responsiblePerson;
+                  cell('M').value = i.completionMark;
+                  cell('N').value = i.probability;
+                  cell('O').value = i.probability1;
+                  cell('P').value = i.heaviness;
+                  cell('Q').value = i.heaviness1;
+                  cell('R').value = i.ipr;
+                  cell('S').value = i.ipr1;
 
                   cell('A').style = style;
                   cell('B').style = style;
@@ -903,65 +785,66 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                   cell('Q').style = style;
                   cell('R').style = style;
                   cell('K').style = style;
+                  cell('S').style = style;
 
                   if (i.ipr <= 2) {
-                    cell('Q').style = {
-                      ...(cell('Q').style || {}),
+                    cell('R').style = {
+                      ...(cell('R').style || {}),
                       fill: darkGeen,
                     };
                   }
                   if (i.ipr >= 3 && i.ipr <= 6) {
-                    cell('Q').style = {
-                      ...(cell('Q').style || {}),
+                    cell('R').style = {
+                      ...(cell('R').style || {}),
                       fill: green,
                     };
                   }
                   if (i.ipr >= 8 && i.ipr <= 12) {
-                    cell('Q').style = {
-                      ...(cell('Q').style || {}),
+                    cell('R').style = {
+                      ...(cell('R').style || {}),
                       fill: yellow,
                     };
                   }
                   if (i.ipr >= 15 && i.ipr <= 16) {
-                    cell('Q').style = {
-                      ...(cell('Q').style || {}),
+                    cell('R').style = {
+                      ...(cell('R').style || {}),
                       fill: orange,
                     };
                   }
                   if (i.ipr >= 20) {
-                    cell('Q').style = {
-                      ...(cell('Q').style || {}),
+                    cell('R').style = {
+                      ...(cell('R').style || {}),
                       fill: red,
                     };
                   }
 
                   if (i.ipr1 <= 2) {
-                    cell('R').style = {
-                      ...(cell('R').style || {}),
+                    cell('S').style = {
+                      ...(cell('S').style || {}),
                       fill: darkGeen,
                     };
                   }
                   if (i.ipr1 >= 3 && i.ipr1 <= 6) {
-                    cell('R').style = {
-                      ...(cell('R').style || {}),
+                    cell('S').style = {
+                      ...(cell('S').style || {}),
                       fill: green,
                     };
                   }
                   if (i.ipr1 >= 8 && i.ipr1 <= 12) {
-                    cell('R').style = {
-                      ...(cell('R').style || {}),
+                    cell('S').style = {
+                      ...(cell('S').style || {}),
                       fill: yellow,
                     };
                   }
                   if (i.ipr1 >= 15 && i.ipr1 <= 16) {
-                    cell('R').style = {
-                      ...(cell('R').style || {}),
+                    cell('S').style = {
+                      ...(cell('S').style || {}),
                       fill: orange,
                     };
                   }
                   if (i.ipr1 >= 20) {
-                    cell('R').style = {
-                      ...(cell('R').style || {}),
+                    cell('S').style = {
+                      ...(cell('S').style || {}),
                       fill: red,
                     };
                   }
@@ -1009,17 +892,20 @@ module.exports.createListHazardsTable = (req, res, next) => {
       ent.owner.toString() === req.user._id
       || ent.access.includes(req.user._id)
     ) {
-      Value.find({ enterpriseId: req.params.id }, {
-        dangerEvent776Id: 1,
-        dangerEventID: 1,
-        num: 1,
-        danger776Id: 1,
-        dangerGroupId: 1,
-        danger776: 1,
-        dangerGroup: 1,
-        dangerEvent776: 1,
-        dangerEvent: 1,
-      })
+      Value.find(
+        { enterpriseId: req.params.id },
+        {
+          dangerEvent776Id: 1,
+          dangerEventID: 1,
+          num: 1,
+          danger776Id: 1,
+          dangerGroupId: 1,
+          danger776: 1,
+          dangerGroup: 1,
+          dangerEvent776: 1,
+          dangerEvent: 1,
+        },
+      )
         .then((el) => {
           const fileName = 'Реестр опасностей.xlsx';
           workbook.xlsx
@@ -1027,70 +913,7 @@ module.exports.createListHazardsTable = (req, res, next) => {
             .then((e) => {
               const sheet = e.getWorksheet(1);
 
-              const cellA16 = sheet.getCell('A16');
-              const cellB16 = sheet.getCell('B16');
-              const cellC16 = sheet.getCell('C16');
-              const cellD16 = sheet.getCell('D16');
-              const cellE16 = sheet.getCell('E16');
-
-              const border = {
-                border: {
-                  left: { style: 'thin' },
-                  right: { style: 'thin' },
-                  bottom: { style: 'thin' },
-                  top: { style: 'thin' },
-                },
-                alignment: {
-                  horizontal: 'center',
-                  vertical: 'middle',
-                  wrapText: 'true',
-                },
-                font: {
-                  size: 8,
-                  bold: true,
-                  name: 'Arial',
-                },
-              };
-
-              const textRotation = {
-                border: {
-                  left: { style: 'thin' },
-                  right: { style: 'thin' },
-                  bottom: { style: 'thin' },
-                  top: { style: 'thin' },
-                },
-                alignment: {
-                  horizontal: 'center',
-                  vertical: 'middle',
-                  wrapText: 'true',
-                  textRotation: 'vertical',
-                },
-                font: {
-                  size: 8,
-                  bold: true,
-                  name: 'Arial',
-                },
-              };
-
-              cellA16.style = border;
-              cellC16.style = border;
-              cellE16.style = border;
-
-              cellB16.style = textRotation;
-              cellD16.style = textRotation;
-
-              cellA16.value = '№ п/п';
-              cellB16.value = '№ опасности';
-              cellC16.value = 'Наименование опасности';
-              cellD16.value = '№ опасного события';
-              cellE16.value = 'Наименование опасного события';
-
-              sheet.getColumn(1).width = 6;
-              sheet.getColumn(2).width = 8;
-              sheet.getColumn(3).width = 20;
-              sheet.getColumn(4).width = 8;
-              sheet.getColumn(5).width = 20;
-              let i = 17;
+              let i = 14;
               let col = 6;
 
               const table2 = {};
@@ -1114,7 +937,7 @@ module.exports.createListHazardsTable = (req, res, next) => {
 
               uniq.forEach((e1) => {
                 if (e1.dangerEvent776Id || e1.dangerEventID) {
-                  sheet.getCell(`A${i}`).value = i - 16;
+                  sheet.getCell(`A${i}`).value = i - 13;
                   sheet.getCell(`B${i}`).value = e1.danger776Id || e1.dangerGroupId;
                   sheet.getCell(`C${i}`).value = e1.danger776 || e1.dangerGroup;
                   sheet.getCell(`D${i}`).value = e1.dangerEvent776Id || e1.dangerEventID;
@@ -1140,11 +963,11 @@ module.exports.createListHazardsTable = (req, res, next) => {
                 })
                 .forEach((element) => {
                   const currentCell = sheet.getColumn(col).letter;
-                  rowAddress.push(currentCell + 16);
+                  rowAddress.push(currentCell + 13);
 
-                  sheet.getCell(currentCell + 16).value = element.num;
-                  sheet.getCell(currentCell + 16).style = style;
-                  sheet.getCell(currentCell + 16).width = 20;
+                  sheet.getCell(currentCell + 13).value = element.num;
+                  sheet.getCell(currentCell + 13).style = style;
+
                   col += 1;
                 });
 
@@ -1155,7 +978,7 @@ module.exports.createListHazardsTable = (req, res, next) => {
 
                 filterJobValue.forEach((v) => {
                   let colStr = i - 1;
-                  while (colStr >= 17) {
+                  while (colStr >= 13) {
                     sheet.getCell(
                       sheet.getCell(address)._column.letter + colStr,
                     ).style = style;
@@ -1231,7 +1054,7 @@ module.exports.createPlanTimetable = (req, res, next) => {
               sheet.autoFilter = 'A15:L15';
               sheetTwo.autoFilter = 'A3:L3';
               cell('B10').value = ent.enterprise;
-              let start = 16;
+              let start = 15;
               const arr = [];
               el.forEach((i) => {
                 const obj = {};
@@ -1358,7 +1181,7 @@ module.exports.createPlanTimetable = (req, res, next) => {
                 start += 1;
               });
 
-              let tableTwoStart = 4;
+              let tableTwoStart = 3;
 
               arr.forEach((value, index) => {
                 if (value.typeSIZ.length > 10) {
@@ -1462,7 +1285,16 @@ module.exports.createRegisterHazards = (req, res, next) => {
                 critical: 0,
               };
 
-              sheet.getCell('G10').value = ent.enterprise;
+              sheet.getCell('B8').value = ent.enterprise;
+              sheet.getCell('K3').value = ent.chairman;
+              sheet.getCell('A14').value = ent.member1Job;
+              sheet.getCell('F14').value = ent.member1;
+              sheet.getCell('A16').value = ent.member2Job;
+              sheet.getCell('F16').value = ent.member2;
+              sheet.getCell('A18').value = ent.member3Job;
+              sheet.getCell('F18').value = ent.member3;
+              sheet.getCell('A20').value = ent.member4Job;
+              sheet.getCell('F20').value = ent.member4;
 
               // Получаем уникальные источники
               const uniqSource = [];
@@ -1603,7 +1435,7 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   return 0;
                 })
                 .forEach((item, index) => {
-                  const startRow = index + 15;
+                  const startRow = index + 12;
                   // Работники
                   const a = item.veryLowWorker
                     + item.lowWorker
@@ -1682,80 +1514,69 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   sheet.getCell(`A${startRow}`).value = index + 1;
                   sheet.getCell(`B${startRow}`).value = item.source;
                   sheet.getCell(`C${startRow}`).value = item.dangerGroupId || item.danger776Id;
-                  sheet.getCell(`F${startRow}`).value = item.dangerGroup || item.danger776;
-                  sheet.getCell(`L${startRow}`).value = item.dangerEventID || item.dangerEvent776Id;
-                  sheet.getCell(`O${startRow}`).value = item.dangerEvent || item.dangerEvent776;
+                  sheet.getCell(`D${startRow}`).value = item.dangerGroup || item.danger776;
+                  sheet.getCell(`E${startRow}`).value = item.dangerEventID || item.dangerEvent776Id;
+                  sheet.getCell(`F${startRow}`).value = item.dangerEvent || item.dangerEvent776;
                   sheet.getCell(
-                    `R${startRow}`,
+                    `G${startRow}`,
                   ).value = `${item.numWorkers}/${item.countWorkPlaces}`;
                   sheet.getCell(
-                    `T${startRow}`,
+                    `H${startRow}`,
                   ).value = `${item.vl}/${item.pvl}`;
-                  sheet.getCell(`X${startRow}`).value = `${item.l}/${item.pl}`;
-                  sheet.getCell(`AA${startRow}`).value = `${item.m}/${item.pm}`;
-                  sheet.getCell(`AD${startRow}`).value = `${item.h}/${item.ph}`;
-                  sheet.getCell(`AG${startRow}`).value = `${item.c}/${item.pc}`;
-                  sheet.getCell(`AI${startRow}`).value = item.IPR;
+                  sheet.getCell(`I${startRow}`).value = `${item.l}/${item.pl}`;
+                  sheet.getCell(`J${startRow}`).value = `${item.m}/${item.pm}`;
+                  sheet.getCell(`K${startRow}`).value = `${item.h}/${item.ph}`;
+                  sheet.getCell(`L${startRow}`).value = `${item.c}/${item.pc}`;
+                  sheet.getCell(`M${startRow}`).value = item.IPR;
                   sheet.getCell(`A${startRow}`).style = style;
                   sheet.getCell(`B${startRow}`).style = style;
                   sheet.getCell(`C${startRow}`).style = style;
+                  sheet.getCell(`D${startRow}`).style = style;
+                  sheet.getCell(`E${startRow}`).style = style;
                   sheet.getCell(`F${startRow}`).style = style;
+                  sheet.getCell(`G${startRow}`).style = style;
+                  sheet.getCell(`H${startRow}`).style = style;
+                  sheet.getCell(`I${startRow}`).style = style;
+                  sheet.getCell(`J${startRow}`).style = style;
+                  sheet.getCell(`K${startRow}`).style = style;
                   sheet.getCell(`L${startRow}`).style = style;
-                  sheet.getCell(`O${startRow}`).style = style;
-                  sheet.getCell(`R${startRow}`).style = style;
-                  sheet.getCell(`T${startRow}`).style = style;
-                  sheet.getCell(`X${startRow}`).style = style;
-                  sheet.getCell(`AA${startRow}`).style = style;
-                  sheet.getCell(`AD${startRow}`).style = style;
-                  sheet.getCell(`AG${startRow}`).style = style;
-                  sheet.getCell(`AI${startRow}`).style = style;
-                  sheet.mergeCells(`C${startRow} : E${startRow}`);
-                  sheet.mergeCells(`F${startRow} : K${startRow}`);
-                  sheet.mergeCells(`L${startRow} : N${startRow}`);
-                  sheet.mergeCells(`O${startRow} : Q${startRow}`);
-                  sheet.mergeCells(`R${startRow} : S${startRow}`);
-                  sheet.mergeCells(`T${startRow} : W${startRow}`);
-                  sheet.mergeCells(`X${startRow} : Z${startRow}`);
-                  sheet.mergeCells(`AA${startRow} : AC${startRow}`);
-                  sheet.mergeCells(`AD${startRow} : AF${startRow}`);
-                  sheet.mergeCells(`AG${startRow} : AH${startRow}`);
-                  sheet.mergeCells(`AI${startRow} : AJ${startRow}`);
-                  if (sheet.getCell(`T${startRow}`).value !== '0/0') {
+                  sheet.getCell(`M${startRow}`).style = style;
+                  if (sheet.getCell(`H${startRow}`).value !== '0/0') {
                     diagrammaValue.veryLow += 1;
-                    sheet.getCell(`T${startRow}`).style = {
-                      ...(sheet.getCell(`T${startRow}`).style || {}),
+                    sheet.getCell(`H${startRow}`).style = {
+                      ...(sheet.getCell(`H${startRow}`).style || {}),
                       fill: darkGeen,
                     };
                   }
-                  if (sheet.getCell(`X${startRow}`).value !== '0/0') {
+                  if (sheet.getCell(`I${startRow}`).value !== '0/0') {
                     diagrammaValue.low += 1;
-                    sheet.getCell(`X${startRow}`).style = {
-                      ...(sheet.getCell(`X${startRow}`).style || {}),
+                    sheet.getCell(`I${startRow}`).style = {
+                      ...(sheet.getCell(`I${startRow}`).style || {}),
                       fill: green,
                     };
                   }
-                  if (sheet.getCell(`AA${startRow}`).value !== '0/0') {
+                  if (sheet.getCell(`J${startRow}`).value !== '0/0') {
                     diagrammaValue.mid += 1;
-                    sheet.getCell(`AA${startRow}`).style = {
-                      ...(sheet.getCell(`AA${startRow}`).style || {}),
+                    sheet.getCell(`J${startRow}`).style = {
+                      ...(sheet.getCell(`J${startRow}`).style || {}),
                       fill: yellow,
                     };
                   }
-                  if (sheet.getCell(`AD${startRow}`).value !== '0/0') {
+                  if (sheet.getCell(`K${startRow}`).value !== '0/0') {
                     diagrammaValue.height += 1;
-                    sheet.getCell(`AD${startRow}`).style = {
-                      ...(sheet.getCell(`AD${startRow}`).style || {}),
+                    sheet.getCell(`K${startRow}`).style = {
+                      ...(sheet.getCell(`K${startRow}`).style || {}),
                       fill: orange,
                     };
                   }
-                  if (sheet.getCell(`AG${startRow}`).value !== '0/0') {
+                  if (sheet.getCell(`L${startRow}`).value !== '0/0') {
                     diagrammaValue.critical += 1;
-                    sheet.getCell(`AG${startRow}`).style = {
-                      ...(sheet.getCell(`AG${startRow}`).style || {}),
+                    sheet.getCell(`L${startRow}`).style = {
+                      ...(sheet.getCell(`L${startRow}`).style || {}),
                       fill: red,
                     };
                   }
-                  sheet.insertRow(index + 16);
+                  sheet.insertRow(index + 13);
                 });
               sheetDiagramma.getCell('B3').value = diagrammaValue.veryLow;
               sheetDiagramma.getCell('B4').value = diagrammaValue.low;
@@ -1808,10 +1629,20 @@ module.exports.createListSiz = (req, res, next) => {
           workbook.xlsx
             .readFile(fileName)
             .then((e) => {
-              let startRow = 14;
+              let startRow = 13;
               const sheet = e.getWorksheet(1);
               const cell = (c, i) => sheet.getCell(c + i);
-              cell('B', 11).value = ent.enterprise;
+              cell('B', 10).value = ent.enterprise;
+              cell('H', 3).value = ent.chairman;
+              cell('A', 15).value = ent.member1Job;
+              cell('D', 15).value = ent.member1;
+              cell('A', 17).value = ent.member2Job;
+              cell('D', 17).value = ent.member2;
+              cell('A', 19).value = ent.member3Job;
+              cell('D', 19).value = ent.member3;
+              cell('A', 21).value = ent.member4Job;
+              cell('D', 21).value = ent.member4;
+
               el.forEach((s) => {
                 if (s.typeSIZ) {
                   cell('A', startRow).value = s.num;
