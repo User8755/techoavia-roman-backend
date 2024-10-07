@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const {
+  createBaseTabelSIZ,
   createBaseTabel,
   createNormTabel,
   createMapOPRTabel,
@@ -11,6 +12,7 @@ const {
 } = require('../controllers/tabels');
 const auth = require('../middlewares/auth');
 
+router.get('/base-siz/:id', auth, createBaseTabelSIZ);
 router.get('/base/:id', auth, createBaseTabel);
 router.get('/norm/:id', auth, createNormTabel);
 router.get('/mapOPR/:id', auth, createMapOPRTabel);

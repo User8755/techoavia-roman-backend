@@ -15,7 +15,12 @@ app.use(fileUpload());
 
 const { PORT = 3001, MONGODB = 'mongodb://127.0.0.1:27017/test' } = process.env;
 
-mongoose.connect(MONGODB);
+try {
+  mongoose.connect(MONGODB);
+  console.log('успех');
+} catch (e) {
+  console.log(e);
+}
 
 const urlList = [
   'http://localhost:3000',
@@ -40,12 +45,14 @@ app.use('/enterprise', require('./routes/enterprise'));
 app.use('/tabels', require('./routes/tabels'));
 app.use('/value', require('./routes/enterpriceValue'));
 app.use('/logs', require('./routes/logs'));
+app.use('/update', require('./routes/update'));
 
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
   console.log(err);
   res.status(statusCode).send({
-    message: statusCode === 500 ? `На сервере произошла ошибка ${err}` : message,
+    message:
+      statusCode === 500 ? `На сервере произошла ошибка ${err}` : message,
   });
   next();
 });

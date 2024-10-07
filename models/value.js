@@ -175,7 +175,20 @@ const value = new mongoose.Schema(
       type: String,
     },
     proffSIZ: {
-      type: Array,
+      type: [{
+        vid: {
+          type: String,
+          maxlength: 500,
+        },
+        type: {
+          type: String,
+          maxlength: 500,
+        },
+        norm: {
+          type: String,
+          maxlength: 500,
+        },
+      }],
     },
     numWorkers: {
       type: String,

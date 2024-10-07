@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /* eslint-disable no-mixed-operators */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-param-reassign */
@@ -59,8 +60,8 @@ const borderCell = {
   bottom: { style: 'thin' },
   top: { style: 'thin' },
 };
-// Базовая таблица
-module.exports.createBaseTabel = (req, res, next) => {
+// Базовая таблица СИЗ
+module.exports.createBaseTabelSIZ = (req, res, next) => {
   Enterprise.findById(req.params.id).then((ent) => {
     if (!ent) {
       next(new NotFound('Предприятие не найдено'));
@@ -70,7 +71,7 @@ module.exports.createBaseTabel = (req, res, next) => {
       || ent.access.includes(req.user._id)
     ) {
       Value.find({ enterpriseId: req.params.id })
-        .then((el) => {
+        .then(async (el) => {
           const workbook = new Excel.Workbook();
           const sheet = workbook.addWorksheet('sheet');
           sheet.columns = [
@@ -200,18 +201,228 @@ module.exports.createBaseTabel = (req, res, next) => {
             { header: 'Трудовая функция', key: 'laborFunction', width: 20 },
             { header: 'Код ОК-016-94:', key: 'code', width: 20 },
           ];
-          let i = 1;
-          el.forEach((item) => {
-            item.number = i;
-            sheet.addRow(item);
 
-            if (item.proffSIZ) {
-              item.proffSIZ.forEach((SIZ) => sheet.addRow(SIZ));
+          let strIndex = 1;
+          const arr = [];
+          el.forEach((item) => {
+            item.num = String(item.num);
+            if (!arr.some((u) => u === item.num)) {
+              arr.push(item.num);
             }
-            i += 1;
           });
+          arr.sort((a, b) => a.localeCompare(b));
+          arr.sort((a, b) => a - b);
           sheet.autoFilter = 'A1:AZ1';
 
+          for (const data of arr) {
+            const filtredArr = el.filter((f) => f.num === data);
+            for (let k = 0; k <= filtredArr.length - 1; k += 1) {
+              // eslint-disable-next-line no-plusplus
+              filtredArr[k].number = strIndex++;
+              sheet.addRow(filtredArr[k]);
+              if (k === 0 && filtredArr[0].proff) {
+                filtredArr[0].proffSIZ.forEach((siz) => {
+                  siz.num = filtredArr[0].num;
+                  siz.proff = filtredArr[0].proff;
+                  siz.proffId = filtredArr[0].proffId;
+                  sheet.addRow(siz);
+                });
+              }
+            }
+          }
+          res.setHeader(
+            'Content-Type',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          );
+          res.setHeader(
+            'Content-Disposition',
+            'attachment; filename="Workbook.xlsx"',
+          );
+
+          workbook.xlsx
+            .write(res)
+            .then(() => {
+              res.end();
+            })
+            .catch((err) => {
+              next(err);
+            });
+        })
+        .catch((i) => {
+          next(i);
+        });
+    }
+    logs
+      .create({
+        action: `Пользователь ${req.user.name} выгрузил(а) таблицу Базовая таблица  ${ent.enterprise}`,
+        userId: req.user._id,
+        enterpriseId: ent._id,
+      })
+      .catch((e) => next(e));
+  });
+};
+
+module.exports.createBaseTabel = (req, res, next) => {
+  Enterprise.findById(req.params.id).then((ent) => {
+    if (!ent) {
+      next(new NotFound('Предприятие не найдено'));
+    }
+    if (
+      ent.owner.toString() === req.user._id
+      || ent.access.includes(req.user._id)
+    ) {
+      Value.find({ enterpriseId: req.params.id })
+        .then(async (el) => {
+          const workbook = new Excel.Workbook();
+          const sheet = workbook.addWorksheet('sheet');
+          sheet.columns = [
+            {
+              header: '№ п/п',
+              key: 'number',
+              width: 9,
+              style: {
+                fill: {
+                  type: 'pattern',
+                  pattern: 'solid',
+                  fgColor: { argb: 'E0E0E0' },
+                },
+              },
+              border: {
+                left: { style: 'thin' },
+                right: { style: 'thin' },
+                bottom: { style: 'thin' },
+                top: { style: 'thin' },
+              },
+            },
+            {
+              header: 'Код профессии (при наличии)',
+              key: 'proffId',
+              width: 20,
+            },
+            { header: 'Номер рабочего места', key: 'num', width: 20 },
+            {
+              header: 'Профессия (Приказ 767н приложения 1):',
+              key: 'proff',
+              width: 20,
+            },
+            { header: 'Профессия', key: 'job', width: 20 },
+            { header: 'Подразделение', key: 'subdivision', width: 20 },
+            { header: 'Тип средства защиты', key: 'type', width: 20 },
+            {
+              header:
+                'Наименование специальной одежды, специальной обуви и других средств индивидуальной защиты',
+              key: 'vid',
+              width: 20,
+            },
+            {
+              header:
+                'Нормы выдачи на год (период) (штуки, пары, комплекты, мл)',
+              key: 'norm',
+              width: 20,
+            },
+            { header: 'ОБЪЕКТ', key: 'obj', width: 20 },
+            { header: 'Источник', key: 'source', width: 20 },
+            { header: 'ID группы опасностей', key: 'dangerID', width: 20 },
+            { header: 'Группа опасности', key: 'danger', width: 25 },
+            { header: 'Опасность, ID 767', key: 'dangerGroupId', width: 17 },
+            { header: 'Опасности', key: 'dangerGroup', width: 25 },
+            {
+              header: 'Опасное событие, текст 767',
+              key: 'dangerEventID',
+              width: 25,
+            },
+            { header: 'Опасное событие', key: 'dangerEvent', width: 25 },
+            { header: 'Тяжесть', key: 'heaviness', width: 8 },
+            { header: 'Вероятность', key: 'probability', width: 12 },
+            { header: 'ИПР', key: 'ipr', width: 5 },
+            { header: 'Уровень риска', key: 'risk', width: 20 },
+            { header: 'Приемлемость', key: 'acceptability', width: 20 },
+            { header: 'Отношение к риску', key: 'riskAttitude', width: 20 },
+            { header: 'Тип СИЗ', key: 'typeSIZ', width: 20 },
+            { header: 'Вид СИЗ', key: 'speciesSIZ', width: 40 },
+            {
+              header:
+                'Нормы выдачи средств индивидуальной защиты на год (штуки, пары, комплекты, мл)',
+              key: 'issuanceRate',
+              width: 20,
+            },
+            { header: 'ДОП средства', key: 'additionalMeans', width: 20 },
+            {
+              header:
+                'Нормы выдачи средств индивидуальной защиты, выдаваемых дополнительно, на год (штуки, пары, комплекты, мл)',
+              key: 'AdditionalIssuanceRate',
+              width: 20,
+            },
+            { header: 'Стандарты (ГОСТ, EN)', key: 'standart', width: 20 },
+            { header: 'Экспл.уровень', key: 'OperatingLevel', width: 20 },
+            { header: 'Комментарий', key: 'commit', width: 20 },
+            { header: 'ID опасности 776н', key: 'danger776Id', width: 20 },
+            { header: 'Опасности 776н', key: 'danger776', width: 20 },
+            {
+              header: 'ID опасного события 776н',
+              key: 'dangerEvent776Id',
+              width: 20,
+            },
+            {
+              header: 'Опасное событие 776н',
+              key: 'dangerEvent776',
+              width: 20,
+            },
+            { header: 'ID мер управления', key: 'riskManagementID', width: 20 },
+            {
+              header: 'Меры управления/контроля профессиональных рисков',
+              key: 'riskManagement',
+              width: 20,
+            },
+            { header: 'Тяжесть', key: 'heaviness1', width: 8 },
+            { header: 'Вероятность', key: 'probability1', width: 12 },
+            { header: 'ИПР', key: 'ipr1', width: 5 },
+            { header: 'Уровень риска1', key: 'risk1', width: 20 },
+            { header: 'Приемлемость1', key: 'acceptability1', width: 20 },
+            { header: 'Отношение к риску1', key: 'riskAttitude1', width: 20 },
+            {
+              header: 'Существующие меры упр-я рисками',
+              key: 'existingRiskManagement',
+              width: 20,
+            },
+            { header: 'Периодичность', key: 'periodicity', width: 20 },
+            {
+              header: 'Ответственное лицо',
+              key: 'responsiblePerson',
+              width: 20,
+            },
+            {
+              header: 'Отметка о выполнении',
+              key: 'completionMark',
+              width: 20,
+            },
+            { header: 'Кол-во работников', key: 'numWorkers', width: 20 },
+            { header: 'Оборудование', key: 'equipment', width: 20 },
+            { header: 'Материалы', key: 'materials', width: 20 },
+            { header: 'Трудовая функция', key: 'laborFunction', width: 20 },
+            { header: 'Код ОК-016-94:', key: 'code', width: 20 },
+          ];
+
+          let strIndex = 1;
+          const arr = [];
+          el.forEach((item) => {
+            item.num = String(item.num);
+            if (!arr.some((u) => u === item.num)) {
+              arr.push(item.num);
+            }
+          });
+          arr.sort((a, b) => a.localeCompare(b));
+          arr.sort((a, b) => a - b);
+          sheet.autoFilter = 'A1:AZ1';
+
+          for (const data of arr) {
+            const filtredArr = el.filter((f) => f.num === data);
+            for (let k = 0; k <= filtredArr.length - 1; k += 1) {
+              // eslint-disable-next-line no-plusplus
+              filtredArr[k].number = strIndex++;
+              sheet.addRow(filtredArr[k]);
+            }
+          }
           res.setHeader(
             'Content-Type',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -711,6 +922,7 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                         });
                         i.num = numResult;
                       }
+                      return n;
                     })
                   );
                   if (
@@ -731,6 +943,7 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                         });
                         i.num = numResult;
                       }
+                      return n;
                     })
                   );
                 });

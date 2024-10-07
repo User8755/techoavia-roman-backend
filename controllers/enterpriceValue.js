@@ -5,6 +5,7 @@ const logs = require('../models/logs');
 const NotFound = require('../errors/NotFound');
 const ConflictError = require('../errors/ConflictError');
 const BadRequestError = require('../errors/BadRequestError');
+require('../errors/statusCode');
 
 const workbook = new Excel.Workbook();
 
@@ -37,7 +38,11 @@ module.exports.updateValue = (req, res, next) => {
                   })
                   .catch((e) => {
                     if (e.name === 'ValidationError') {
-                      next(new BadRequestError('Не все обязательные поля заполнены'));
+                      next(
+                        new BadRequestError(
+                          'Не все обязательные поля заполнены',
+                        ),
+                      );
                     } else {
                       next(e);
                     }
@@ -81,9 +86,80 @@ module.exports.newValue = (req, res, next) => {
 };
 
 module.exports.getValueEnterprise = (req, res, next) => {
-  Value.count({ enterpriseId: req.params.id })
+  Value.countDocuments({ enterpriseId: req.params.id })
     .then((i) => {
       res.send(String(i));
     })
     .catch((e) => next(e));
+};
+
+module.exports.getUniqWorkPlace = (req, res, next) => {
+  Value.find({ enterpriseId: req.params.id }, { num: 1, proff: 1, job: 1 })
+    .then((i) => {
+      const arr = [];
+      i.forEach((doc) => {
+        if (!arr.some((u) => u.num === doc.num)) {
+          arr.push(doc);
+        }
+      });
+      res.send(arr);
+    })
+    .catch((e) => next(e));
+};
+
+module.exports.getCurentWorkPlace = (req, res, next) => {
+  Value.find({ enterpriseId: req.params.id, num: req.body.curent })
+    .then((i) => {
+      res.send(i);
+    })
+    .catch((e) => next(e));
+};
+
+module.exports.createNewPlace = (req, res, next) => {
+  Enterprise.findById(req.params.id)
+    .then((enterprise) => {
+      if (!enterprise) {
+        next(new NotFound('Предприятие не найдено'));
+      }
+      if (
+        enterprise.owner.toString() === req.user._id
+        || enterprise.access.includes(req.user._id)
+      ) {
+        req.body.newDetalis.forEach((i) => {
+          Value.create(i)
+            .then(() => {
+              res.end();
+              logs
+                .create({
+                  action: `Пользователь ${req.user.name} создал(а) запись для предприятия ${enterprise.enterprise}`,
+                  userId: req.user._id,
+                  enterpriseId: enterprise._id,
+                })
+                .catch((e) => next(e));
+            })
+            .catch((e) => next(e));
+        });
+      }
+    })
+    .catch((e) => next(e));
+};
+
+module.exports.getlastValue = (req, res, next) => {
+  Enterprise.findById(req.params.id).then((enterprise) => {
+    if (!enterprise) {
+      next(new NotFound('Предприятие не найдено'));
+    }
+    if (
+      enterprise.owner.toString() === req.user._id
+      || enterprise.access.includes(req.user._id)
+    ) {
+      Value.find({ enterpriseId: req.params.id })
+        .limit(15)
+        .sort({ $natural: -1 })
+        .then((i) => {
+          res.send(i);
+        })
+        .catch((e) => next(e));
+    }
+  });
 };
