@@ -189,6 +189,8 @@ const value = new mongoose.Schema(
           maxlength: 500,
         },
       }],
+      default: [],
+      required: true,
     },
     numWorkers: {
       type: String,

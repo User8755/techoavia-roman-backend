@@ -200,6 +200,9 @@ module.exports.createBaseTabelSIZ = (req, res, next) => {
             { header: 'Материалы', key: 'materials', width: 20 },
             { header: 'Трудовая функция', key: 'laborFunction', width: 20 },
             { header: 'Код ОК-016-94:', key: 'code', width: 20 },
+            { header: 'Тип синт:', key: 'typeSint', width: 20 },
+            { header: 'Вид синт:', key: 'vidSint', width: 20 },
+            { header: 'маркер общий:', key: 'marker', width: 20 },
           ];
 
           let strIndex = 1;
@@ -219,12 +222,16 @@ module.exports.createBaseTabelSIZ = (req, res, next) => {
             for (let k = 0; k <= filtredArr.length - 1; k += 1) {
               // eslint-disable-next-line no-plusplus
               filtredArr[k].number = strIndex++;
+              filtredArr[k].typeSint = filtredArr[k].typeSIZ;
+              filtredArr[k].vidSint = filtredArr[k].speciesSIZ;
               sheet.addRow(filtredArr[k]);
               if (k === 0 && filtredArr[0].proff) {
                 filtredArr[0].proffSIZ.forEach((siz) => {
                   siz.num = filtredArr[0].num;
                   siz.proff = filtredArr[0].proff;
                   siz.proffId = filtredArr[0].proffId;
+                  siz.typeSint = siz.type;
+                  siz.vidSint = siz.vid;
                   sheet.addRow(siz);
                 });
               }
@@ -401,6 +408,9 @@ module.exports.createBaseTabel = (req, res, next) => {
             { header: 'Материалы', key: 'materials', width: 20 },
             { header: 'Трудовая функция', key: 'laborFunction', width: 20 },
             { header: 'Код ОК-016-94:', key: 'code', width: 20 },
+            { header: 'Тип синт:', key: 'typeSint', width: 20 },
+            { header: 'Вид синт:', key: 'vidSint', width: 20 },
+            { header: 'маркер общий:', key: 'marker', width: 20 },
           ];
 
           let strIndex = 1;
@@ -420,6 +430,8 @@ module.exports.createBaseTabel = (req, res, next) => {
             for (let k = 0; k <= filtredArr.length - 1; k += 1) {
               // eslint-disable-next-line no-plusplus
               filtredArr[k].number = strIndex++;
+              filtredArr[k].typeSint = filtredArr[k].typeSIZ;
+              filtredArr[k].vidSint = filtredArr[k].speciesSIZ;
               sheet.addRow(filtredArr[k]);
             }
           }
