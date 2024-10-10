@@ -226,7 +226,7 @@ module.exports.createBaseTabelSIZ = (req, res, next) => {
               filtredArr[k].vidSint = filtredArr[k].speciesSIZ;
               sheet.addRow(filtredArr[k]);
               let addSiz = true;
-              if (filtredArr[k].proff.length > 0 && addSiz) {
+              if (filtredArr[k].proffSIZ.length > 0 && addSiz) {
               // if (k === 0 && filtredArr[0].proff) {
                 filtredArr[0].proffSIZ.forEach((siz) => {
                   siz.num = filtredArr[0].num;
