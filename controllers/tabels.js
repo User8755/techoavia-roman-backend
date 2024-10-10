@@ -228,10 +228,10 @@ module.exports.createBaseTabelSIZ = (req, res, next) => {
               let addSiz = true;
               if (filtredArr[k].proffSIZ.length > 0 && addSiz) {
               // if (k === 0 && filtredArr[0].proff) {
-                filtredArr[0].proffSIZ.forEach((siz) => {
-                  siz.num = filtredArr[0].num;
-                  siz.proff = filtredArr[0].proff;
-                  siz.proffId = filtredArr[0].proffId;
+                filtredArr[k].proffSIZ.forEach((siz) => {
+                  siz.num = filtredArr[k].num;
+                  siz.proff = filtredArr[k].proff;
+                  siz.proffId = filtredArr[k].proffId;
                   siz.typeSint = siz.type;
                   siz.vidSint = siz.vid;
                   sheet.addRow(siz);
