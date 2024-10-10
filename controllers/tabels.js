@@ -236,7 +236,7 @@ module.exports.createBaseTabelSIZ = (req, res, next) => {
                   siz.vidSint = siz.vid;
                   sheet.addRow(siz);
                 });
-                addSiz = flase
+                addSiz = false;
               }
             }
           }
