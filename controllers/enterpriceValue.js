@@ -26,7 +26,8 @@ module.exports.updateValue = (req, res, next) => {
             next(new NotFound('Предприятие не найдено'));
           }
 
-          if (enterprise.owner.toString() !== req.user._id) next(new ConflictError('У Вас нет доступа'));
+          if (enterprise.owner.toString() !== req.user._id)
+            next(new ConflictError('У Вас нет доступа'));
           if (!req.data) next();
 
           Value.deleteMany({ enterpriseId: req.params.id })
@@ -40,8 +41,8 @@ module.exports.updateValue = (req, res, next) => {
                     if (e.name === 'ValidationError') {
                       next(
                         new BadRequestError(
-                          'Не все обязательные поля заполнены',
-                        ),
+                          'Не все обязательные поля заполнены'
+                        )
                       );
                     } else {
                       next(e);
@@ -94,7 +95,8 @@ module.exports.getValueEnterprise = (req, res, next) => {
 };
 
 module.exports.getUniqWorkPlace = (req, res, next) => {
-  Value.find({ enterpriseId: req.params.id }, { num: 1, proff: 1, job: 1 })
+  Value.find({ enterpriseId: req.params.id },
+    { num: 1, proff: 1, job: 1, subdivision: 1, proffSIZ: 1, code: 1, numWorkers: 1, proffId: 1})
     .then((i) => {
       const arr = [];
       i.forEach((doc) => {
@@ -122,8 +124,8 @@ module.exports.createNewPlace = (req, res, next) => {
         next(new NotFound('Предприятие не найдено'));
       }
       if (
-        enterprise.owner.toString() === req.user._id
-        || enterprise.access.includes(req.user._id)
+        enterprise.owner.toString() === req.user._id ||
+        enterprise.access.includes(req.user._id)
       ) {
         req.body.newDetalis.forEach((i) => {
           Value.create(i)
@@ -150,8 +152,8 @@ module.exports.getlastValue = (req, res, next) => {
       next(new NotFound('Предприятие не найдено'));
     }
     if (
-      enterprise.owner.toString() === req.user._id
-      || enterprise.access.includes(req.user._id)
+      enterprise.owner.toString() === req.user._id ||
+      enterprise.access.includes(req.user._id)
     ) {
       Value.find({ enterpriseId: req.params.id })
         .limit(15)
