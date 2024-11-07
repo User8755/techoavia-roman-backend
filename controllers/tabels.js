@@ -512,7 +512,7 @@ module.exports.createNormTabel = (req, res, next) => {
                 .catch((e) => next(e));
             }
 
-            if (i.dangerEventID) {
+            if (i.dangerEventID && i.typeSIZ) {
               TypeSiz.findOne(
                 {
                   dependence: i.dangerEventID,
