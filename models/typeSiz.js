@@ -1,36 +1,38 @@
 const mongoose = require('mongoose');
 
-const proff767 = new mongoose.Schema(
+const typeSiz = new mongoose.Schema(
   {
-    proffId: {
-      type: Number,
-      require: true,
-      minlength: 1,
-      maxlength: 30,
-    },
-    proff: {
+    dependence: {
       type: String,
       require: true,
-      minlength: 1,
-      maxlength: 300,
     },
-    vid: {
+    label: {
       type: String,
       require: true,
-      minlength: 1,
-      maxlength: 500,
     },
-    type: {
+    speciesSIZ: {
       type: String,
       require: true,
-      minlength: 1,
-      maxlength: 500,
     },
-    norm: {
+    issuanceRate: {
       type: String,
       require: true,
-      minlength: 1,
-      maxlength: 500,
+    },
+    additionalMeans: {
+      type: String,
+      require: true,
+    },
+    AdditionalIssuanceRate: {
+      type: String,
+      require: true,
+    },
+    standart: {
+      type: String,
+      require: true,
+    },
+    OperatingLevel: {
+      type: String,
+      require: true,
     },
     markerBase: {
       type: String,
@@ -95,4 +97,4 @@ const proff767 = new mongoose.Schema(
   { versionKey: false }
 );
 
-module.exports = mongoose.model('proff767', proff767);
+module.exports = mongoose.model('typeSiz', typeSiz);

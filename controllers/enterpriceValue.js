@@ -5,8 +5,7 @@ const logs = require('../models/logs');
 const NotFound = require('../errors/NotFound');
 const ConflictError = require('../errors/ConflictError');
 const BadRequestError = require('../errors/BadRequestError');
-require('../errors/statusCode');
-
+const Proff767 = require('../models/proff767');
 const workbook = new Excel.Workbook();
 
 module.exports.updateValue = (req, res, next) => {
@@ -70,18 +69,55 @@ module.exports.newValue = (req, res, next) => {
       if (!enterprise) {
         next(new NotFound('Предприятие не найдено'));
       }
-      Value.create(req.body)
-        .then((data) => {
-          res.send(data);
-          logs
-            .create({
-              action: `Пользователь ${req.user.name} создал(а) запись для предприятия ${enterprise.enterprise}`,
-              userId: req.user._id,
-              enterpriseId: enterprise._id,
+      if (req.body.proffId) {
+        Proff767.find(
+          { proffId: req.body.proffId },
+          {
+            markerBase: 1,
+            markerRubber: 1,
+            markerSlip: 1,
+            markerPuncture: 1,
+            markerGlovesAbrasion: 1,
+            markerGlovesCut: 1,
+            markerGlovesPuncture: 1,
+            markerWinterShoes: 1,
+            markerWinterclothes: 1,
+            markerHierarchyOfClothing: 1,
+            markerHierarchyOfShoes: 1,
+            markerHierarchyOfGloves: 1,
+            vid: 1,
+            norm: 1,
+            type: 1,
+          }
+        ).then((i) => {
+          req.body.SIZ = i;
+          Value.create(req.body)
+            .then((data) => {
+              res.send(data);
+              logs
+                .create({
+                  action: `Пользователь ${req.user.name} создал(а) запись для предприятия ${enterprise.enterprise}`,
+                  userId: req.user._id,
+                  enterpriseId: enterprise._id,
+                })
+                .catch((e) => next(e));
             })
             .catch((e) => next(e));
-        })
-        .catch((e) => next(e));
+        });
+      } else {
+        Value.create(req.body)
+          .then((data) => {
+            res.send(data);
+            logs
+              .create({
+                action: `Пользователь ${req.user.name} создал(а) запись для предприятия ${enterprise.enterprise}`,
+                userId: req.user._id,
+                enterpriseId: enterprise._id,
+              })
+              .catch((e) => next(e));
+          })
+          .catch((e) => next(e));
+      }
     })
     .catch((e) => next(e));
 };
@@ -95,8 +131,19 @@ module.exports.getValueEnterprise = (req, res, next) => {
 };
 
 module.exports.getUniqWorkPlace = (req, res, next) => {
-  Value.find({ enterpriseId: req.params.id },
-    { num: 1, proff: 1, job: 1, subdivision: 1, proffSIZ: 1, code: 1, numWorkers: 1, proffId: 1})
+  Value.find(
+    { enterpriseId: req.params.id },
+    {
+      num: 1,
+      proff: 1,
+      job: 1,
+      subdivision: 1,
+      proffSIZ: 1,
+      code: 1,
+      numWorkers: 1,
+      proffId: 1,
+    }
+  )
     .then((i) => {
       const arr = [];
       i.forEach((doc) => {

@@ -9,6 +9,8 @@ const Enterprise = require('../models/enterprise');
 const NotFound = require('../errors/NotFound');
 const convertValues = require('../forNormTable');
 const logs = require('../models/logs');
+const Proff767 = require('../models/proff767');
+const TypeSiz = require('../models/typeSiz');
 
 const darkGeen = {
   type: 'pattern',
@@ -67,8 +69,8 @@ module.exports.createBaseTabelSIZ = (req, res, next) => {
       next(new NotFound('Предприятие не найдено'));
     }
     if (
-      ent.owner.toString() === req.user._id
-      || ent.access.includes(req.user._id)
+      ent.owner.toString() === req.user._id ||
+      ent.access.includes(req.user._id)
     ) {
       Value.find({ enterpriseId: req.params.id })
         .then(async (el) => {
@@ -227,7 +229,7 @@ module.exports.createBaseTabelSIZ = (req, res, next) => {
               sheet.addRow(filtredArr[k]);
               let addSiz = true;
               if (filtredArr[k].proffSIZ.length > 0 && addSiz) {
-              // if (k === 0 && filtredArr[0].proff) {
+                // if (k === 0 && filtredArr[0].proff) {
                 filtredArr[k].proffSIZ.forEach((siz) => {
                   siz.num = filtredArr[k].num;
                   siz.proff = filtredArr[k].proff;
@@ -242,11 +244,11 @@ module.exports.createBaseTabelSIZ = (req, res, next) => {
           }
           res.setHeader(
             'Content-Type',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
           );
           res.setHeader(
             'Content-Disposition',
-            'attachment; filename="Workbook.xlsx"',
+            'attachment; filename="Workbook.xlsx"'
           );
 
           workbook.xlsx
@@ -278,8 +280,8 @@ module.exports.createBaseTabel = (req, res, next) => {
       next(new NotFound('Предприятие не найдено'));
     }
     if (
-      ent.owner.toString() === req.user._id
-      || ent.access.includes(req.user._id)
+      ent.owner.toString() === req.user._id ||
+      ent.access.includes(req.user._id)
     ) {
       Value.find({ enterpriseId: req.params.id })
         .then(async (el) => {
@@ -440,11 +442,11 @@ module.exports.createBaseTabel = (req, res, next) => {
           }
           res.setHeader(
             'Content-Type',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
           );
           res.setHeader(
             'Content-Disposition',
-            'attachment; filename="Workbook.xlsx"',
+            'attachment; filename="Workbook.xlsx"'
           );
 
           workbook.xlsx
@@ -477,11 +479,77 @@ module.exports.createNormTabel = (req, res, next) => {
       next(new NotFound('Предприятие не найдено'));
     }
     if (
-      ent.owner.toString() === req.user._id
-      || ent.access.includes(req.user._id)
+      ent.owner.toString() === req.user._id ||
+      ent.access.includes(req.user._id)
     ) {
       Value.find({ enterpriseId: req.params.id })
         .then((el) => {
+          for (i of el) {
+            if (i.proffId) {
+              Proff767.find(
+                { proffId: i.proffId },
+                {
+                  markerBase: 1,
+                  markerRubber: 1,
+                  markerSlip: 1,
+                  markerPuncture: 1,
+                  markerGlovesAbrasion: 1,
+                  markerGlovesCut: 1,
+                  markerGlovesPuncture: 1,
+                  markerWinterShoes: 1,
+                  markerWinterclothes: 1,
+                  markerHierarchyOfClothing: 1,
+                  markerHierarchyOfShoes: 1,
+                  markerHierarchyOfGloves: 1,
+                  vid: 1,
+                  norm: 1,
+                  type: 1,
+                }
+              )
+                .then((item) => {
+                  i.proffSIZ = item;
+                })
+                .catch((e) => next(e));
+            }
+
+            if (i.dangerEventID) {
+              TypeSiz.findOne(
+                {
+                  dependence: i.dangerEventID,
+                  label: i.typeSIZ,
+                },
+                {
+                  markerBase: 1,
+                  markerRubber: 1,
+                  markerSlip: 1,
+                  markerPuncture: 1,
+                  markerGlovesAbrasion: 1,
+                  markerGlovesCut: 1,
+                  markerGlovesPuncture: 1,
+                  markerWinterShoes: 1,
+                  markerWinterclothes: 1,
+                  markerHierarchyOfClothing: 1,
+                  markerHierarchyOfShoes: 1,
+                  markerHierarchyOfGloves: 1,
+                }
+              )
+                .then((item) => {
+                  i.markerBase = item.markerBase;
+                  i.markerRubber = item.markerRubber;
+                  i.markerSlip = item.markerSlip;
+                  i.markerPuncture = item.markerPuncture;
+                  i.markerGlovesAbrasion = item.markerGlovesAbrasion;
+                  i.markerGlovesCut = item.markerGlovesCut;
+                  i.markerGlovesPuncture = item.markerGlovesPuncture;
+                  i.markerWinterShoes = item.markerWinterShoes;
+                  i.markerWinterclothes = item.markerWinterclothes;
+                  i.markerHierarchyOfClothing = item.markerHierarchyOfClothing;
+                  i.markerHierarchyOfShoes = item.markerHierarchyOfShoes;
+                  i.markerHierarchyOfGloves = item.markerHierarchyOfGloves;
+                })
+                .catch((e) => next(e));
+            }
+          }
           const fileName = 'normSIZ.xlsx';
           workbook.xlsx
             .readFile(fileName)
@@ -497,9 +565,10 @@ module.exports.createNormTabel = (req, res, next) => {
               const cell = (c, i) => sheet.getCell(c + i);
               let startRow = 10;
               sheet.getCell('A5').value = entName;
+
               el.forEach((item) => {
                 const handleFilterTypeSIZ = convertValues.find(
-                  (i) => i.typeSIZ === item.typeSIZ,
+                  (i) => i.typeSIZ === item.typeSIZ
                 );
 
                 const stringProff = item.proffId
@@ -511,20 +580,33 @@ module.exports.createNormTabel = (req, res, next) => {
                   cell('C', startRow).value = `${item.typeSIZ}`;
                   cell('D', startRow).value = !handleFilterTypeSIZ
                     ? `${item.speciesSIZ} ${
-                      item.OperatingLevel ? `${item.OperatingLevel}` : ''
-                    }  ${item.standart ? `${item.standart}` : ''}`
+                        item.OperatingLevel ? `${item.OperatingLevel}` : ''
+                      }  ${item.standart ? `${item.standart}` : ''}`
                     : `${item.speciesSIZ} ${handleFilterTypeSIZ.forTable}  ${
-                      item.OperatingLevel ? `${item.OperatingLevel}` : ''
-                    }  ${item.standart ? `${item.standart}` : ''}`;
+                        item.OperatingLevel ? `${item.OperatingLevel}` : ''
+                      }  ${item.standart ? `${item.standart}` : ''}`;
                   cell('E', startRow).value = item.issuanceRate;
                   cell(
                     'F',
-                    startRow,
+                    startRow
                   ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
                   cell('G', startRow).value = item.dangerGroupId;
                   cell('H', startRow).value = item.dangerGroup;
                   cell('I', startRow).value = item.dangerEventID;
                   cell('J', startRow).value = item.dangerEvent;
+                  // маркеры
+                  cell('K', startRow).value = item.markerBase;
+                  cell('L', startRow).value = item.markerRubber;
+                  cell('M', startRow).value = item.markerSlip;
+                  cell('N', startRow).value = item.markerPuncture;
+                  cell('O', startRow).value = item.markerGlovesAbrasion;
+                  cell('P', startRow).value = item.markerGlovesCut;
+                  cell('Q', startRow).value = item.markerGlovesPuncture;
+                  cell('R', startRow).value = item.markerWinterShoes;
+                  cell('S', startRow).value = item.markerWinterclothes;
+                  cell('T', startRow).value = item.markerHierarchyOfClothing;
+                  cell('U', startRow).value = item.markerHierarchyOfShoes;
+                  cell('V', startRow).value = item.markerHierarchyOfGloves;
                   // стили
                   cell('A', startRow).style = style;
                   cell('B', startRow).style = style;
@@ -544,7 +626,7 @@ module.exports.createNormTabel = (req, res, next) => {
                     cell('E', startRow).value = item.AdditionalIssuanceRate;
                     cell(
                       'F',
-                      startRow,
+                      startRow
                     ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
                     cell('G', startRow).value = item.dangerGroupId;
                     cell('H', startRow).value = item.dangerGroup;
@@ -571,12 +653,27 @@ module.exports.createNormTabel = (req, res, next) => {
                       cell('E', startRow).value = SIZ.norm;
                       cell(
                         'F',
-                        startRow,
+                        startRow
                       ).value = `Пункт ${item.proffId} Приложения 1 Приказа 767н`;
                       cell('G', startRow).value = item.dangerGroupId;
                       cell('H', startRow).value = item.dangerGroup;
                       cell('I', startRow).value = item.dangerEventID;
                       cell('J', startRow).value = item.dangerEvent;
+
+                      // маркеры
+                      cell('K', startRow).value = item.markerBase;
+                      cell('L', startRow).value = item.markerRubber;
+                      cell('M', startRow).value = item.markerSlip;
+                      cell('N', startRow).value = item.markerPuncture;
+                      cell('O', startRow).value = item.markerGlovesAbrasion;
+                      cell('P', startRow).value = item.markerGlovesCut;
+                      cell('Q', startRow).value = item.markerGlovesPuncture;
+                      cell('R', startRow).value = item.markerWinterShoes;
+                      cell('S', startRow).value = item.markerWinterclothes;
+                      cell('T', startRow).value =
+                        item.markerHierarchyOfClothing;
+                      cell('U', startRow).value = item.markerHierarchyOfShoes;
+                      cell('V', startRow).value = item.markerHierarchyOfGloves;
                       // стили
                       cell('A', startRow).style = style;
                       cell('B', startRow).style = style;
@@ -594,14 +691,14 @@ module.exports.createNormTabel = (req, res, next) => {
                   }
                 }
               });
-              sheet.autoFilter = 'A9:J9';
+              sheet.autoFilter = 'A9:V9';
               res.setHeader(
                 'Content-Type',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
               );
               res.setHeader(
                 'Content-Disposition',
-                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
               );
 
               workbook.xlsx
@@ -634,14 +731,15 @@ module.exports.createMapOPRTabel = (req, res, next) => {
         next(new NotFound('Предприятие не найдено'));
       }
       if (
-        ent.owner.toString() === req.user._id
-        || ent.access.includes(req.user._id)
+        ent.owner.toString() === req.user._id ||
+        ent.access.includes(req.user._id)
       ) {
         Value.find({ enterpriseId: req.params.id })
           .sort({ ipr: -1 })
           .then((el) => {
             const uniq = el.reduce((accumulator, value) => {
-              if (accumulator.every((item) => !(item.num === value.num))) accumulator.push(value);
+              if (accumulator.every((item) => !(item.num === value.num)))
+                accumulator.push(value);
               return accumulator;
             }, []);
 
@@ -665,7 +763,7 @@ module.exports.createMapOPRTabel = (req, res, next) => {
                         { includeEmpty: true },
                         (sourceCell) => {
                           const targetCell = newSheet.getCell(
-                            sourceCell.address,
+                            sourceCell.address
                           );
 
                           // style
@@ -680,12 +778,12 @@ module.exports.createMapOPRTabel = (req, res, next) => {
                           }:${targetCell.address}`;
                           newSheet.unMergeCells(range);
                           newSheet.mergeCells(range);
-                        },
+                        }
                       );
                     }
                   }
                   const numFilter = el.filter(
-                    (filterEl) => filterEl.num === ss.name,
+                    (filterEl) => filterEl.num === ss.name
                   );
 
                   let i = 20;
@@ -713,10 +811,13 @@ module.exports.createMapOPRTabel = (req, res, next) => {
                     }
 
                     Ncell(`A${i}`).value = index + 1;
-                    Ncell(`B${i}`).value = elem.danger776Id || elem.dangerGroupId;
+                    Ncell(`B${i}`).value =
+                      elem.danger776Id || elem.dangerGroupId;
                     Ncell(`C${i}`).value = elem.danger776 || elem.dangerGroup;
-                    Ncell(`D${i}`).value = elem.dangerEvent776Id || elem.dangerEventID;
-                    Ncell(`E${i}`).value = elem.dangerEvent776 || elem.dangerEvent;
+                    Ncell(`D${i}`).value =
+                      elem.dangerEvent776Id || elem.dangerEventID;
+                    Ncell(`E${i}`).value =
+                      elem.dangerEvent776 || elem.dangerEvent;
                     Ncell(`F${i}`).value = elem.obj;
                     Ncell(`G${i}`).value = elem.source;
                     Ncell(`H${i}`).value = elem.existingRiskManagement;
@@ -799,11 +900,11 @@ module.exports.createMapOPRTabel = (req, res, next) => {
 
                 res.setHeader(
                   'Content-Type',
-                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 );
                 res.setHeader(
                   'Content-Disposition',
-                  `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+                  `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
                 );
                 workbook.xlsx
                   .write(res)
@@ -838,8 +939,8 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
         next(new NotFound('Предприятие не найдено'));
       }
       if (
-        ent.owner.toString() === req.user._id
-        || ent.access.includes(req.user._id)
+        ent.owner.toString() === req.user._id ||
+        ent.access.includes(req.user._id)
       ) {
         Value.find({ enterpriseId: req.params.id })
           .sort({ ipr: -1 })
@@ -855,13 +956,14 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                   if (i.dangerEventID !== '') {
                     if (
                       !arr.find(
-                        (n) => n.dangerEventID === i.dangerEventID
-                          && n.obj.toLocaleLowerCase().trim()
-                            === i.obj.toLocaleLowerCase().trim()
-                          && n.source.toLocaleLowerCase().trim()
-                            === i.source.toLocaleLowerCase().trim()
-                          && n.ipr === i.ipr
-                          && n.ipr1 === i.ipr1,
+                        (n) =>
+                          n.dangerEventID === i.dangerEventID &&
+                          n.obj.toLocaleLowerCase().trim() ===
+                            i.obj.toLocaleLowerCase().trim() &&
+                          n.source.toLocaleLowerCase().trim() ===
+                            i.source.toLocaleLowerCase().trim() &&
+                          n.ipr === i.ipr &&
+                          n.ipr1 === i.ipr1
                       )
                     ) {
                       obj.dangerGroupId = i.dangerGroupId;
@@ -888,13 +990,14 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                   if (i.dangerEventID === '') {
                     if (
                       !arr.find(
-                        (n) => n.dangerEvent776Id === i.dangerEvent776Id
-                          && n.obj.toLocaleLowerCase().trim()
-                            === i.obj.toLocaleLowerCase().trim()
-                          && n.source.toLocaleLowerCase().trim()
-                            === i.source.toLocaleLowerCase().trim()
-                          && n.ipr === i.ipr
-                          && n.ipr1 === i.ipr1,
+                        (n) =>
+                          n.dangerEvent776Id === i.dangerEvent776Id &&
+                          n.obj.toLocaleLowerCase().trim() ===
+                            i.obj.toLocaleLowerCase().trim() &&
+                          n.source.toLocaleLowerCase().trim() ===
+                            i.source.toLocaleLowerCase().trim() &&
+                          n.ipr === i.ipr &&
+                          n.ipr1 === i.ipr1
                       )
                     ) {
                       obj.danger776 = `${i.danger776} (Приказ776н)`;
@@ -922,13 +1025,13 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                   if (
                     el.filter((n) => {
                       if (
-                        n.dangerEventID === i.dangerEventID
-                        && n.obj.toLocaleLowerCase().trim()
-                          === i.obj.toLocaleLowerCase().trim()
-                        && n.source.toLocaleLowerCase().trim()
-                          === i.source.toLocaleLowerCase().trim()
-                        && n.ipr === i.ipr
-                        && n.ipr1 === i.ipr1
+                        n.dangerEventID === i.dangerEventID &&
+                        n.obj.toLocaleLowerCase().trim() ===
+                          i.obj.toLocaleLowerCase().trim() &&
+                        n.source.toLocaleLowerCase().trim() ===
+                          i.source.toLocaleLowerCase().trim() &&
+                        n.ipr === i.ipr &&
+                        n.ipr1 === i.ipr1
                       ) {
                         if (!numArr.includes(n.num)) numArr.push(n.num);
                         let numResult = '';
@@ -943,13 +1046,13 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                   if (
                     el.filter((n) => {
                       if (
-                        n.dangerEvent776Id === i.dangerEvent776Id
-                        && n.obj.toLocaleLowerCase().trim()
-                          === i.obj.toLocaleLowerCase().trim()
-                        && n.source.toLocaleLowerCase().trim()
-                          === i.source.toLocaleLowerCase().trim()
-                        && n.ipr === i.ipr
-                        && n.ipr1 === i.ipr1
+                        n.dangerEvent776Id === i.dangerEvent776Id &&
+                        n.obj.toLocaleLowerCase().trim() ===
+                          i.obj.toLocaleLowerCase().trim() &&
+                        n.source.toLocaleLowerCase().trim() ===
+                          i.source.toLocaleLowerCase().trim() &&
+                        n.ipr === i.ipr &&
+                        n.ipr1 === i.ipr1
                       ) {
                         if (!numArr.includes(n.num)) numArr.push(n.num);
                         let numResult = '';
@@ -1083,11 +1186,11 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
 
                 res.setHeader(
                   'Content-Type',
-                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
                 );
                 res.setHeader(
                   'Content-Disposition',
-                  `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+                  `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
                 );
                 workbook.xlsx
                   .write(res)
@@ -1117,8 +1220,8 @@ module.exports.createListHazardsTable = (req, res, next) => {
       next(new NotFound('Предприятие не найдено'));
     }
     if (
-      ent.owner.toString() === req.user._id
-      || ent.access.includes(req.user._id)
+      ent.owner.toString() === req.user._id ||
+      ent.access.includes(req.user._id)
     ) {
       Value.find(
         { enterpriseId: req.params.id },
@@ -1132,7 +1235,7 @@ module.exports.createListHazardsTable = (req, res, next) => {
           dangerGroup: 1,
           dangerEvent776: 1,
           dangerEvent: 1,
-        },
+        }
       )
         .then((el) => {
           const fileName = 'Реестр опасностей.xlsx';
@@ -1149,27 +1252,32 @@ module.exports.createListHazardsTable = (req, res, next) => {
               const uniq = el.reduce((accumulator, currentValue) => {
                 if (
                   accumulator.every(
-                    (item) => !(
-                      item.dangerEvent776Id
-                          === currentValue.dangerEvent776Id
-                        && item.dangerEventID === currentValue.dangerEventID
-                    ),
+                    (item) =>
+                      !(
+                        item.dangerEvent776Id ===
+                          currentValue.dangerEvent776Id &&
+                        item.dangerEventID === currentValue.dangerEventID
+                      )
                   )
-                ) accumulator.push(currentValue);
+                )
+                  accumulator.push(currentValue);
                 return accumulator;
               }, []);
 
               const resProff = el.filter(
-                ({ num }) => !table2[num] && (table2[num] = 1),
+                ({ num }) => !table2[num] && (table2[num] = 1)
               );
 
               uniq.forEach((e1) => {
                 if (e1.dangerEvent776Id || e1.dangerEventID) {
                   sheet.getCell(`A${i}`).value = i - 13;
-                  sheet.getCell(`B${i}`).value = e1.danger776Id || e1.dangerGroupId;
+                  sheet.getCell(`B${i}`).value =
+                    e1.danger776Id || e1.dangerGroupId;
                   sheet.getCell(`C${i}`).value = e1.danger776 || e1.dangerGroup;
-                  sheet.getCell(`D${i}`).value = e1.dangerEvent776Id || e1.dangerEventID;
-                  sheet.getCell(`E${i}`).value = e1.dangerEvent776 || e1.dangerEvent;
+                  sheet.getCell(`D${i}`).value =
+                    e1.dangerEvent776Id || e1.dangerEventID;
+                  sheet.getCell(`E${i}`).value =
+                    e1.dangerEvent776 || e1.dangerEvent;
 
                   sheet.getCell(`A${i}`).style = style;
                   sheet.getCell(`B${i}`).style = style;
@@ -1201,29 +1309,29 @@ module.exports.createListHazardsTable = (req, res, next) => {
 
               rowAddress.forEach((address) => {
                 const filterJobValue = el.filter(
-                  (element) => element.num === sheet.getCell(address).value,
+                  (element) => element.num === sheet.getCell(address).value
                 );
 
                 filterJobValue.forEach((v) => {
                   let colStr = i - 1;
                   while (colStr >= 13) {
                     sheet.getCell(
-                      sheet.getCell(address)._column.letter + colStr,
+                      sheet.getCell(address)._column.letter + colStr
                     ).style = style;
                     if (
-                      sheet.getCell(`D${colStr}`).value
-                        === v.dangerEvent776Id
-                      && sheet.getCell(`D${colStr}`).value !== null
+                      sheet.getCell(`D${colStr}`).value ===
+                        v.dangerEvent776Id &&
+                      sheet.getCell(`D${colStr}`).value !== null
                     ) {
                       sheet.getCell(
-                        sheet.getCell(address)._column.letter + colStr,
+                        sheet.getCell(address)._column.letter + colStr
                       ).value = '+';
                     } else if (
-                      sheet.getCell(`D${colStr}`).value === v.dangerEventID
-                      && sheet.getCell(`D${colStr}`).value !== null
+                      sheet.getCell(`D${colStr}`).value === v.dangerEventID &&
+                      sheet.getCell(`D${colStr}`).value !== null
                     ) {
                       sheet.getCell(
-                        sheet.getCell(address)._column.letter + colStr,
+                        sheet.getCell(address)._column.letter + colStr
                       ).value = '+';
                     }
                     colStr -= 1;
@@ -1232,11 +1340,11 @@ module.exports.createListHazardsTable = (req, res, next) => {
               });
               res.setHeader(
                 'Content-Type',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
               );
               res.setHeader(
                 'Content-Disposition',
-                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
               );
               workbook.xlsx
                 .write(res)
@@ -1265,8 +1373,8 @@ module.exports.createPlanTimetable = (req, res, next) => {
       next(new NotFound('Предприятие не найдено'));
     }
     if (
-      ent.owner.toString() === req.user._id
-      || ent.access.includes(req.user._id)
+      ent.owner.toString() === req.user._id ||
+      ent.access.includes(req.user._id)
     ) {
       Value.find({ enterpriseId: req.params.id })
         .then((el) => {
@@ -1289,11 +1397,12 @@ module.exports.createPlanTimetable = (req, res, next) => {
                 if (i.dangerEventID !== '') {
                   if (
                     !arr.find(
-                      (n) => n.dangerEventID === i.dangerEventID
-                        && n.obj.toLocaleLowerCase().trim()
-                          === i.obj.toLocaleLowerCase().trim()
-                        && n.source.toLocaleLowerCase().trim()
-                          === i.source.toLocaleLowerCase().trim(),
+                      (n) =>
+                        n.dangerEventID === i.dangerEventID &&
+                        n.obj.toLocaleLowerCase().trim() ===
+                          i.obj.toLocaleLowerCase().trim() &&
+                        n.source.toLocaleLowerCase().trim() ===
+                          i.source.toLocaleLowerCase().trim()
                     )
                   ) {
                     obj.dangerGroupId = i.dangerGroupId;
@@ -1318,11 +1427,12 @@ module.exports.createPlanTimetable = (req, res, next) => {
                 if (i.dangerEventID === '') {
                   if (
                     !arr.find(
-                      (n) => n.dangerEvent776Id === i.dangerEvent776Id
-                        && n.obj.toLocaleLowerCase().trim()
-                          === i.obj.toLocaleLowerCase().trim()
-                        && n.source.toLocaleLowerCase().trim()
-                          === i.source.toLocaleLowerCase().trim(),
+                      (n) =>
+                        n.dangerEvent776Id === i.dangerEvent776Id &&
+                        n.obj.toLocaleLowerCase().trim() ===
+                          i.obj.toLocaleLowerCase().trim() &&
+                        n.source.toLocaleLowerCase().trim() ===
+                          i.source.toLocaleLowerCase().trim()
                     )
                   ) {
                     obj.danger776 = i.danger776;
@@ -1351,11 +1461,12 @@ module.exports.createPlanTimetable = (req, res, next) => {
               arr.forEach((i) => {
                 const numArr = [];
                 el.filter(
-                  (n) => n.dangerEventID === i.dangerEventID
-                    && n.obj.toLocaleLowerCase().trim()
-                      === i.obj.toLocaleLowerCase().trim()
-                    && n.source.toLocaleLowerCase().trim()
-                      === i.source.toLocaleLowerCase().trim(),
+                  (n) =>
+                    n.dangerEventID === i.dangerEventID &&
+                    n.obj.toLocaleLowerCase().trim() ===
+                      i.obj.toLocaleLowerCase().trim() &&
+                    n.source.toLocaleLowerCase().trim() ===
+                      i.source.toLocaleLowerCase().trim()
                 ).forEach((nu) => {
                   if (!numArr.includes(nu.num)) numArr.push(nu.num);
                   let numResult = '';
@@ -1365,11 +1476,12 @@ module.exports.createPlanTimetable = (req, res, next) => {
                   i.num = numResult;
                 });
                 el.filter(
-                  (n) => n.dangerEvent776Id === i.dangerEvent776Id
-                    && n.obj.toLocaleLowerCase().trim()
-                      === i.obj.toLocaleLowerCase().trim()
-                    && n.source.toLocaleLowerCase().trim()
-                      === i.source.toLocaleLowerCase().trim(),
+                  (n) =>
+                    n.dangerEvent776Id === i.dangerEvent776Id &&
+                    n.obj.toLocaleLowerCase().trim() ===
+                      i.obj.toLocaleLowerCase().trim() &&
+                    n.source.toLocaleLowerCase().trim() ===
+                      i.source.toLocaleLowerCase().trim()
                 ).forEach((nu) => {
                   if (!numArr.includes(nu.num)) numArr.push(nu.num);
                   let numResult = '';
@@ -1382,10 +1494,13 @@ module.exports.createPlanTimetable = (req, res, next) => {
 
               arr.forEach((value) => {
                 cell(`A${start}`).value = start - 15;
-                cell(`B${start}`).value = value.danger776Id || value.dangerGroupId;
+                cell(`B${start}`).value =
+                  value.danger776Id || value.dangerGroupId;
                 cell(`C${start}`).value = value.danger776 || value.dangerGroup;
-                cell(`D${start}`).value = value.dangerEvent776Id || value.dangerEventID;
-                cell(`E${start}`).value = value.dangerEvent776 || value.dangerEvent;
+                cell(`D${start}`).value =
+                  value.dangerEvent776Id || value.dangerEventID;
+                cell(`E${start}`).value =
+                  value.dangerEvent776 || value.dangerEvent;
                 cell(`F${start}`).value = value.obj;
                 cell(`G${start}`).value = value.source;
                 cell(`H${start}`).value = value.num;
@@ -1423,8 +1538,10 @@ module.exports.createPlanTimetable = (req, res, next) => {
                   cellSheetTwo(`H${tableTwoStart}`).value = value.num;
                   cellSheetTwo(`I${tableTwoStart}`).value = value.typeSIZ;
                   cellSheetTwo(`J${tableTwoStart}`).value = value.issuanceRate;
-                  cellSheetTwo(`K${tableTwoStart}`).value = value.responsiblePerson;
-                  cellSheetTwo(`L${tableTwoStart}`).value = value.completionMark;
+                  cellSheetTwo(`K${tableTwoStart}`).value =
+                    value.responsiblePerson;
+                  cellSheetTwo(`L${tableTwoStart}`).value =
+                    value.completionMark;
 
                   cellSheetTwo(`A${tableTwoStart}`).style = style;
                   cellSheetTwo(`B${tableTwoStart}`).style = style;
@@ -1443,11 +1560,11 @@ module.exports.createPlanTimetable = (req, res, next) => {
               });
               res.setHeader(
                 'Content-Type',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
               );
               res.setHeader(
                 'Content-Disposition',
-                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
               );
 
               workbook.xlsx
@@ -1477,8 +1594,8 @@ module.exports.createRegisterHazards = (req, res, next) => {
       next(new NotFound('Предприятие не найдено'));
     }
     if (
-      ent.owner.toString() === req.user._id
-      || ent.access.includes(req.user._id)
+      ent.owner.toString() === req.user._id ||
+      ent.access.includes(req.user._id)
     ) {
       Value.find(
         { enterpriseId: req.params.id },
@@ -1496,7 +1613,7 @@ module.exports.createRegisterHazards = (req, res, next) => {
           risk: true,
           dangerEvent776: true,
           num: true,
-        },
+        }
       )
         .then((el) => {
           const fileName = 'Реестр оцененных опасностей_ИОУПР.xlsx';
@@ -1535,9 +1652,10 @@ module.exports.createRegisterHazards = (req, res, next) => {
                 filter.forEach((o) => {
                   if (
                     !arr.some(
-                      (l) => l.source.toLocaleLowerCase()
-                          === o.source.toLocaleLowerCase()
-                        && l.dangerEventID === o.dangerEventID,
+                      (l) =>
+                        l.source.toLocaleLowerCase() ===
+                          o.source.toLocaleLowerCase() &&
+                        l.dangerEventID === o.dangerEventID
                     )
                   ) {
                     arr.push({
@@ -1576,9 +1694,9 @@ module.exports.createRegisterHazards = (req, res, next) => {
                 el.forEach((c) => {
                   if (c.dangerEventID) {
                     if (
-                      c.source.toLocaleLowerCase()
-                        === i.source.toLocaleLowerCase()
-                      && c.dangerEventID === i.dangerEventID
+                      c.source.toLocaleLowerCase() ===
+                        i.source.toLocaleLowerCase() &&
+                      c.dangerEventID === i.dangerEventID
                     ) {
                       if (!countWorker.includes(c.num)) {
                         if (!countWorker.includes(c.num)) {
@@ -1616,9 +1734,9 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   }
                   if (!c.dangerEventID) {
                     if (
-                      c.source.toLocaleLowerCase()
-                        === i.source.toLocaleLowerCase()
-                      && c.dangerEvent776Id === i.dangerEvent776Id
+                      c.source.toLocaleLowerCase() ===
+                        i.source.toLocaleLowerCase() &&
+                      c.dangerEvent776Id === i.dangerEvent776Id
                     ) {
                       if (!countWorker.includes(c.num)) {
                         countWorker.push(c.num);
@@ -1665,11 +1783,12 @@ module.exports.createRegisterHazards = (req, res, next) => {
                 .forEach((item, index) => {
                   const startRow = index + 12;
                   // Работники
-                  const a = item.veryLowWorker
-                    + item.lowWorker
-                    + item.midWorker
-                    + item.highWorker
-                    + item.criticalWorker;
+                  const a =
+                    item.veryLowWorker +
+                    item.lowWorker +
+                    item.midWorker +
+                    item.highWorker +
+                    item.criticalWorker;
                   if (item.veryLowWorker !== 0) {
                     item.vlp = item.veryLowWorker / a;
                   } else {
@@ -1701,11 +1820,12 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   item.h = Math.ceil(item.hp * item.numWorkers);
                   item.c = Math.ceil(item.cp * item.numWorkers);
                   // Рабочие места
-                  const b = item.veryLowPlace
-                    + item.lowPlace
-                    + item.midPlace
-                    + item.highPlace
-                    + item.criticalPlace;
+                  const b =
+                    item.veryLowPlace +
+                    item.lowPlace +
+                    item.midPlace +
+                    item.highPlace +
+                    item.criticalPlace;
                   if (item.veryLowPlace !== 0) {
                     item.pvlp = item.veryLowPlace / b;
                   } else {
@@ -1734,22 +1854,27 @@ module.exports.createRegisterHazards = (req, res, next) => {
 
                   item.pvl = Math.round(item.pvlp * item.countWorkPlaces);
                   item.pl = Math.round(item.plp * item.countWorkPlaces);
-                  item.pm = item.pmp > 0 && item.pmp < 1
-                    ? 1
-                    : Math.round(item.pmp * item.countWorkPlaces);
+                  item.pm =
+                    item.pmp > 0 && item.pmp < 1
+                      ? 1
+                      : Math.round(item.pmp * item.countWorkPlaces);
                   item.ph = Math.round(item.php * item.countWorkPlaces);
                   item.pc = Math.round(item.pcp * item.countWorkPlaces);
                   sheet.getCell(`A${startRow}`).value = index + 1;
                   sheet.getCell(`B${startRow}`).value = item.source;
-                  sheet.getCell(`C${startRow}`).value = item.dangerGroupId || item.danger776Id;
-                  sheet.getCell(`D${startRow}`).value = item.dangerGroup || item.danger776;
-                  sheet.getCell(`E${startRow}`).value = item.dangerEventID || item.dangerEvent776Id;
-                  sheet.getCell(`F${startRow}`).value = item.dangerEvent || item.dangerEvent776;
+                  sheet.getCell(`C${startRow}`).value =
+                    item.dangerGroupId || item.danger776Id;
+                  sheet.getCell(`D${startRow}`).value =
+                    item.dangerGroup || item.danger776;
+                  sheet.getCell(`E${startRow}`).value =
+                    item.dangerEventID || item.dangerEvent776Id;
+                  sheet.getCell(`F${startRow}`).value =
+                    item.dangerEvent || item.dangerEvent776;
                   sheet.getCell(
-                    `G${startRow}`,
+                    `G${startRow}`
                   ).value = `${item.numWorkers}/${item.countWorkPlaces}`;
                   sheet.getCell(
-                    `H${startRow}`,
+                    `H${startRow}`
                   ).value = `${item.vl}/${item.pvl}`;
                   sheet.getCell(`I${startRow}`).value = `${item.l}/${item.pl}`;
                   sheet.getCell(`J${startRow}`).value = `${item.m}/${item.pm}`;
@@ -1814,11 +1939,11 @@ module.exports.createRegisterHazards = (req, res, next) => {
 
               res.setHeader(
                 'Content-Type',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
               );
               res.setHeader(
                 'Content-Disposition',
-                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
               );
 
               workbook.xlsx
@@ -1849,8 +1974,8 @@ module.exports.createListSiz = (req, res, next) => {
       next(new NotFound('Предприятие не найдено'));
     }
     if (
-      ent.owner.toString() === req.user._id
-      || ent.access.includes(req.user._id)
+      ent.owner.toString() === req.user._id ||
+      ent.access.includes(req.user._id)
     ) {
       Value.find({ enterpriseId: req.params.id })
         .then((el) => {
@@ -1895,11 +2020,11 @@ module.exports.createListSiz = (req, res, next) => {
               });
               res.setHeader(
                 'Content-Type',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
               );
               res.setHeader(
                 'Content-Disposition',
-                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`,
+                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
               );
 
               workbook.xlsx

@@ -47,6 +47,7 @@ app.use('/value', require('./routes/enterpriceValue'));
 app.use('/logs', require('./routes/logs'));
 app.use('/update', require('./routes/update'));
 app.use('/work-place', require('./routes/workPlace'));
+app.use('/data', require('./routes/proff767'));
 
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;

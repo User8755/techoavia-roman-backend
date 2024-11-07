@@ -7,7 +7,6 @@ module.exports.getUniqWorkPlace = (req, res, next) => {
   workPlace
     .find({ enterpriseId: req.params.id })
     .then((i) => {
-      console.log(i);
       // const arr = [];
       // i.forEach((doc) => {
       //   if (!arr.some((u) => u.num === doc.num)) {
