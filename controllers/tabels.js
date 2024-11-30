@@ -473,7 +473,19 @@ module.exports.createBaseTabel = (req, res, next) => {
 };
 const workbook = new Excel.Workbook();
 // Нормы выдачи
-module.exports.createNormTabel = (req, res, next) => {
+module.exports.createNormTabel = async (req, res, next) => {
+  const dataSiz = await TypeSiz.find(
+    {},
+    {
+      speciesSIZ: 0,
+      issuanceRate: 0,
+      additionalMeans: 0,
+      AdditionalIssuanceRate: 0,
+      OperatingLevel: 0,
+      standart: 0,
+    }
+  );
+
   Enterprise.findById(req.params.id).then((ent) => {
     if (!ent) {
       next(new NotFound('Предприятие не найдено'));
@@ -512,44 +524,45 @@ module.exports.createNormTabel = (req, res, next) => {
                 .catch((e) => next(e));
             }
 
-            if (i.dangerEventID && i.typeSIZ) {
-              TypeSiz.findOne(
-                {
-                  dependence: i.dangerEventID,
-                  label: i.typeSIZ,
-                },
-                {
-                  markerBase: 1,
-                  markerRubber: 1,
-                  markerSlip: 1,
-                  markerPuncture: 1,
-                  markerGlovesAbrasion: 1,
-                  markerGlovesCut: 1,
-                  markerGlovesPuncture: 1,
-                  markerWinterShoes: 1,
-                  markerWinterclothes: 1,
-                  markerHierarchyOfClothing: 1,
-                  markerHierarchyOfShoes: 1,
-                  markerHierarchyOfGloves: 1,
-                }
-              )
-                .then((item) => {
-                  i.markerBase = item.markerBase;
-                  i.markerRubber = item.markerRubber;
-                  i.markerSlip = item.markerSlip;
-                  i.markerPuncture = item.markerPuncture;
-                  i.markerGlovesAbrasion = item.markerGlovesAbrasion;
-                  i.markerGlovesCut = item.markerGlovesCut;
-                  i.markerGlovesPuncture = item.markerGlovesPuncture;
-                  i.markerWinterShoes = item.markerWinterShoes;
-                  i.markerWinterclothes = item.markerWinterclothes;
-                  i.markerHierarchyOfClothing = item.markerHierarchyOfClothing;
-                  i.markerHierarchyOfShoes = item.markerHierarchyOfShoes;
-                  i.markerHierarchyOfGloves = item.markerHierarchyOfGloves;
-                })
-                .catch((e) => next(e));
-            }
+            // if (i.typeSIZ) {
+            //   TypeSiz.findOne(
+            //     {
+            //       dependence: i.dangerEventID,
+            //       label: i.typeSIZ,
+            //     },
+            //     {
+            //       markerBase: 1,
+            //       markerRubber: 1,
+            //       markerSlip: 1,
+            //       markerPuncture: 1,
+            //       markerGlovesAbrasion: 1,
+            //       markerGlovesCut: 1,
+            //       markerGlovesPuncture: 1,
+            //       markerWinterShoes: 1,
+            //       markerWinterclothes: 1,
+            //       markerHierarchyOfClothing: 1,
+            //       markerHierarchyOfShoes: 1,
+            //       markerHierarchyOfGloves: 1,
+            //     }
+            //   )
+            //     .then((item) => {
+            //       i.markerBase = item.markerBase;
+            //       i.markerRubber = item.markerRubber;
+            //       i.markerSlip = item.markerSlip;
+            //       i.markerPuncture = item.markerPuncture;
+            //       i.markerGlovesAbrasion = item.markerGlovesAbrasion;
+            //       i.markerGlovesCut = item.markerGlovesCut;
+            //       i.markerGlovesPuncture = item.markerGlovesPuncture;
+            //       i.markerWinterShoes = item.markerWinterShoes;
+            //       i.markerWinterclothes = item.markerWinterclothes;
+            //       i.markerHierarchyOfClothing = item.markerHierarchyOfClothing;
+            //       i.markerHierarchyOfShoes = item.markerHierarchyOfShoes;
+            //       i.markerHierarchyOfGloves = item.markerHierarchyOfGloves;
+            //     })
+            //     .catch((e) => next(e));
+            // }
           }
+
           const fileName = 'normSIZ.xlsx';
           workbook.xlsx
             .readFile(fileName)
@@ -567,6 +580,12 @@ module.exports.createNormTabel = (req, res, next) => {
               sheet.getCell('A5').value = entName;
 
               el.forEach((item) => {
+                const handletFilterTypeSiz = dataSiz.find(
+                  (siz) =>
+                    siz.dependence === item.dangerEventID &&
+                    siz.label === item.typeSIZ
+                );
+                console.log(handletFilterTypeSiz);
                 const handleFilterTypeSIZ = convertValues.find(
                   (i) => i.typeSIZ === item.typeSIZ
                 );
@@ -595,18 +614,27 @@ module.exports.createNormTabel = (req, res, next) => {
                   cell('I', startRow).value = item.dangerEventID;
                   cell('J', startRow).value = item.dangerEvent;
                   // маркеры
-                  cell('K', startRow).value = item.markerBase;
-                  cell('L', startRow).value = item.markerRubber;
-                  cell('M', startRow).value = item.markerSlip;
-                  cell('N', startRow).value = item.markerPuncture;
-                  cell('O', startRow).value = item.markerGlovesAbrasion;
-                  cell('P', startRow).value = item.markerGlovesCut;
-                  cell('Q', startRow).value = item.markerGlovesPuncture;
-                  cell('R', startRow).value = item.markerWinterShoes;
-                  cell('S', startRow).value = item.markerWinterclothes;
-                  cell('T', startRow).value = item.markerHierarchyOfClothing;
-                  cell('U', startRow).value = item.markerHierarchyOfShoes;
-                  cell('V', startRow).value = item.markerHierarchyOfGloves;
+                  cell('K', startRow).value = handletFilterTypeSiz.markerBase;
+                  cell('L', startRow).value = handletFilterTypeSiz.markerRubber;
+                  cell('M', startRow).value = handletFilterTypeSiz.markerSlip;
+                  cell('N', startRow).value =
+                    handletFilterTypeSiz.markerPuncture;
+                  cell('O', startRow).value =
+                    handletFilterTypeSiz.markerGlovesAbrasion;
+                  cell('P', startRow).value =
+                    handletFilterTypeSiz.markerGlovesCut;
+                  cell('Q', startRow).value =
+                    handletFilterTypeSiz.markerGlovesPuncture;
+                  cell('R', startRow).value =
+                    handletFilterTypeSiz.markerWinterShoes;
+                  cell('S', startRow).value =
+                    handletFilterTypeSiz.markerWinterclothes;
+                  cell('T', startRow).value =
+                    handletFilterTypeSiz.markerHierarchyOfClothing;
+                  cell('U', startRow).value =
+                    handletFilterTypeSiz.markerHierarchyOfShoes;
+                  cell('V', startRow).value =
+                    handletFilterTypeSiz.markerHierarchyOfGloves;
                   // стили
                   cell('A', startRow).style = style;
                   cell('B', startRow).style = style;
