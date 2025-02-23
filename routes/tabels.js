@@ -9,6 +9,7 @@ const {
   createPlanTimetable,
   createRegisterHazards,
   createListSiz,
+  createCorrelationOfHazards,
 } = require('../controllers/tabels');
 const auth = require('../middlewares/auth');
 
@@ -21,5 +22,6 @@ router.get('/listHazards/:id', auth, createListHazardsTable);
 router.get('/planTimetable/:id', auth, createPlanTimetable);
 router.get('/registerHazards/:id', auth, createRegisterHazards);
 router.get('/listSiz/:id', auth, createListSiz);
+router.get('/correlation/:id', auth, createCorrelationOfHazards);
 
 module.exports = router;
