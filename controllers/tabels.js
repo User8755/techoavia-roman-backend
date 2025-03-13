@@ -64,215 +64,405 @@ const borderCell = {
   top: { style: 'thin' },
 };
 // Базовая таблица СИЗ
-module.exports.createBaseTabelSIZ = (req, res, next) => {
-  Enterprise.findById(req.params.id).then((ent) => {
-    if (!ent) {
-      next(new NotFound('Предприятие не найдено'));
-    }
-    if (
-      ent.owner.toString() === req.user._id ||
-      ent.access.includes(req.user._id)
-    ) {
-      Value.find({ enterpriseId: req.params.id })
-        .then(async (el) => {
-          const workbook = new Excel.Workbook();
-          const sheet = workbook.addWorksheet('sheet');
-          sheet.columns = [
-            {
-              header: '№ п/п',
-              key: 'number',
-              width: 9,
-              style: {
-                fill: {
-                  type: 'pattern',
-                  pattern: 'solid',
-                  fgColor: { argb: 'E0E0E0' },
-                },
-              },
-              border: {
-                left: { style: 'thin' },
-                right: { style: 'thin' },
-                bottom: { style: 'thin' },
-                top: { style: 'thin' },
-              },
-            },
-            {
-              header: 'Код профессии (при наличии)',
-              key: 'proffId',
-              width: 20,
-            },
-            { header: 'Номер рабочего места', key: 'num', width: 20 },
-            {
-              header: 'Профессия (Приказ 767н приложения 1):',
-              key: 'proff',
-              width: 20,
-            },
-            { header: 'Профессия', key: 'job', width: 20 },
-            { header: 'Подразделение', key: 'subdivision', width: 20 },
-            { header: 'Тип средства защиты', key: 'type', width: 20 },
-            {
-              header:
-                'Наименование специальной одежды, специальной обуви и других средств индивидуальной защиты',
-              key: 'vid',
-              width: 20,
-            },
-            {
-              header:
-                'Нормы выдачи на год (период) (штуки, пары, комплекты, мл)',
-              key: 'norm',
-              width: 20,
-            },
-            { header: 'ОБЪЕКТ', key: 'obj', width: 20 },
-            { header: 'Источник', key: 'source', width: 20 },
-            { header: 'ID группы опасностей', key: 'dangerID', width: 20 },
-            { header: 'Группа опасности', key: 'danger', width: 25 },
-            { header: 'Опасность, ID 767', key: 'dangerGroupId', width: 17 },
-            { header: 'Опасности', key: 'dangerGroup', width: 25 },
-            {
-              header: 'Опасное событие, текст 767',
-              key: 'dangerEventID',
-              width: 25,
-            },
-            { header: 'Опасное событие', key: 'dangerEvent', width: 25 },
-            { header: 'Тяжесть', key: 'heaviness', width: 8 },
-            { header: 'Вероятность', key: 'probability', width: 12 },
-            { header: 'ИПР', key: 'ipr', width: 5 },
-            { header: 'Уровень риска', key: 'risk', width: 20 },
-            { header: 'Приемлемость', key: 'acceptability', width: 20 },
-            { header: 'Отношение к риску', key: 'riskAttitude', width: 20 },
-            { header: 'Тип СИЗ', key: 'typeSIZ', width: 20 },
-            { header: 'Вид СИЗ', key: 'speciesSIZ', width: 40 },
-            {
-              header:
-                'Нормы выдачи средств индивидуальной защиты на год (штуки, пары, комплекты, мл)',
-              key: 'issuanceRate',
-              width: 20,
-            },
-            { header: 'ДОП средства', key: 'additionalMeans', width: 20 },
-            {
-              header:
-                'Нормы выдачи средств индивидуальной защиты, выдаваемых дополнительно, на год (штуки, пары, комплекты, мл)',
-              key: 'AdditionalIssuanceRate',
-              width: 20,
-            },
-            { header: 'Стандарты (ГОСТ, EN)', key: 'standart', width: 20 },
-            { header: 'Экспл.уровень', key: 'OperatingLevel', width: 20 },
-            { header: 'Комментарий', key: 'commit', width: 20 },
-            { header: 'ID опасности 776н', key: 'danger776Id', width: 20 },
-            { header: 'Опасности 776н', key: 'danger776', width: 20 },
-            {
-              header: 'ID опасного события 776н',
-              key: 'dangerEvent776Id',
-              width: 20,
-            },
-            {
-              header: 'Опасное событие 776н',
-              key: 'dangerEvent776',
-              width: 20,
-            },
-            { header: 'ID мер управления', key: 'riskManagementID', width: 20 },
-            {
-              header: 'Меры управления/контроля профессиональных рисков',
-              key: 'riskManagement',
-              width: 20,
-            },
-            { header: 'Тяжесть', key: 'heaviness1', width: 8 },
-            { header: 'Вероятность', key: 'probability1', width: 12 },
-            { header: 'ИПР', key: 'ipr1', width: 5 },
-            { header: 'Уровень риска1', key: 'risk1', width: 20 },
-            { header: 'Приемлемость1', key: 'acceptability1', width: 20 },
-            { header: 'Отношение к риску1', key: 'riskAttitude1', width: 20 },
-            {
-              header: 'Существующие меры упр-я рисками',
-              key: 'existingRiskManagement',
-              width: 20,
-            },
-            { header: 'Периодичность', key: 'periodicity', width: 20 },
-            {
-              header: 'Ответственное лицо',
-              key: 'responsiblePerson',
-              width: 20,
-            },
-            {
-              header: 'Отметка о выполнении',
-              key: 'completionMark',
-              width: 20,
-            },
-            { header: 'Кол-во работников', key: 'numWorkers', width: 20 },
-            { header: 'Оборудование', key: 'equipment', width: 20 },
-            { header: 'Материалы', key: 'materials', width: 20 },
-            { header: 'Трудовая функция', key: 'laborFunction', width: 20 },
-            { header: 'Код ОК-016-94:', key: 'code', width: 20 },
-            { header: 'Тип синт:', key: 'typeSint', width: 20 },
-            { header: 'Вид синт:', key: 'vidSint', width: 20 },
-            { header: 'маркер общий:', key: 'marker', width: 20 },
-          ];
+module.exports.createBaseTabelSIZ = async (req, res, next) => {
+  const enterprise = await Enterprise.findById(req.params.id);
 
-          let strIndex = 1;
-          const arr = [];
-          el.forEach((item) => {
-            item.num = String(item.num);
-            if (!arr.some((u) => u === item.num)) {
-              arr.push(item.num);
-            }
-          });
-          arr.sort((a, b) => a.localeCompare(b));
-          arr.sort((a, b) => a - b);
-          sheet.autoFilter = 'A1:AZ1';
+  const owner =
+    enterprise.owner.toString() != req.user._id ||
+    !enterprise.access.includes(req.user._id);
 
-          for (const data of arr) {
-            const filtredArr = el.filter((f) => f.num === data);
-            for (let k = 0; k <= filtredArr.length - 1; k += 1) {
-              // eslint-disable-next-line no-plusplus
-              filtredArr[k].number = strIndex++;
-              filtredArr[k].typeSint = filtredArr[k].typeSIZ;
-              filtredArr[k].vidSint = filtredArr[k].speciesSIZ;
-              sheet.addRow(filtredArr[k]);
-              let addSiz = true;
-              if (filtredArr[k].proffSIZ.length > 0 && addSiz) {
-                // if (k === 0 && filtredArr[0].proff) {
-                filtredArr[k].proffSIZ.forEach((siz) => {
-                  siz.num = filtredArr[k].num;
-                  siz.proff = filtredArr[k].proff;
-                  siz.proffId = filtredArr[k].proffId;
-                  siz.typeSint = siz.type;
-                  siz.vidSint = siz.vid;
-                  sheet.addRow(siz);
-                });
-                addSiz = false;
-              }
-            }
-          }
-          res.setHeader(
-            'Content-Type',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-          );
-          res.setHeader(
-            'Content-Disposition',
-            'attachment; filename="Workbook.xlsx"'
-          );
+  if (!enterprise) next(new NotFound('Предприятие не найдено'));
+  if (!owner) next(new ConflictError('Нет доступа'));
 
-          workbook.xlsx
-            .write(res)
-            .then(() => {
-              res.end();
-            })
-            .catch((err) => {
-              next(err);
-            });
+  const value = await Value.find({ enterpriseId: req.params.id });
+
+  const uniqWorkPlace = [...new Set(value.map((i) => i.num))];
+  const sheet = workbook.addWorksheet('sheet');
+  sheet.columns = [
+    {
+      header: '№ п/п',
+      key: 'number',
+      width: 9,
+      style: {
+        fill: {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'E0E0E0' },
+        },
+      },
+      border: {
+        left: { style: 'thin' },
+        right: { style: 'thin' },
+        bottom: { style: 'thin' },
+        top: { style: 'thin' },
+      },
+    },
+    {
+      header: 'Код профессии (при наличии)',
+      key: 'proffId',
+      width: 20,
+    },
+    { header: 'Номер рабочего места', key: 'num', width: 20 },
+    {
+      header: 'Профессия (Приказ 767н приложения 1):',
+      key: 'proff',
+      width: 20,
+    },
+    { header: 'Профессия', key: 'job', width: 20 },
+    { header: 'Подразделение', key: 'subdivision', width: 20 },
+    // { header: 'Тип средства защиты', key: 'type', width: 20 },
+    // {
+    //   header:
+    //     'Наименование специальной одежды, специальной обуви и других средств индивидуальной защиты',
+    //   key: 'vid',
+    //   width: 20,
+    // },
+    // {
+    //   header: 'Нормы выдачи на год (период) (штуки, пары, комплекты, мл)',
+    //   key: 'norm',
+    //   width: 20,
+    // },
+    { header: 'ОБЪЕКТ', key: 'obj', width: 20 },
+    { header: 'Источник', key: 'source', width: 20 },
+    { header: 'ID группы опасностей', key: 'dangerID', width: 20 },
+    { header: 'Группа опасности', key: 'danger', width: 25 },
+    { header: 'Опасность, ID 767', key: 'dangerGroupId', width: 17 },
+    { header: 'Опасности', key: 'dangerGroup', width: 25 },
+    {
+      header: 'Опасное событие, текст 767',
+      key: 'dangerEventID',
+      width: 25,
+    },
+    { header: 'Опасное событие', key: 'dangerEvent', width: 25 },
+    { header: 'Тяжесть', key: 'heaviness', width: 8 },
+    { header: 'Вероятность', key: 'probability', width: 12 },
+    { header: 'ИПР', key: 'ipr', width: 5 },
+    { header: 'Уровень риска', key: 'risk', width: 20 },
+    { header: 'Приемлемость', key: 'acceptability', width: 20 },
+    { header: 'Отношение к риску', key: 'riskAttitude', width: 20 },
+    { header: 'Тип СИЗ', key: 'typeSIZ', width: 20 },
+    { header: 'Вид СИЗ', key: 'speciesSIZ', width: 40 },
+    {
+      header:
+        'Нормы выдачи средств индивидуальной защиты на год (штуки, пары, комплекты, мл)',
+      key: 'issuanceRate',
+      width: 20,
+    },
+    { header: 'ДОП средства', key: 'additionalMeans', width: 20 },
+    {
+      header:
+        'Нормы выдачи средств индивидуальной защиты, выдаваемых дополнительно, на год (штуки, пары, комплекты, мл)',
+      key: 'AdditionalIssuanceRate',
+      width: 20,
+    },
+    { header: 'Стандарты (ГОСТ, EN)', key: 'standart', width: 20 },
+    { header: 'Экспл.уровень', key: 'OperatingLevel', width: 20 },
+    { header: 'Комментарий', key: 'commit', width: 20 },
+    { header: 'ID опасности 776н', key: 'danger776Id', width: 20 },
+    { header: 'Опасности 776н', key: 'danger776', width: 20 },
+    {
+      header: 'ID опасного события 776н',
+      key: 'dangerEvent776Id',
+      width: 20,
+    },
+    {
+      header: 'Опасное событие 776н',
+      key: 'dangerEvent776',
+      width: 20,
+    },
+    { header: 'ID мер управления', key: 'riskManagementID', width: 20 },
+    {
+      header: 'Меры управления/контроля профессиональных рисков',
+      key: 'riskManagement',
+      width: 20,
+    },
+    { header: 'Тяжесть', key: 'heaviness1', width: 8 },
+    { header: 'Вероятность', key: 'probability1', width: 12 },
+    { header: 'ИПР', key: 'ipr1', width: 5 },
+    { header: 'Уровень риска1', key: 'risk1', width: 20 },
+    { header: 'Приемлемость1', key: 'acceptability1', width: 20 },
+    { header: 'Отношение к риску1', key: 'riskAttitude1', width: 20 },
+    {
+      header: 'Существующие меры упр-я рисками',
+      key: 'existingRiskManagement',
+      width: 20,
+    },
+    { header: 'Периодичность', key: 'periodicity', width: 20 },
+    {
+      header: 'Ответственное лицо',
+      key: 'responsiblePerson',
+      width: 20,
+    },
+    {
+      header: 'Отметка о выполнении',
+      key: 'completionMark',
+      width: 20,
+    },
+    { header: 'Кол-во работников', key: 'numWorkers', width: 20 },
+    { header: 'Оборудование', key: 'equipment', width: 20 },
+    { header: 'Материалы', key: 'materials', width: 20 },
+    { header: 'Трудовая функция', key: 'laborFunction', width: 20 },
+    { header: 'Код ОК-016-94:', key: 'code', width: 20 },
+    { header: 'Тип синт:', key: 'typeSint', width: 20 },
+    { header: 'Вид синт:', key: 'vidSint', width: 20 },
+    { header: 'маркер общий:', key: 'marker', width: 20 },
+  ];
+
+  for (const obj of uniqWorkPlace) {
+    const filtredArr = value.filter((v) => v.num === obj);
+    if (filtredArr[0].proffId) {
+      const siz = await Proff767.find(
+        { proffId: filtredArr[0].proffId },
+        { vid: 1, type: 1, norm: 1 }
+      );
+      const array3 = filtredArr.concat(siz);
+      array3.forEach((i) => {
+        if (i.type) {
+          i.proff = filtredArr[0].proff;
+          i.num = filtredArr[0].num;
+          i.proffId = filtredArr[0].proffId;
+          i.job = filtredArr[0].job;
+          i.subdivision = filtredArr[0].subdivision;
+          i.typeSIZ = i.type;
+          i.speciesSIZ = i.vid;
+          i.issuanceRate = i.norm;
+        }
+      });
+      array3
+        .sort((a, b) => {
+          const nameA = a.typeSIZ;
+          const nameB = b.typeSIZ;
+          if (nameA > nameB) return 1;
+          if (nameA < nameB) return -1;
+          return 0;
         })
-        .catch((i) => {
-          next(i);
+        .forEach((i) => {
+          sheet.addRow(i);
         });
     }
-    logs
-      .create({
-        action: `Пользователь ${req.user.name} выгрузил(а) таблицу Базовая таблица  ${ent.enterprise}`,
-        userId: req.user._id,
-        enterpriseId: ent._id,
-      })
-      .catch((e) => next(e));
-  });
+  }
+  sheet.autoFilter = 'A1:AZ1';
+  res.set(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  );
+  res.set(
+    'Content-Disposition',
+    `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
+  );
+  await workbook.xlsx
+    .write(res)
+    .then(() => {
+      res.end();
+    })
+    .catch((err) => next(err));
+  // Enterprise.findById(req.params.id).then((ent) => {
+  //   if (!ent) {
+  //     next(new NotFound('Предприятие не найдено'));
+  //   }
+  //   if (
+  //     ent.owner.toString() === req.user._id ||
+  //     ent.access.includes(req.user._id)
+  //   ) {
+  //     Value.find({ enterpriseId: req.params.id })
+  //       .then(async (el) => {
+  //         const sheet = workbook.addWorksheet('sheet');
+  //         sheet.columns = [
+  //           {
+  //             header: '№ п/п',
+  //             key: 'number',
+  //             width: 9,
+  //             style: {
+  //               fill: {
+  //                 type: 'pattern',
+  //                 pattern: 'solid',
+  //                 fgColor: { argb: 'E0E0E0' },
+  //               },
+  //             },
+  //             border: {
+  //               left: { style: 'thin' },
+  //               right: { style: 'thin' },
+  //               bottom: { style: 'thin' },
+  //               top: { style: 'thin' },
+  //             },
+  //           },
+  //           {
+  //             header: 'Код профессии (при наличии)',
+  //             key: 'proffId',
+  //             width: 20,
+  //           },
+  //           { header: 'Номер рабочего места', key: 'num', width: 20 },
+  //           {
+  //             header: 'Профессия (Приказ 767н приложения 1):',
+  //             key: 'proff',
+  //             width: 20,
+  //           },
+  //           { header: 'Профессия', key: 'job', width: 20 },
+  //           { header: 'Подразделение', key: 'subdivision', width: 20 },
+  //           { header: 'Тип средства защиты', key: 'type', width: 20 },
+  //           {
+  //             header:
+  //               'Наименование специальной одежды, специальной обуви и других средств индивидуальной защиты',
+  //             key: 'vid',
+  //             width: 20,
+  //           },
+  //           {
+  //             header:
+  //               'Нормы выдачи на год (период) (штуки, пары, комплекты, мл)',
+  //             key: 'norm',
+  //             width: 20,
+  //           },
+  //           { header: 'ОБЪЕКТ', key: 'obj', width: 20 },
+  //           { header: 'Источник', key: 'source', width: 20 },
+  //           { header: 'ID группы опасностей', key: 'dangerID', width: 20 },
+  //           { header: 'Группа опасности', key: 'danger', width: 25 },
+  //           { header: 'Опасность, ID 767', key: 'dangerGroupId', width: 17 },
+  //           { header: 'Опасности', key: 'dangerGroup', width: 25 },
+  //           {
+  //             header: 'Опасное событие, текст 767',
+  //             key: 'dangerEventID',
+  //             width: 25,
+  //           },
+  //           { header: 'Опасное событие', key: 'dangerEvent', width: 25 },
+  //           { header: 'Тяжесть', key: 'heaviness', width: 8 },
+  //           { header: 'Вероятность', key: 'probability', width: 12 },
+  //           { header: 'ИПР', key: 'ipr', width: 5 },
+  //           { header: 'Уровень риска', key: 'risk', width: 20 },
+  //           { header: 'Приемлемость', key: 'acceptability', width: 20 },
+  //           { header: 'Отношение к риску', key: 'riskAttitude', width: 20 },
+  //           { header: 'Тип СИЗ', key: 'typeSIZ', width: 20 },
+  //           { header: 'Вид СИЗ', key: 'speciesSIZ', width: 40 },
+  //           {
+  //             header:
+  //               'Нормы выдачи средств индивидуальной защиты на год (штуки, пары, комплекты, мл)',
+  //             key: 'issuanceRate',
+  //             width: 20,
+  //           },
+  //           { header: 'ДОП средства', key: 'additionalMeans', width: 20 },
+  //           {
+  //             header:
+  //               'Нормы выдачи средств индивидуальной защиты, выдаваемых дополнительно, на год (штуки, пары, комплекты, мл)',
+  //             key: 'AdditionalIssuanceRate',
+  //             width: 20,
+  //           },
+  //           { header: 'Стандарты (ГОСТ, EN)', key: 'standart', width: 20 },
+  //           { header: 'Экспл.уровень', key: 'OperatingLevel', width: 20 },
+  //           { header: 'Комментарий', key: 'commit', width: 20 },
+  //           { header: 'ID опасности 776н', key: 'danger776Id', width: 20 },
+  //           { header: 'Опасности 776н', key: 'danger776', width: 20 },
+  //           {
+  //             header: 'ID опасного события 776н',
+  //             key: 'dangerEvent776Id',
+  //             width: 20,
+  //           },
+  //           {
+  //             header: 'Опасное событие 776н',
+  //             key: 'dangerEvent776',
+  //             width: 20,
+  //           },
+  //           { header: 'ID мер управления', key: 'riskManagementID', width: 20 },
+  //           {
+  //             header: 'Меры управления/контроля профессиональных рисков',
+  //             key: 'riskManagement',
+  //             width: 20,
+  //           },
+  //           { header: 'Тяжесть', key: 'heaviness1', width: 8 },
+  //           { header: 'Вероятность', key: 'probability1', width: 12 },
+  //           { header: 'ИПР', key: 'ipr1', width: 5 },
+  //           { header: 'Уровень риска1', key: 'risk1', width: 20 },
+  //           { header: 'Приемлемость1', key: 'acceptability1', width: 20 },
+  //           { header: 'Отношение к риску1', key: 'riskAttitude1', width: 20 },
+  //           {
+  //             header: 'Существующие меры упр-я рисками',
+  //             key: 'existingRiskManagement',
+  //             width: 20,
+  //           },
+  //           { header: 'Периодичность', key: 'periodicity', width: 20 },
+  //           {
+  //             header: 'Ответственное лицо',
+  //             key: 'responsiblePerson',
+  //             width: 20,
+  //           },
+  //           {
+  //             header: 'Отметка о выполнении',
+  //             key: 'completionMark',
+  //             width: 20,
+  //           },
+  //           { header: 'Кол-во работников', key: 'numWorkers', width: 20 },
+  //           { header: 'Оборудование', key: 'equipment', width: 20 },
+  //           { header: 'Материалы', key: 'materials', width: 20 },
+  //           { header: 'Трудовая функция', key: 'laborFunction', width: 20 },
+  //           { header: 'Код ОК-016-94:', key: 'code', width: 20 },
+  //           { header: 'Тип синт:', key: 'typeSint', width: 20 },
+  //           { header: 'Вид синт:', key: 'vidSint', width: 20 },
+  //           { header: 'маркер общий:', key: 'marker', width: 20 },
+  //         ];
+
+  //         let strIndex = 1;
+  //         const arr = [];
+  //         el.forEach((item) => {
+  //           item.num = String(item.num);
+  //           if (!arr.some((u) => u === item.num)) {
+  //             arr.push(item.num);
+  //           }
+  //         });
+  //         arr.sort((a, b) => a.localeCompare(b));
+  //         arr.sort((a, b) => a - b);
+  //         sheet.autoFilter = 'A1:AZ1';
+
+  //         for (const data of arr) {
+  //           const filtredArr = el.filter((f) => f.num === data);
+  //           for (let k = 0; k <= filtredArr.length - 1; k += 1) {
+  //             // eslint-disable-next-line no-plusplus
+  //             filtredArr[k].number = strIndex++;
+  //             filtredArr[k].typeSint = filtredArr[k].typeSIZ;
+  //             filtredArr[k].vidSint = filtredArr[k].speciesSIZ;
+  //             sheet.addRow(filtredArr[k]);
+  //             let addSiz = true;
+  //             if (filtredArr[k].proffSIZ.length > 0 && addSiz) {
+  //               // if (k === 0 && filtredArr[0].proff) {
+  //               filtredArr[k].proffSIZ.forEach((siz) => {
+  //                 siz.num = filtredArr[k].num;
+  //                 siz.proff = filtredArr[k].proff;
+  //                 siz.proffId = filtredArr[k].proffId;
+  //                 siz.typeSint = siz.type;
+  //                 siz.vidSint = siz.vid;
+  //                 sheet.addRow(siz);
+  //               });
+  //               addSiz = false;
+  //             }
+  //           }
+  //         }
+  //         res.setHeader(
+  //           'Content-Type',
+  //           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  //         );
+  //         res.setHeader(
+  //           'Content-Disposition',
+  //           'attachment; filename="Workbook.xlsx"'
+  //         );
+
+  //         workbook.xlsx
+  //           .write(res)
+  //           .then(() => {
+  //             res.end();
+  //           })
+  //           .catch((err) => {
+  //             next(err);
+  //           });
+  //       })
+  //       .catch((i) => {
+  //         next(i);
+  //       });
+  //   }
+  //   logs
+  //     .create({
+  //       action: `Пользователь ${req.user.name} выгрузил(а) таблицу Базовая таблица  ${ent.enterprise}`,
+  //       userId: req.user._id,
+  //       enterpriseId: ent._id,
+  //     })
+  //     .catch((e) => next(e));
+  // });
 };
 
 module.exports.createBaseTabel = (req, res, next) => {
