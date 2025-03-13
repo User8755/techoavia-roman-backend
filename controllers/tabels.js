@@ -77,6 +77,7 @@ module.exports.createBaseTabelSIZ = async (req, res, next) => {
   const value = await Value.find({ enterpriseId: req.params.id });
 
   const uniqWorkPlace = [...new Set(value.map((i) => i.num))];
+  const workbook = new Excel.Workbook();
   const sheet = workbook.addWorksheet('sheet');
   sheet.columns = [
     {
