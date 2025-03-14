@@ -2416,7 +2416,20 @@ module.exports.createCorrelationOfHazards = async (req, res, next) => {
       num: 1,
     }
   ).catch((err) => next(err));
-
+  const uniqEventId = [...new Set(value.map((i) => i.dangerEventID))];
+  const arr = [];
+  uniqEventId.forEach((i) => {
+    const obj = { num: '' };
+    const filterd = value.filter((f) => f.dangerEventID === i);
+    obj.dangerGroupId = filterd[0].dangerGroupId;
+    obj.dangerGroup = filterd[0].dangerGroup;
+    obj.dangerEventID = filterd[0].dangerEventID;
+    obj.dangerEvent = filterd[0].dangerEvent;
+    filterd.forEach((c) => {
+      obj.num = obj.num.concat(c.num, '; ');
+    });
+    arr.push(obj);
+  });
   await workbook.xlsx
     .readFile(fileName)
 
@@ -2430,7 +2443,7 @@ module.exports.createCorrelationOfHazards = async (req, res, next) => {
   const TEXT_CELL_10 =
     'Приказ Минтруда РФ от 29.10.2021 №767н "Об утверждении Единых типовых норм выдачи средств индивидуальной защиты и смывающих средств.';
   cell('I', 6).value = enterprise.chairman;
-  value.forEach((i) => {
+  arr.forEach((i) => {
     const number = startRow - 15;
     cell('A', startRow).value = number;
     cell('F', startRow).value = i.dangerGroupId;
