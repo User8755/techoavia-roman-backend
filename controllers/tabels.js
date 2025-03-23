@@ -666,354 +666,471 @@ module.exports.createBaseTabel = (req, res, next) => {
 const workbook = new Excel.Workbook();
 // Нормы выдачи
 module.exports.createNormTabel = async (req, res, next) => {
-  const dataSiz = await TypeSiz.find(
-    {},
-    {
-      speciesSIZ: 0,
-      issuanceRate: 0,
-      additionalMeans: 0,
-      AdditionalIssuanceRate: 0,
-      OperatingLevel: 0,
-      standart: 0,
-    }
+  const enterprise = await Enterprise.findById(req.params.id);
+
+  const entName = `Нормы выдачи средств индивидуальной защиты (далее — СИЗ) в ${enterprise.enterprise} (наименование подразделения, организации)
+  в соответствии с требованиями приказов Минтруда от 29 октября 2021 г.
+  №767н «Об утверждении единых типовых норм (далее – ЕТН) выдачи СИЗ и смывающих средств»,
+  №766н «Об утверждении правил обеспечения работников средствами индивидуальной защиты и смывающими средствами»
+  (далее - приказ №766н)`;
+
+  const owner =
+    enterprise.owner.toString() != req.user._id ||
+    !enterprise.access.includes(req.user._id);
+
+  if (!enterprise) next(new NotFound('Предприятие не найдено'));
+  if (!owner) next(new ConflictError('Нет доступа'));
+
+  const value = await Value.find(
+    { enterpriseId: req.params.id },
+    { proffSIZ: 0 }
   );
+  const allTypeSIZ = await TypeSiz.find({});
+  const uniqWorkPlace = [...new Set(value.map((i) => i.num))];
 
-  Enterprise.findById(req.params.id).then((ent) => {
-    if (!ent) {
-      next(new NotFound('Предприятие не найдено'));
+  const fileName = 'normSIZ.xlsx';
+  await workbook.xlsx.readFile(fileName);
+  const sheet = workbook.getWorksheet(1);
+
+  const cell = (c, i) => sheet.getCell(c + i);
+
+  let startRow = 9;
+  cell('A', 5).value = entName;
+
+  let array3 = [];
+  for (const obj of uniqWorkPlace) {
+    const filtredArr = value.filter((v) => v.num === obj);
+    if (filtredArr[0].proffId) {
+      const siz = await Proff767.find(
+        { proffId: filtredArr[0].proffId },
+        { proff: 0 }
+      );
+      array3 = filtredArr.concat(siz);
     }
-    if (
-      ent.owner.toString() === req.user._id ||
-      ent.access.includes(req.user._id)
-    ) {
-      Value.find({ enterpriseId: req.params.id })
-        .then((el) => {
-          for (i of el) {
-            if (i.proffId) {
-              Proff767.find(
-                { proffId: i.proffId },
-                {
-                  markerBase: 1,
-                  markerRubber: 1,
-                  markerSlip: 1,
-                  markerPuncture: 1,
-                  markerGlovesAbrasion: 1,
-                  markerGlovesCut: 1,
-                  markerGlovesPuncture: 1,
-                  markerWinterShoes: 1,
-                  markerWinterclothes: 1,
-                  markerHierarchyOfClothing: 1,
-                  markerHierarchyOfShoes: 1,
-                  markerHierarchyOfGloves: 1,
-                  vid: 1,
-                  norm: 1,
-                  type: 1,
-                }
-              )
-                .then((item) => {
-                  i.proffSIZ = item;
-                })
-                .catch((e) => next(e));
-            }
-          }
 
-          const fileName = 'normSIZ.xlsx';
-          workbook.xlsx
-            .readFile(fileName)
-            .then((e) => {
-              const entName = `Нормы выдачи средств индивидуальной защиты (далее — СИЗ) в ${ent.enterprise} (наименование подразделения, организации)
-                в соответствии с требованиями приказов Минтруда от 29 октября 2021 г.
-                №767н «Об утверждении единых типовых норм (далее – ЕТН) выдачи СИЗ и смывающих средств»,
-                №766н «Об утверждении правил обеспечения работников средствами индивидуальной защиты и смывающими средствами»
-                (далее - приказ №766н)`;
+    for (const i of array3) {
+      const strWorlPlace = `${filtredArr[0].num}. ${
+        filtredArr[0].proffId ? filtredArr[0].proff : filtredArr[0].job
+      }`;
+      const typeSIZ = i.typeSIZ || i.type;
+      const splitType = i.typeSIZ?.split(' для ')[1] || i.typeSIZ;
+      const nameSIZ = `${i.speciesSIZ ? i.speciesSIZ : i.vid} для защиты от ${
+        i.typeSIZ ? splitType : i.type
+      } ${i.OperatingLevel ? i.OperatingLevel : ''}`;
 
-              const sheet = e.getWorksheet('Лист1');
-              const cell = (c, i) => sheet.getCell(c + i);
-              let startRow = 9;
-              sheet.getCell('A5').value = entName;
+      const basis = !i.dangerEventID
+        ? `Пункт ${i.proffId} Приложения 1 Приказа 767н`
+        : `п. опасное событие, текст ${i.dangerEventID} Приложения 2 Приказа 767н`;
 
-              el.forEach((item) => {
-                const handletFilterTypeSiz = dataSiz.find(
-                  (siz) =>
-                    siz.dependence === item.dangerEventID &&
-                    siz.label === item.typeSIZ
-                );
+      const filtredTypeSIZ = allTypeSIZ.filter(
+        (f) => f.dependence === i.dangerEventID && f.speciesSIZ === i.speciesSIZ
+      );
 
-                const handleFilterTypeSIZ = convertValues.find(
-                  (i) => i.typeSIZ === item.typeSIZ
-                );
+      cell('B', startRow).value = filtredArr[0].subdivision;
+      cell('C', startRow).value = strWorlPlace;
+      cell('D', startRow).value = typeSIZ;
+      cell('E', startRow).value = nameSIZ;
+      cell('F', startRow).value = i.issuanceRate || i.norm;
+      cell('G', startRow).value = basis;
 
-                const stringProff = item.proffId
-                  ? `${item.num}. ${item.proff}. ${item.subdivision}`
-                  : `${item.num}. ${item.job}. ${item.subdivision}.`;
-                if (item.typeSIZ) {
-                  //новое
-                  cell('A', startRow).value = startRow - 8;
-                  cell('B', startRow).value = item.subdivision;
-                  cell('C', startRow).value = stringProff;
-                  cell('D', startRow).value = item.typeSIZ;
-                  cell('E', startRow).value = !handleFilterTypeSIZ
-                    ? `${item.speciesSIZ} ${
-                        item.OperatingLevel ? `${item.OperatingLevel}` : ''
-                      }  ${item.standart ? `${item.standart}` : ''}`
-                    : `${item.speciesSIZ} ${handleFilterTypeSIZ.forTable}  ${
-                        item.OperatingLevel ? `${item.OperatingLevel}` : ''
-                      }  ${item.standart ? `${item.standart}` : ''}`;
-                  cell('F', startRow).value = item.issuanceRate;
-                  cell(
-                    'G',
-                    startRow
-                  ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
-                  // маркеры
-                  cell('H', startRow).value = handletFilterTypeSiz.markerBase;
-                  cell('I', startRow).value = handletFilterTypeSiz.markerRubber;
-                  cell('J', startRow).value = handletFilterTypeSiz.markerSlip;
-                  cell('K', startRow).value =
-                    handletFilterTypeSiz.markerPuncture;
-                  cell('L', startRow).value =
-                    handletFilterTypeSiz.markerGlovesAbrasion;
-                  cell('M', startRow).value =
-                    handletFilterTypeSiz.markerGlovesCut;
-                  cell('N', startRow).value =
-                    handletFilterTypeSiz.markerGlovesPuncture;
-                  cell('O', startRow).value =
-                    handletFilterTypeSiz.markerWinterShoes;
-                  cell('P', startRow).value =
-                    handletFilterTypeSiz.markerWinterclothes;
-                  cell('Q', startRow).value =
-                    handletFilterTypeSiz.markerHierarchyOfClothing;
-                  cell('R', startRow).value =
-                    handletFilterTypeSiz.markerHierarchyOfShoes;
-                  cell('S', startRow).value =
-                    handletFilterTypeSiz.markerHierarchyOfGloves;
-                  // стили
-                  cell('A', startRow).style = style;
-                  cell('B', startRow).style = style;
-                  cell('C', startRow).style = style;
-                  cell('D', startRow).style = style;
-                  cell('E', startRow).style = style;
-                  cell('F', startRow).style = style;
-                  cell('G', startRow).style = style;
+      cell('B', startRow).style = style;
+      cell('C', startRow).style = style;
+      cell('D', startRow).style = style;
+      cell('E', startRow).style = style;
+      cell('F', startRow).style = style;
+      cell('G', startRow).style = style;
 
-                  startRow += 1;
-                  sheet.insertRow(startRow);
-                  if (item.additionalMeans) {
-                    cell('B', startRow).value = item.subdivision;
-                    cell('C', startRow).value = stringProff;
-                    cell('E', startRow).value = item.additionalMeans;
-                    cell('F', startRow).value = item.AdditionalIssuanceRate;
-                    cell(
-                      'G',
-                      startRow
-                    ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
+      cell('H', startRow).value = i.markerBase || filtredTypeSIZ[0]?.markerBase;
+      cell('I', startRow).value =
+        i.markerRubber || filtredTypeSIZ[0]?.markerRubber;
+      cell('J', startRow).value = i.markerSlip || filtredTypeSIZ[0]?.markerSlip;
+      cell('K', startRow).value =
+        i.markerPuncture || filtredTypeSIZ[0]?.markerPuncture;
+      cell('L', startRow).value =
+        i.markerGlovesAbrasion || filtredTypeSIZ[0]?.markerGlovesAbrasion;
+      cell('M', startRow).value =
+        i.markerGlovesCut || filtredTypeSIZ[0]?.markerGlovesCut;
+      cell('N', startRow).value =
+        i.markerGlovesPuncture || filtredTypeSIZ[0]?.markerGlovesPuncture;
+      cell('O', startRow).value =
+        i.markerWinterShoes || filtredTypeSIZ[0]?.markerWinterShoes;
+      cell('P', startRow).value =
+        i.markerWinterclothes || filtredTypeSIZ[0]?.markerWinterclothes;
+      cell('Q', startRow).value =
+        i.markerHierarchyOfClothing ||
+        filtredTypeSIZ[0]?.markerHierarchyOfClothing;
+      cell('R', startRow).value =
+        i.markerHierarchyOfShoes || filtredTypeSIZ[0]?.markerHierarchyOfShoes;
+      cell('S', startRow).value =
+        i.markerHierarchyOfGloves || filtredTypeSIZ[0]?.markerHierarchyOfGloves;
 
-                    // стили
-                    cell('A', startRow).style = style;
-                    cell('B', startRow).style = style;
-                    cell('C', startRow).style = style;
-                    cell('D', startRow).style = style;
-                    cell('E', startRow).style = style;
-                    cell('F', startRow).style = style;
-                    cell('G', startRow).style = style;
-
-                    startRow += 1;
-                    sheet.insertRow(startRow);
-                  }
-                  if (item.proffSIZ) {
-                    item.proffSIZ.forEach((SIZ) => {
-                      cell('B', startRow).value = item.subdivision;
-                      cell('C', startRow).value = stringProff;
-                      cell('D', startRow).value = SIZ.type;
-                      cell('E', startRow).value = SIZ.vid;
-                      cell('F', startRow).value = SIZ.norm;
-                      cell(
-                        'G',
-                        startRow
-                      ).value = `Пункт ${item.proffId} Приложения 1 Приказа 767н`;
-
-                      // маркеры
-                      cell('K', startRow).value = item.markerBase;
-                      cell('L', startRow).value = item.markerRubber;
-                      cell('M', startRow).value = item.markerSlip;
-                      cell('N', startRow).value = item.markerPuncture;
-                      cell('O', startRow).value = item.markerGlovesAbrasion;
-                      cell('P', startRow).value = item.markerGlovesCut;
-                      cell('Q', startRow).value = item.markerGlovesPuncture;
-                      cell('R', startRow).value = item.markerWinterShoes;
-                      cell('S', startRow).value = item.markerWinterclothes;
-                      cell('T', startRow).value =
-                        item.markerHierarchyOfClothing;
-                      cell('U', startRow).value = item.markerHierarchyOfShoes;
-                      cell('V', startRow).value = item.markerHierarchyOfGloves;
-                      // стили
-                      cell('A', startRow).style = style;
-                      cell('B', startRow).style = style;
-                      cell('C', startRow).style = style;
-                      cell('D', startRow).style = style;
-                      cell('E', startRow).style = style;
-                      cell('F', startRow).style = style;
-                      cell('G', startRow).style = style;
-                      startRow += 1;
-                      sheet.insertRow(startRow);
-                    });
-                  }
-                  //конец
-                  // cell('A', startRow).value = startRow - 9;
-                  // cell('B', startRow).value = stringProff;
-                  // cell('C', startRow).value = `${item.typeSIZ}`;
-                  // cell('D', startRow).value = !handleFilterTypeSIZ
-                  //   ? `${item.speciesSIZ} ${
-                  //       item.OperatingLevel ? `${item.OperatingLevel}` : ''
-                  //     }  ${item.standart ? `${item.standart}` : ''}`
-                  //   : `${item.speciesSIZ} ${handleFilterTypeSIZ.forTable}  ${
-                  //       item.OperatingLevel ? `${item.OperatingLevel}` : ''
-                  //     }  ${item.standart ? `${item.standart}` : ''}`;
-                  // cell('E', startRow).value = item.issuanceRate;
-                  // cell(
-                  //   'F',
-                  //   startRow
-                  // ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
-                  // cell('G', startRow).value = item.dangerGroupId;
-                  // cell('H', startRow).value = item.dangerGroup;
-                  // cell('I', startRow).value = item.dangerEventID;
-                  // cell('J', startRow).value = item.dangerEvent;
-                  // // маркеры
-                  // cell('K', startRow).value = handletFilterTypeSiz.markerBase;
-                  // cell('L', startRow).value = handletFilterTypeSiz.markerRubber;
-                  // cell('M', startRow).value = handletFilterTypeSiz.markerSlip;
-                  // cell('N', startRow).value =
-                  //   handletFilterTypeSiz.markerPuncture;
-                  // cell('O', startRow).value =
-                  //   handletFilterTypeSiz.markerGlovesAbrasion;
-                  // cell('P', startRow).value =
-                  //   handletFilterTypeSiz.markerGlovesCut;
-                  // cell('Q', startRow).value =
-                  //   handletFilterTypeSiz.markerGlovesPuncture;
-                  // cell('R', startRow).value =
-                  //   handletFilterTypeSiz.markerWinterShoes;
-                  // cell('S', startRow).value =
-                  //   handletFilterTypeSiz.markerWinterclothes;
-                  // cell('T', startRow).value =
-                  //   handletFilterTypeSiz.markerHierarchyOfClothing;
-                  // cell('U', startRow).value =
-                  //   handletFilterTypeSiz.markerHierarchyOfShoes;
-                  // cell('V', startRow).value =
-                  //   handletFilterTypeSiz.markerHierarchyOfGloves;
-                  // // стили
-                  // cell('A', startRow).style = style;
-                  // cell('B', startRow).style = style;
-                  // cell('C', startRow).style = style;
-                  // cell('D', startRow).style = style;
-                  // cell('E', startRow).style = style;
-                  // cell('F', startRow).style = style;
-                  // cell('G', startRow).style = style;
-                  // cell('H', startRow).style = style;
-                  // cell('I', startRow).style = style;
-                  // cell('J', startRow).style = style;
-                  // startRow += 1;
-                  // sheet.insertRow(startRow);
-                  // if (item.additionalMeans) {
-                  //   cell('B', startRow).value = stringProff;
-                  //   cell('D', startRow).value = item.additionalMeans;
-                  //   cell('E', startRow).value = item.AdditionalIssuanceRate;
-                  //   cell(
-                  //     'F',
-                  //     startRow
-                  //   ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
-                  //   cell('G', startRow).value = item.dangerGroupId;
-                  //   cell('H', startRow).value = item.dangerGroup;
-                  //   cell('I', startRow).value = item.dangerEventID;
-                  //   cell('J', startRow).value = item.dangerEvent;
-                  //   // стили
-                  //   cell('A', startRow).style = style;
-                  //   cell('B', startRow).style = style;
-                  //   cell('C', startRow).style = style;
-                  //   cell('D', startRow).style = style;
-                  //   cell('E', startRow).style = style;
-                  //   cell('F', startRow).style = style;
-                  //   cell('G', startRow).style = style;
-                  //   cell('H', startRow).style = style;
-                  //   cell('I', startRow).style = style;
-                  //   cell('J', startRow).style = style;
-                  //   startRow += 1;
-                  //   sheet.insertRow(startRow);
-                  // }
-                  // if (item.proffSIZ) {
-                  //   item.proffSIZ.forEach((SIZ) => {
-                  //     cell('B', startRow).value = stringProff;
-                  //     cell('D', startRow).value = SIZ.vid;
-                  //     cell('E', startRow).value = SIZ.norm;
-                  //     cell(
-                  //       'F',
-                  //       startRow
-                  //     ).value = `Пункт ${item.proffId} Приложения 1 Приказа 767н`;
-                  //     cell('G', startRow).value = item.dangerGroupId;
-                  //     cell('H', startRow).value = item.dangerGroup;
-                  //     cell('I', startRow).value = item.dangerEventID;
-                  //     cell('J', startRow).value = item.dangerEvent;
-
-                  //     // маркеры
-                  //     cell('K', startRow).value = item.markerBase;
-                  //     cell('L', startRow).value = item.markerRubber;
-                  //     cell('M', startRow).value = item.markerSlip;
-                  //     cell('N', startRow).value = item.markerPuncture;
-                  //     cell('O', startRow).value = item.markerGlovesAbrasion;
-                  //     cell('P', startRow).value = item.markerGlovesCut;
-                  //     cell('Q', startRow).value = item.markerGlovesPuncture;
-                  //     cell('R', startRow).value = item.markerWinterShoes;
-                  //     cell('S', startRow).value = item.markerWinterclothes;
-                  //     cell('T', startRow).value =
-                  //       item.markerHierarchyOfClothing;
-                  //     cell('U', startRow).value = item.markerHierarchyOfShoes;
-                  //     cell('V', startRow).value = item.markerHierarchyOfGloves;
-                  //     // стили
-                  //     cell('A', startRow).style = style;
-                  //     cell('B', startRow).style = style;
-                  //     cell('C', startRow).style = style;
-                  //     cell('D', startRow).style = style;
-                  //     cell('E', startRow).style = style;
-                  //     cell('F', startRow).style = style;
-                  //     cell('G', startRow).style = style;
-                  //     cell('H', startRow).style = style;
-                  //     cell('I', startRow).style = style;
-                  //     cell('J', startRow).style = style;
-                  //     startRow += 1;
-                  //     sheet.insertRow(startRow);
-                  //   });
-                  // }
-                }
-              });
-              sheet.autoFilter = 'A8:V8';
-              res.setHeader(
-                'Content-Type',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-              );
-              res.setHeader(
-                'Content-Disposition',
-                `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
-              );
-
-              workbook.xlsx
-                .write(res)
-                .then(() => {
-                  res.end();
-                })
-                .catch((err) => next(err));
-            })
-            .catch((e) => next(e));
-        })
-        .catch((i) => {
-          next(i);
-        });
+      startRow++;
+      sheet.insertRow(startRow);
     }
-    logs
-      .create({
-        action: `Пользователь ${req.user.name} выгрузил(а) таблицу норма выдачи СИЗ  ${ent.enterprise}`,
-        userId: req.user._id,
-        enterpriseId: ent._id,
-      })
-      .catch((e) => next(e));
-  });
+  }
+  sheet.autoFilter = 'A8:S8';
+  res.set(
+    'Content-Type',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  );
+  res.set(
+    'Content-Disposition',
+    `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
+  );
+  await workbook.xlsx
+    .write(res)
+    .then(() => {
+      res.end();
+    })
+    .catch((err) => next(err));
+  // const dataSiz = await TypeSiz.find(
+  //   {},
+  //   {
+  //     speciesSIZ: 0,
+  //     issuanceRate: 0,
+  //     additionalMeans: 0,
+  //     AdditionalIssuanceRate: 0,
+  //     OperatingLevel: 0,
+  //     standart: 0,
+  //   }
+  // );
+
+  // Enterprise.findById(req.params.id).then((ent) => {
+  //   if (!ent) {
+  //     next(new NotFound('Предприятие не найдено'));
+  //   }
+  //   if (
+  //     ent.owner.toString() === req.user._id ||
+  //     ent.access.includes(req.user._id)
+  //   ) {
+  //     Value.find({ enterpriseId: req.params.id })
+  //       .then((el) => {
+  //         for (i of el) {
+  //           if (i.proffId) {
+  //             Proff767.find(
+  //               { proffId: i.proffId },
+  //               {
+  //                 markerBase: 1,
+  //                 markerRubber: 1,
+  //                 markerSlip: 1,
+  //                 markerPuncture: 1,
+  //                 markerGlovesAbrasion: 1,
+  //                 markerGlovesCut: 1,
+  //                 markerGlovesPuncture: 1,
+  //                 markerWinterShoes: 1,
+  //                 markerWinterclothes: 1,
+  //                 markerHierarchyOfClothing: 1,
+  //                 markerHierarchyOfShoes: 1,
+  //                 markerHierarchyOfGloves: 1,
+  //                 vid: 1,
+  //                 norm: 1,
+  //                 type: 1,
+  //               }
+  //             )
+  //               .then((item) => {
+  //                 i.proffSIZ = item;
+  //               })
+  //               .catch((e) => next(e));
+  //           }
+  //         }
+
+  //         const fileName = 'normSIZ.xlsx';
+  //         workbook.xlsx
+  //           .readFile(fileName)
+  //           .then((e) => {
+  //             const entName = `Нормы выдачи средств индивидуальной защиты (далее — СИЗ) в ${ent.enterprise} (наименование подразделения, организации)
+  //               в соответствии с требованиями приказов Минтруда от 29 октября 2021 г.
+  //               №767н «Об утверждении единых типовых норм (далее – ЕТН) выдачи СИЗ и смывающих средств»,
+  //               №766н «Об утверждении правил обеспечения работников средствами индивидуальной защиты и смывающими средствами»
+  //               (далее - приказ №766н)`;
+
+  //             const sheet = e.getWorksheet('Лист1');
+  //             const cell = (c, i) => sheet.getCell(c + i);
+  //             let startRow = 9;
+  //             sheet.getCell('A5').value = entName;
+
+  //             el.forEach((item) => {
+  //               const handletFilterTypeSiz = dataSiz.find(
+  //                 (siz) =>
+  //                   siz.dependence === item.dangerEventID &&
+  //                   siz.label === item.typeSIZ
+  //               );
+
+  //               const handleFilterTypeSIZ = convertValues.find(
+  //                 (i) => i.typeSIZ === item.typeSIZ
+  //               );
+
+  //               const stringProff = item.proffId
+  //                 ? `${item.num}. ${item.proff}. ${item.subdivision}`
+  //                 : `${item.num}. ${item.job}. ${item.subdivision}.`;
+  //               if (item.typeSIZ) {
+  //                 //новое
+  //                 cell('A', startRow).value = startRow - 8;
+  //                 cell('B', startRow).value = item.subdivision;
+  //                 cell('C', startRow).value = stringProff;
+  //                 cell('D', startRow).value = item.typeSIZ;
+  //                 cell('E', startRow).value = !handleFilterTypeSIZ
+  //                   ? `${item.speciesSIZ} ${
+  //                       item.OperatingLevel ? `${item.OperatingLevel}` : ''
+  //                     }  ${item.standart ? `${item.standart}` : ''}`
+  //                   : `${item.speciesSIZ} ${handleFilterTypeSIZ.forTable}  ${
+  //                       item.OperatingLevel ? `${item.OperatingLevel}` : ''
+  //                     }  ${item.standart ? `${item.standart}` : ''}`;
+  //                 cell('F', startRow).value = item.issuanceRate;
+  //                 cell(
+  //                   'G',
+  //                   startRow
+  //                 ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
+  //                 // маркеры
+  //                 cell('H', startRow).value = handletFilterTypeSiz.markerBase;
+  //                 cell('I', startRow).value = handletFilterTypeSiz.markerRubber;
+  //                 cell('J', startRow).value = handletFilterTypeSiz.markerSlip;
+  //                 cell('K', startRow).value =
+  //                   handletFilterTypeSiz.markerPuncture;
+  //                 cell('L', startRow).value =
+  //                   handletFilterTypeSiz.markerGlovesAbrasion;
+  //                 cell('M', startRow).value =
+  //                   handletFilterTypeSiz.markerGlovesCut;
+  //                 cell('N', startRow).value =
+  //                   handletFilterTypeSiz.markerGlovesPuncture;
+  //                 cell('O', startRow).value =
+  //                   handletFilterTypeSiz.markerWinterShoes;
+  //                 cell('P', startRow).value =
+  //                   handletFilterTypeSiz.markerWinterclothes;
+  //                 cell('Q', startRow).value =
+  //                   handletFilterTypeSiz.markerHierarchyOfClothing;
+  //                 cell('R', startRow).value =
+  //                   handletFilterTypeSiz.markerHierarchyOfShoes;
+  //                 cell('S', startRow).value =
+  //                   handletFilterTypeSiz.markerHierarchyOfGloves;
+  //                 // стили
+  //                 cell('A', startRow).style = style;
+  //                 cell('B', startRow).style = style;
+  //                 cell('C', startRow).style = style;
+  //                 cell('D', startRow).style = style;
+  //                 cell('E', startRow).style = style;
+  //                 cell('F', startRow).style = style;
+  //                 cell('G', startRow).style = style;
+
+  //                 startRow += 1;
+  //                 sheet.insertRow(startRow);
+  //                 if (item.additionalMeans) {
+  //                   cell('B', startRow).value = item.subdivision;
+  //                   cell('C', startRow).value = stringProff;
+  //                   cell('E', startRow).value = item.additionalMeans;
+  //                   cell('F', startRow).value = item.AdditionalIssuanceRate;
+  //                   cell(
+  //                     'G',
+  //                     startRow
+  //                   ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
+
+  //                   // стили
+  //                   cell('A', startRow).style = style;
+  //                   cell('B', startRow).style = style;
+  //                   cell('C', startRow).style = style;
+  //                   cell('D', startRow).style = style;
+  //                   cell('E', startRow).style = style;
+  //                   cell('F', startRow).style = style;
+  //                   cell('G', startRow).style = style;
+
+  //                   startRow += 1;
+  //                   sheet.insertRow(startRow);
+  //                 }
+  //                 if (item.proffSIZ) {
+  //                   item.proffSIZ.forEach((SIZ) => {
+  //                     cell('B', startRow).value = item.subdivision;
+  //                     cell('C', startRow).value = stringProff;
+  //                     cell('D', startRow).value = SIZ.type;
+  //                     cell('E', startRow).value = SIZ.vid;
+  //                     cell('F', startRow).value = SIZ.norm;
+  //                     cell(
+  //                       'G',
+  //                       startRow
+  //                     ).value = `Пункт ${item.proffId} Приложения 1 Приказа 767н`;
+
+  //                     // маркеры
+  //                     cell('K', startRow).value = item.markerBase;
+  //                     cell('L', startRow).value = item.markerRubber;
+  //                     cell('M', startRow).value = item.markerSlip;
+  //                     cell('N', startRow).value = item.markerPuncture;
+  //                     cell('O', startRow).value = item.markerGlovesAbrasion;
+  //                     cell('P', startRow).value = item.markerGlovesCut;
+  //                     cell('Q', startRow).value = item.markerGlovesPuncture;
+  //                     cell('R', startRow).value = item.markerWinterShoes;
+  //                     cell('S', startRow).value = item.markerWinterclothes;
+  //                     cell('T', startRow).value =
+  //                       item.markerHierarchyOfClothing;
+  //                     cell('U', startRow).value = item.markerHierarchyOfShoes;
+  //                     cell('V', startRow).value = item.markerHierarchyOfGloves;
+  //                     // стили
+  //                     cell('A', startRow).style = style;
+  //                     cell('B', startRow).style = style;
+  //                     cell('C', startRow).style = style;
+  //                     cell('D', startRow).style = style;
+  //                     cell('E', startRow).style = style;
+  //                     cell('F', startRow).style = style;
+  //                     cell('G', startRow).style = style;
+  //                     startRow += 1;
+  //                     sheet.insertRow(startRow);
+  //                   });
+  //                 }
+  //                 //конец
+  //                 // cell('A', startRow).value = startRow - 9;
+  //                 // cell('B', startRow).value = stringProff;
+  //                 // cell('C', startRow).value = `${item.typeSIZ}`;
+  //                 // cell('D', startRow).value = !handleFilterTypeSIZ
+  //                 //   ? `${item.speciesSIZ} ${
+  //                 //       item.OperatingLevel ? `${item.OperatingLevel}` : ''
+  //                 //     }  ${item.standart ? `${item.standart}` : ''}`
+  //                 //   : `${item.speciesSIZ} ${handleFilterTypeSIZ.forTable}  ${
+  //                 //       item.OperatingLevel ? `${item.OperatingLevel}` : ''
+  //                 //     }  ${item.standart ? `${item.standart}` : ''}`;
+  //                 // cell('E', startRow).value = item.issuanceRate;
+  //                 // cell(
+  //                 //   'F',
+  //                 //   startRow
+  //                 // ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
+  //                 // cell('G', startRow).value = item.dangerGroupId;
+  //                 // cell('H', startRow).value = item.dangerGroup;
+  //                 // cell('I', startRow).value = item.dangerEventID;
+  //                 // cell('J', startRow).value = item.dangerEvent;
+  //                 // // маркеры
+  //                 // cell('K', startRow).value = handletFilterTypeSiz.markerBase;
+  //                 // cell('L', startRow).value = handletFilterTypeSiz.markerRubber;
+  //                 // cell('M', startRow).value = handletFilterTypeSiz.markerSlip;
+  //                 // cell('N', startRow).value =
+  //                 //   handletFilterTypeSiz.markerPuncture;
+  //                 // cell('O', startRow).value =
+  //                 //   handletFilterTypeSiz.markerGlovesAbrasion;
+  //                 // cell('P', startRow).value =
+  //                 //   handletFilterTypeSiz.markerGlovesCut;
+  //                 // cell('Q', startRow).value =
+  //                 //   handletFilterTypeSiz.markerGlovesPuncture;
+  //                 // cell('R', startRow).value =
+  //                 //   handletFilterTypeSiz.markerWinterShoes;
+  //                 // cell('S', startRow).value =
+  //                 //   handletFilterTypeSiz.markerWinterclothes;
+  //                 // cell('T', startRow).value =
+  //                 //   handletFilterTypeSiz.markerHierarchyOfClothing;
+  //                 // cell('U', startRow).value =
+  //                 //   handletFilterTypeSiz.markerHierarchyOfShoes;
+  //                 // cell('V', startRow).value =
+  //                 //   handletFilterTypeSiz.markerHierarchyOfGloves;
+  //                 // // стили
+  //                 // cell('A', startRow).style = style;
+  //                 // cell('B', startRow).style = style;
+  //                 // cell('C', startRow).style = style;
+  //                 // cell('D', startRow).style = style;
+  //                 // cell('E', startRow).style = style;
+  //                 // cell('F', startRow).style = style;
+  //                 // cell('G', startRow).style = style;
+  //                 // cell('H', startRow).style = style;
+  //                 // cell('I', startRow).style = style;
+  //                 // cell('J', startRow).style = style;
+  //                 // startRow += 1;
+  //                 // sheet.insertRow(startRow);
+  //                 // if (item.additionalMeans) {
+  //                 //   cell('B', startRow).value = stringProff;
+  //                 //   cell('D', startRow).value = item.additionalMeans;
+  //                 //   cell('E', startRow).value = item.AdditionalIssuanceRate;
+  //                 //   cell(
+  //                 //     'F',
+  //                 //     startRow
+  //                 //   ).value = `${item.dangerEventID}, Приложения 2 Приказа 767н`;
+  //                 //   cell('G', startRow).value = item.dangerGroupId;
+  //                 //   cell('H', startRow).value = item.dangerGroup;
+  //                 //   cell('I', startRow).value = item.dangerEventID;
+  //                 //   cell('J', startRow).value = item.dangerEvent;
+  //                 //   // стили
+  //                 //   cell('A', startRow).style = style;
+  //                 //   cell('B', startRow).style = style;
+  //                 //   cell('C', startRow).style = style;
+  //                 //   cell('D', startRow).style = style;
+  //                 //   cell('E', startRow).style = style;
+  //                 //   cell('F', startRow).style = style;
+  //                 //   cell('G', startRow).style = style;
+  //                 //   cell('H', startRow).style = style;
+  //                 //   cell('I', startRow).style = style;
+  //                 //   cell('J', startRow).style = style;
+  //                 //   startRow += 1;
+  //                 //   sheet.insertRow(startRow);
+  //                 // }
+  //                 // if (item.proffSIZ) {
+  //                 //   item.proffSIZ.forEach((SIZ) => {
+  //                 //     cell('B', startRow).value = stringProff;
+  //                 //     cell('D', startRow).value = SIZ.vid;
+  //                 //     cell('E', startRow).value = SIZ.norm;
+  //                 //     cell(
+  //                 //       'F',
+  //                 //       startRow
+  //                 //     ).value = `Пункт ${item.proffId} Приложения 1 Приказа 767н`;
+  //                 //     cell('G', startRow).value = item.dangerGroupId;
+  //                 //     cell('H', startRow).value = item.dangerGroup;
+  //                 //     cell('I', startRow).value = item.dangerEventID;
+  //                 //     cell('J', startRow).value = item.dangerEvent;
+
+  //                 //     // маркеры
+  //                 //     cell('K', startRow).value = item.markerBase;
+  //                 //     cell('L', startRow).value = item.markerRubber;
+  //                 //     cell('M', startRow).value = item.markerSlip;
+  //                 //     cell('N', startRow).value = item.markerPuncture;
+  //                 //     cell('O', startRow).value = item.markerGlovesAbrasion;
+  //                 //     cell('P', startRow).value = item.markerGlovesCut;
+  //                 //     cell('Q', startRow).value = item.markerGlovesPuncture;
+  //                 //     cell('R', startRow).value = item.markerWinterShoes;
+  //                 //     cell('S', startRow).value = item.markerWinterclothes;
+  //                 //     cell('T', startRow).value =
+  //                 //       item.markerHierarchyOfClothing;
+  //                 //     cell('U', startRow).value = item.markerHierarchyOfShoes;
+  //                 //     cell('V', startRow).value = item.markerHierarchyOfGloves;
+  //                 //     // стили
+  //                 //     cell('A', startRow).style = style;
+  //                 //     cell('B', startRow).style = style;
+  //                 //     cell('C', startRow).style = style;
+  //                 //     cell('D', startRow).style = style;
+  //                 //     cell('E', startRow).style = style;
+  //                 //     cell('F', startRow).style = style;
+  //                 //     cell('G', startRow).style = style;
+  //                 //     cell('H', startRow).style = style;
+  //                 //     cell('I', startRow).style = style;
+  //                 //     cell('J', startRow).style = style;
+  //                 //     startRow += 1;
+  //                 //     sheet.insertRow(startRow);
+  //                 //   });
+  //                 // }
+  //               }
+  //             });
+  //             sheet.autoFilter = 'A8:V8';
+  //             res.setHeader(
+  //               'Content-Type',
+  //               'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  //             );
+  //             res.setHeader(
+  //               'Content-Disposition',
+  //               `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
+  //             );
+
+  //             workbook.xlsx
+  //               .write(res)
+  //               .then(() => {
+  //                 res.end();
+  //               })
+  //               .catch((err) => next(err));
+  //           })
+  //           .catch((e) => next(e));
+  //       })
+  //       .catch((i) => {
+  //         next(i);
+  //       });
+  //   }
+  //   logs
+  //     .create({
+  //       action: `Пользователь ${req.user.name} выгрузил(а) таблицу норма выдачи СИЗ  ${ent.enterprise}`,
+  //       userId: req.user._id,
+  //       enterpriseId: ent._id,
+  //     })
+  //     .catch((e) => next(e));
+  // });
 };
 // Карты опаснстей
 module.exports.createMapOPRTabel = (req, res, next) => {
