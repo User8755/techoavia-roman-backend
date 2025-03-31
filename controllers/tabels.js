@@ -8,7 +8,6 @@ const Value = require('../models/value');
 const Enterprise = require('../models/enterprise');
 const NotFound = require('../errors/NotFound');
 const ConflictError = require('../errors/ConflictError');
-const convertValues = require('../forNormTable');
 const logs = require('../models/logs');
 const Proff767 = require('../models/proff767');
 const TypeSiz = require('../models/typeSiz');
@@ -214,33 +213,28 @@ module.exports.createBaseTabelSIZ = async (req, res, next) => {
     if (filtredArr[0].proffId) {
       const siz = await Proff767.find(
         { proffId: filtredArr[0].proffId },
-        { vid: 1, type: 1, norm: 1 }
+        { speciesSIZ: 1, typeSIZ: 1, issuanceRate: 1 }
       );
-      const array3 = filtredArr.concat(siz);
-      array3.forEach((i) => {
-        if (i.type) {
-          i.proff = filtredArr[0].proff;
-          i.num = filtredArr[0].num;
-          i.proffId = filtredArr[0].proffId;
-          i.job = filtredArr[0].job;
-          i.subdivision = filtredArr[0].subdivision;
-          i.typeSIZ = i.type;
-          i.speciesSIZ = i.vid;
-          i.issuanceRate = i.norm;
-        }
+      siz.forEach((i) => {
+        i.proff = filtredArr[0].proff;
+        i.num = filtredArr[0].num;
+        i.proffId = filtredArr[0].proffId;
+        i.job = filtredArr[0].job;
+        i.subdivision = filtredArr[0].subdivision;
+        filtredArr.push(i);
       });
-      array3
-        .sort((a, b) => {
-          const nameA = a.typeSIZ;
-          const nameB = b.typeSIZ;
-          if (nameA > nameB) return 1;
-          if (nameA < nameB) return -1;
-          return 0;
-        })
-        .forEach((i) => {
-          sheet.addRow(i);
-        });
     }
+    filtredArr
+      .sort((a, b) => {
+        const nameA = a.typeSIZ;
+        const nameB = b.typeSIZ;
+        if (nameA > nameB) return 1;
+        if (nameA < nameB) return -1;
+        return 0;
+      })
+      .forEach((i) => {
+        sheet.addRow(i);
+      });
   }
   sheet.autoFilter = 'A1:AZ1';
   res.set(
@@ -697,7 +691,6 @@ module.exports.createNormTabel = async (req, res, next) => {
   let startRow = 9;
   cell('A', 5).value = entName;
 
-  let array3 = [];
   for (const obj of uniqWorkPlace) {
     const filtredArr = value.filter((v) => v.num === obj);
     if (filtredArr[0].proffId) {
@@ -705,67 +698,88 @@ module.exports.createNormTabel = async (req, res, next) => {
         { proffId: filtredArr[0].proffId },
         { proff: 0 }
       );
-      array3 = filtredArr.concat(siz);
+      siz.forEach((i) => {
+        i.proff = filtredArr[0].proff;
+        i.num = filtredArr[0].num;
+        i.proffId = filtredArr[0].proffId;
+        i.job = filtredArr[0].job;
+        i.subdivision = filtredArr[0].subdivision;
+        filtredArr.push(i);
+      });
     }
-
-    for (const i of array3) {
-      const strWorlPlace = `${filtredArr[0].num}. ${
-        filtredArr[0].proffId ? filtredArr[0].proff : filtredArr[0].job
-      }`;
-      const typeSIZ = i.typeSIZ || i.type;
+    for (const i of filtredArr) {
+      const strWorlPlace = `${i.num}. ${i.proffId ? i.proff : i.job}`;
       const splitType = i.typeSIZ?.split(' для ')[1] || i.typeSIZ;
-      const nameSIZ = `${i.speciesSIZ ? i.speciesSIZ : i.vid} для защиты от ${
-        i.typeSIZ ? splitType : i.type
+      const nameSIZ = `${i.speciesSIZ} для защиты от ${
+        i.typeSIZ ? splitType : ''
       } ${i.OperatingLevel ? i.OperatingLevel : ''}`;
-
       const basis = !i.dangerEventID
         ? `Пункт ${i.proffId} Приложения 1 Приказа 767н`
-        : `п. опасное событие, текст ${i.dangerEventID} Приложения 2 Приказа 767н`;
+        : `п. ${i.dangerEventID} Приложения 2 Приказа 767н`;
 
       const filtredTypeSIZ = allTypeSIZ.filter(
         (f) => f.dependence === i.dangerEventID && f.speciesSIZ === i.speciesSIZ
       );
+      if (i.typeSIZ) {
+        cell('B', startRow).value = i.subdivision;
+        cell('C', startRow).value = strWorlPlace;
+        cell('D', startRow).value = i.typeSIZ;
+        cell('E', startRow).value = nameSIZ;
+        cell('F', startRow).value = i.issuanceRate || i.norm;
+        cell('G', startRow).value = basis;
 
-      cell('B', startRow).value = filtredArr[0].subdivision;
-      cell('C', startRow).value = strWorlPlace;
-      cell('D', startRow).value = typeSIZ;
-      cell('E', startRow).value = nameSIZ;
-      cell('F', startRow).value = i.issuanceRate || i.norm;
-      cell('G', startRow).value = basis;
+        cell('B', startRow).style = style;
+        cell('C', startRow).style = style;
+        cell('D', startRow).style = style;
+        cell('E', startRow).style = style;
+        cell('F', startRow).style = style;
+        cell('G', startRow).style = style;
 
-      cell('B', startRow).style = style;
-      cell('C', startRow).style = style;
-      cell('D', startRow).style = style;
-      cell('E', startRow).style = style;
-      cell('F', startRow).style = style;
-      cell('G', startRow).style = style;
+        cell('H', startRow).value =
+          i.markerBase || filtredTypeSIZ[0]?.markerBase;
+        cell('I', startRow).value =
+          i.markerRubber || filtredTypeSIZ[0]?.markerRubber;
+        cell('J', startRow).value =
+          i.markerSlip || filtredTypeSIZ[0]?.markerSlip;
+        cell('K', startRow).value =
+          i.markerPuncture || filtredTypeSIZ[0]?.markerPuncture;
+        cell('L', startRow).value =
+          i.markerGlovesAbrasion || filtredTypeSIZ[0]?.markerGlovesAbrasion;
+        cell('M', startRow).value =
+          i.markerGlovesCut || filtredTypeSIZ[0]?.markerGlovesCut;
+        cell('N', startRow).value =
+          i.markerGlovesPuncture || filtredTypeSIZ[0]?.markerGlovesPuncture;
+        cell('O', startRow).value =
+          i.markerWinterShoes || filtredTypeSIZ[0]?.markerWinterShoes;
+        cell('P', startRow).value =
+          i.markerWinterclothes || filtredTypeSIZ[0]?.markerWinterclothes;
+        cell('Q', startRow).value =
+          i.markerHierarchyOfClothing ||
+          filtredTypeSIZ[0]?.markerHierarchyOfClothing;
+        cell('R', startRow).value =
+          i.markerHierarchyOfShoes || filtredTypeSIZ[0]?.markerHierarchyOfShoes;
+        cell('S', startRow).value =
+          i.markerHierarchyOfGloves ||
+          filtredTypeSIZ[0]?.markerHierarchyOfGloves;
 
-      cell('H', startRow).value = i.markerBase || filtredTypeSIZ[0]?.markerBase;
-      cell('I', startRow).value =
-        i.markerRubber || filtredTypeSIZ[0]?.markerRubber;
-      cell('J', startRow).value = i.markerSlip || filtredTypeSIZ[0]?.markerSlip;
-      cell('K', startRow).value =
-        i.markerPuncture || filtredTypeSIZ[0]?.markerPuncture;
-      cell('L', startRow).value =
-        i.markerGlovesAbrasion || filtredTypeSIZ[0]?.markerGlovesAbrasion;
-      cell('M', startRow).value =
-        i.markerGlovesCut || filtredTypeSIZ[0]?.markerGlovesCut;
-      cell('N', startRow).value =
-        i.markerGlovesPuncture || filtredTypeSIZ[0]?.markerGlovesPuncture;
-      cell('O', startRow).value =
-        i.markerWinterShoes || filtredTypeSIZ[0]?.markerWinterShoes;
-      cell('P', startRow).value =
-        i.markerWinterclothes || filtredTypeSIZ[0]?.markerWinterclothes;
-      cell('Q', startRow).value =
-        i.markerHierarchyOfClothing ||
-        filtredTypeSIZ[0]?.markerHierarchyOfClothing;
-      cell('R', startRow).value =
-        i.markerHierarchyOfShoes || filtredTypeSIZ[0]?.markerHierarchyOfShoes;
-      cell('S', startRow).value =
-        i.markerHierarchyOfGloves || filtredTypeSIZ[0]?.markerHierarchyOfGloves;
-
-      startRow++;
-      sheet.insertRow(startRow);
+        startRow++;
+        sheet.insertRow(startRow);
+        if (i.additionalMeans) {
+          cell('B', startRow).value = i.subdivision;
+          cell('C', startRow).value = strWorlPlace;
+          cell('E', startRow).value = i.additionalMeans;
+          cell('F', startRow).value = i.AdditionalIssuanceRate;
+          cell('G', startRow).value = basis;
+          cell('B', startRow).style = style;
+          cell('C', startRow).style = style;
+          cell('D', startRow).style = style;
+          cell('E', startRow).style = style;
+          cell('F', startRow).style = style;
+          cell('G', startRow).style = style;
+          startRow++;
+          sheet.insertRow(startRow);
+        }
+      }
     }
   }
   sheet.autoFilter = 'A8:S8';
@@ -1207,16 +1221,25 @@ module.exports.createMapOPRTabel = (req, res, next) => {
 
                   numFilter.forEach((elem, index) => {
                     if (index === 0) {
-                      Ncell('F8').value = elem.subdivision;
-                      Ncell('F6').value = elem.proff || elem.job;
+                      Ncell(
+                        'A8'
+                      ).value = `Наименование структурного подразделения: ${elem.subdivision}`;
+                      Ncell(
+                        'A6'
+                      ).value = `Наименование профессии (должности) работника: ${
+                        elem.proff || elem.job
+                      }`;
                       Ncell('G11').value = elem.numWorkers;
+
+                      Ncell('L6').value = elem.code || elem.proffId;
+                      Ncell('B1').value = ent.enterprise;
+                      Ncell('A7').value = `Номер рабочего места: ${elem.num}`;
+                      Ncell('G4').value = elem.num;
+                    }
+                    if (!Ncell('G12').value) {
                       Ncell('G12').value = elem.equipment;
                       Ncell('G13').value = elem.materials;
                       Ncell('G14').value = elem.laborFunction;
-                      Ncell('L6').value = elem.code || elem.proffId;
-                      Ncell('B1').value = ent.enterprise;
-                      Ncell('C7').value = elem.num;
-                      Ncell('G4').value = elem.num;
                     }
 
                     Ncell(`A${i}`).value = index + 1;
@@ -1979,7 +2002,8 @@ module.exports.createPlanTimetable = (req, res, next) => {
                   const number = tableThreeStart - 14;
                   cellSheetThree(`A${tableThreeStart}`).value = number;
                   cellSheetThree(`B${tableThreeStart}`).value = i.num;
-                  cellSheetThree(`C${tableThreeStart}`).value = i.prof || i.job;
+                  cellSheetThree(`C${tableThreeStart}`).value =
+                    i.proff || i.job;
                   cellSheetThree(`D${tableThreeStart}`).value = i.dangerGroupId;
                   cellSheetThree(`E${tableThreeStart}`).value = i.dangerGroup;
                   cellSheetThree(`F${tableThreeStart}`).value = i.dangerEventID;
@@ -2542,9 +2566,8 @@ module.exports.createCorrelationOfHazards = async (req, res, next) => {
     obj.dangerGroup = filterd[0].dangerGroup;
     obj.dangerEventID = filterd[0].dangerEventID;
     obj.dangerEvent = filterd[0].dangerEvent;
-    filterd.forEach((c) => {
-      obj.num = obj.num.concat(c.num, '; ');
-    });
+    const uniqWorkPlace = [...new Set(filterd.map((i) => i.num))];
+    obj.num = uniqWorkPlace.join('; ');
     arr.push(obj);
   });
   await workbook.xlsx
@@ -2561,30 +2584,31 @@ module.exports.createCorrelationOfHazards = async (req, res, next) => {
     'Приказ Минтруда РФ от 29.10.2021 №767н "Об утверждении Единых типовых норм выдачи средств индивидуальной защиты и смывающих средств.';
   cell('I', 6).value = enterprise.chairman;
   arr.forEach((i) => {
-    const number = startRow - 15;
-    cell('A', startRow).value = number;
-    cell('F', startRow).value = i.dangerGroupId;
-    cell('G', startRow).value = i.dangerGroup;
-    cell('H', startRow).value = i.dangerEventID;
-    cell('I', startRow).value = i.dangerEvent;
-    cell('J', startRow).value = TEXT_CELL_10;
-    cell('K', startRow).value = i.num;
+    if (i.dangerEventID) {
+      const number = startRow - 15;
+      cell('A', startRow).value = number;
+      cell('F', startRow).value = i.dangerGroupId;
+      cell('G', startRow).value = i.dangerGroup;
+      cell('H', startRow).value = i.dangerEventID;
+      cell('I', startRow).value = i.dangerEvent;
+      cell('J', startRow).value = TEXT_CELL_10;
+      cell('K', startRow).value = i.num;
 
-    cell('A', startRow).style = style;
-    cell('B', startRow).style = style;
-    cell('C', startRow).style = style;
-    cell('D', startRow).style = style;
-    cell('E', startRow).style = style;
-    cell('F', startRow).style = style;
-    cell('G', startRow).style = style;
-    cell('H', startRow).style = style;
-    cell('I', startRow).style = style;
-    cell('J', startRow).style = style;
-    cell('K', startRow).style = style;
-    startRow++;
-    sheet.insertRow(startRow);
+      cell('A', startRow).style = style;
+      cell('B', startRow).style = style;
+      cell('C', startRow).style = style;
+      cell('D', startRow).style = style;
+      cell('E', startRow).style = style;
+      cell('F', startRow).style = style;
+      cell('G', startRow).style = style;
+      cell('H', startRow).style = style;
+      cell('I', startRow).style = style;
+      cell('J', startRow).style = style;
+      cell('K', startRow).style = style;
+      startRow++;
+      sheet.insertRow(startRow);
+    }
   });
-
   res.set(
     'Content-Type',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'

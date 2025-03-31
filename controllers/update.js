@@ -31,9 +31,9 @@ module.exports.UpdatesProff767 = (req, res, next) => {
           const newObj = {};
           newObj.proffId = Number(cell('A', startRow).value);
           newObj.proff = handleStyleString(cell('B', startRow).value);
-          newObj.type = handleStyleString(cell('C', startRow).value);
-          newObj.vid = handleStyleString(cell('D', startRow).value);
-          newObj.norm = handleStyleString(cell('E', startRow).value);
+          newObj.typeSIZ = handleStyleString(cell('C', startRow).value);
+          newObj.speciesSIZ = handleStyleString(cell('D', startRow).value);
+          newObj.issuanceRate = handleStyleString(cell('E', startRow).value);
 
           newObj.markerBase = handleStyleString(cell('F', startRow).value);
           newObj.markerRubber = handleStyleString(cell('G', startRow).value);
@@ -70,15 +70,15 @@ module.exports.UpdatesProff767 = (req, res, next) => {
             next(new BadRequestError('Не все поля заполнены'));
             break;
           }
-          if (!newObj.vid) {
+          if (!newObj.speciesSIZ) {
             next(new BadRequestError('Не все поля заполнены'));
             break;
           }
-          if (!newObj.type) {
+          if (!newObj.typeSIZ) {
             next(new BadRequestError('Не все поля заполнены'));
             break;
           }
-          if (!newObj.norm) {
+          if (!newObj.issuanceRate) {
             next(new BadRequestError('Не все поля заполнены'));
             break;
           }

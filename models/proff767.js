@@ -14,19 +14,19 @@ const proff767 = new mongoose.Schema(
       minlength: 1,
       maxlength: 300,
     },
-    vid: {
+    speciesSIZ: {
       type: String,
       require: true,
       minlength: 1,
       maxlength: 500,
     },
-    type: {
+    typeSIZ: {
       type: String,
       require: true,
       minlength: 1,
       maxlength: 500,
     },
-    norm: {
+    issuanceRate: {
       type: String,
       require: true,
       minlength: 1,
