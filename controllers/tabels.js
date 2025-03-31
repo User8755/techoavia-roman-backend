@@ -3,64 +3,64 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-return-assign */
-const Excel = require('exceljs');
-const Value = require('../models/value');
-const Enterprise = require('../models/enterprise');
-const NotFound = require('../errors/NotFound');
-const ConflictError = require('../errors/ConflictError');
-const logs = require('../models/logs');
-const Proff767 = require('../models/proff767');
-const TypeSiz = require('../models/typeSiz');
+const Excel = require("exceljs");
+const Value = require("../models/value");
+const Enterprise = require("../models/enterprise");
+const NotFound = require("../errors/NotFound");
+const ConflictError = require("../errors/ConflictError");
+const logs = require("../models/logs");
+const Proff767 = require("../models/proff767");
+const TypeSiz = require("../models/typeSiz");
 
 const darkGeen = {
-  type: 'pattern',
-  pattern: 'solid',
-  fgColor: { argb: 'FF00B050' },
+  type: "pattern",
+  pattern: "solid",
+  fgColor: { argb: "FF00B050" },
 };
 
 const green = {
-  type: 'pattern',
-  pattern: 'solid',
-  fgColor: { argb: 'FF92D050' },
+  type: "pattern",
+  pattern: "solid",
+  fgColor: { argb: "FF92D050" },
 };
 
 const yellow = {
-  type: 'pattern',
-  pattern: 'solid',
-  fgColor: { argb: 'FFFFFF00' },
+  type: "pattern",
+  pattern: "solid",
+  fgColor: { argb: "FFFFFF00" },
 };
 
 const orange = {
-  type: 'pattern',
-  pattern: 'solid',
-  fgColor: { argb: 'FFFFC000' },
+  type: "pattern",
+  pattern: "solid",
+  fgColor: { argb: "FFFFC000" },
 };
 
 const red = {
-  type: 'pattern',
-  pattern: 'solid',
-  fgColor: { argb: 'FFFF0000' },
+  type: "pattern",
+  pattern: "solid",
+  fgColor: { argb: "FFFF0000" },
 };
 
 const style = {
   border: {
-    left: { style: 'thin' },
-    right: { style: 'thin' },
-    bottom: { style: 'thin' },
-    top: { style: 'thin' },
+    left: { style: "thin" },
+    right: { style: "thin" },
+    bottom: { style: "thin" },
+    top: { style: "thin" },
   },
   alignment: {
-    horizontal: 'left',
-    vertical: 'top',
-    wrapText: 'true',
+    horizontal: "left",
+    vertical: "top",
+    wrapText: "true",
   },
 };
 
 const borderCell = {
-  left: { style: 'thin' },
-  right: { style: 'thin' },
-  bottom: { style: 'thin' },
-  top: { style: 'thin' },
+  left: { style: "thin" },
+  right: { style: "thin" },
+  bottom: { style: "thin" },
+  top: { style: "thin" },
 };
 // Базовая таблица СИЗ
 module.exports.createBaseTabelSIZ = async (req, res, next) => {
@@ -70,46 +70,46 @@ module.exports.createBaseTabelSIZ = async (req, res, next) => {
     enterprise.owner.toString() != req.user._id ||
     !enterprise.access.includes(req.user._id);
 
-  if (!enterprise) next(new NotFound('Предприятие не найдено'));
-  if (!owner) next(new ConflictError('Нет доступа'));
+  if (!enterprise) next(new NotFound("Предприятие не найдено"));
+  if (!owner) next(new ConflictError("Нет доступа"));
 
   const value = await Value.find({ enterpriseId: req.params.id });
 
   const uniqWorkPlace = [...new Set(value.map((i) => i.num))];
   const workbook = new Excel.Workbook();
-  const sheet = workbook.addWorksheet('sheet');
+  const sheet = workbook.addWorksheet("sheet");
   sheet.columns = [
     {
-      header: '№ п/п',
-      key: 'number',
+      header: "№ п/п",
+      key: "number",
       width: 9,
       style: {
         fill: {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'E0E0E0' },
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "E0E0E0" },
         },
       },
       border: {
-        left: { style: 'thin' },
-        right: { style: 'thin' },
-        bottom: { style: 'thin' },
-        top: { style: 'thin' },
+        left: { style: "thin" },
+        right: { style: "thin" },
+        bottom: { style: "thin" },
+        top: { style: "thin" },
       },
     },
     {
-      header: 'Код профессии (при наличии)',
-      key: 'proffId',
+      header: "Код профессии (при наличии)",
+      key: "proffId",
       width: 20,
     },
-    { header: 'Номер рабочего места', key: 'num', width: 20 },
+    { header: "Номер рабочего места", key: "num", width: 20 },
     {
-      header: 'Профессия (Приказ 767н приложения 1):',
-      key: 'proff',
+      header: "Профессия (Приказ 767н приложения 1):",
+      key: "proff",
       width: 20,
     },
-    { header: 'Профессия', key: 'job', width: 20 },
-    { header: 'Подразделение', key: 'subdivision', width: 20 },
+    { header: "Профессия", key: "job", width: 20 },
+    { header: "Подразделение", key: "subdivision", width: 20 },
     // { header: 'Тип средства защиты', key: 'type', width: 20 },
     // {
     //   header:
@@ -122,90 +122,90 @@ module.exports.createBaseTabelSIZ = async (req, res, next) => {
     //   key: 'norm',
     //   width: 20,
     // },
-    { header: 'ОБЪЕКТ', key: 'obj', width: 20 },
-    { header: 'Источник', key: 'source', width: 20 },
-    { header: 'ID группы опасностей', key: 'dangerID', width: 20 },
-    { header: 'Группа опасности', key: 'danger', width: 25 },
-    { header: 'Опасность, ID 767', key: 'dangerGroupId', width: 17 },
-    { header: 'Опасности', key: 'dangerGroup', width: 25 },
+    { header: "ОБЪЕКТ", key: "obj", width: 20 },
+    { header: "Источник", key: "source", width: 20 },
+    { header: "ID группы опасностей", key: "dangerID", width: 20 },
+    { header: "Группа опасности", key: "danger", width: 25 },
+    { header: "Опасность, ID 767", key: "dangerGroupId", width: 17 },
+    { header: "Опасности", key: "dangerGroup", width: 25 },
     {
-      header: 'Опасное событие, текст 767',
-      key: 'dangerEventID',
+      header: "Опасное событие, текст 767",
+      key: "dangerEventID",
       width: 25,
     },
-    { header: 'Опасное событие', key: 'dangerEvent', width: 25 },
-    { header: 'Тяжесть', key: 'heaviness', width: 8 },
-    { header: 'Вероятность', key: 'probability', width: 12 },
-    { header: 'ИПР', key: 'ipr', width: 5 },
-    { header: 'Уровень риска', key: 'risk', width: 20 },
-    { header: 'Приемлемость', key: 'acceptability', width: 20 },
-    { header: 'Отношение к риску', key: 'riskAttitude', width: 20 },
-    { header: 'Тип СИЗ', key: 'typeSIZ', width: 20 },
-    { header: 'Вид СИЗ', key: 'speciesSIZ', width: 40 },
+    { header: "Опасное событие", key: "dangerEvent", width: 25 },
+    { header: "Тяжесть", key: "heaviness", width: 8 },
+    { header: "Вероятность", key: "probability", width: 12 },
+    { header: "ИПР", key: "ipr", width: 5 },
+    { header: "Уровень риска", key: "risk", width: 20 },
+    { header: "Приемлемость", key: "acceptability", width: 20 },
+    { header: "Отношение к риску", key: "riskAttitude", width: 20 },
+    { header: "Тип СИЗ", key: "typeSIZ", width: 20 },
+    { header: "Вид СИЗ", key: "speciesSIZ", width: 40 },
     {
       header:
-        'Нормы выдачи средств индивидуальной защиты на год (штуки, пары, комплекты, мл)',
-      key: 'issuanceRate',
+        "Нормы выдачи средств индивидуальной защиты на год (штуки, пары, комплекты, мл)",
+      key: "issuanceRate",
       width: 20,
     },
-    { header: 'ДОП средства', key: 'additionalMeans', width: 20 },
+    { header: "ДОП средства", key: "additionalMeans", width: 20 },
     {
       header:
-        'Нормы выдачи средств индивидуальной защиты, выдаваемых дополнительно, на год (штуки, пары, комплекты, мл)',
-      key: 'AdditionalIssuanceRate',
+        "Нормы выдачи средств индивидуальной защиты, выдаваемых дополнительно, на год (штуки, пары, комплекты, мл)",
+      key: "AdditionalIssuanceRate",
       width: 20,
     },
-    { header: 'Стандарты (ГОСТ, EN)', key: 'standart', width: 20 },
-    { header: 'Экспл.уровень', key: 'OperatingLevel', width: 20 },
-    { header: 'Комментарий', key: 'commit', width: 20 },
-    { header: 'ID опасности 776н', key: 'danger776Id', width: 20 },
-    { header: 'Опасности 776н', key: 'danger776', width: 20 },
+    { header: "Стандарты (ГОСТ, EN)", key: "standart", width: 20 },
+    { header: "Экспл.уровень", key: "OperatingLevel", width: 20 },
+    { header: "Комментарий", key: "commit", width: 20 },
+    { header: "ID опасности 776н", key: "danger776Id", width: 20 },
+    { header: "Опасности 776н", key: "danger776", width: 20 },
     {
-      header: 'ID опасного события 776н',
-      key: 'dangerEvent776Id',
-      width: 20,
-    },
-    {
-      header: 'Опасное событие 776н',
-      key: 'dangerEvent776',
-      width: 20,
-    },
-    { header: 'ID мер управления', key: 'riskManagementID', width: 20 },
-    {
-      header: 'Меры управления/контроля профессиональных рисков',
-      key: 'riskManagement',
-      width: 20,
-    },
-    { header: 'Тяжесть', key: 'heaviness1', width: 8 },
-    { header: 'Вероятность', key: 'probability1', width: 12 },
-    { header: 'ИПР', key: 'ipr1', width: 5 },
-    { header: 'Уровень риска1', key: 'risk1', width: 20 },
-    { header: 'Приемлемость1', key: 'acceptability1', width: 20 },
-    { header: 'Отношение к риску1', key: 'riskAttitude1', width: 20 },
-    {
-      header: 'Существующие меры упр-я рисками',
-      key: 'existingRiskManagement',
-      width: 20,
-    },
-    { header: 'Периодичность', key: 'periodicity', width: 20 },
-    {
-      header: 'Ответственное лицо',
-      key: 'responsiblePerson',
+      header: "ID опасного события 776н",
+      key: "dangerEvent776Id",
       width: 20,
     },
     {
-      header: 'Отметка о выполнении',
-      key: 'completionMark',
+      header: "Опасное событие 776н",
+      key: "dangerEvent776",
       width: 20,
     },
-    { header: 'Кол-во работников', key: 'numWorkers', width: 20 },
-    { header: 'Оборудование', key: 'equipment', width: 20 },
-    { header: 'Материалы', key: 'materials', width: 20 },
-    { header: 'Трудовая функция', key: 'laborFunction', width: 20 },
-    { header: 'Код ОК-016-94:', key: 'code', width: 20 },
-    { header: 'Тип синт:', key: 'typeSint', width: 20 },
-    { header: 'Вид синт:', key: 'vidSint', width: 20 },
-    { header: 'маркер общий:', key: 'marker', width: 20 },
+    { header: "ID мер управления", key: "riskManagementID", width: 20 },
+    {
+      header: "Меры управления/контроля профессиональных рисков",
+      key: "riskManagement",
+      width: 20,
+    },
+    { header: "Тяжесть", key: "heaviness1", width: 8 },
+    { header: "Вероятность", key: "probability1", width: 12 },
+    { header: "ИПР", key: "ipr1", width: 5 },
+    { header: "Уровень риска1", key: "risk1", width: 20 },
+    { header: "Приемлемость1", key: "acceptability1", width: 20 },
+    { header: "Отношение к риску1", key: "riskAttitude1", width: 20 },
+    {
+      header: "Существующие меры упр-я рисками",
+      key: "existingRiskManagement",
+      width: 20,
+    },
+    { header: "Периодичность", key: "periodicity", width: 20 },
+    {
+      header: "Ответственное лицо",
+      key: "responsiblePerson",
+      width: 20,
+    },
+    {
+      header: "Отметка о выполнении",
+      key: "completionMark",
+      width: 20,
+    },
+    { header: "Кол-во работников", key: "numWorkers", width: 20 },
+    { header: "Оборудование", key: "equipment", width: 20 },
+    { header: "Материалы", key: "materials", width: 20 },
+    { header: "Трудовая функция", key: "laborFunction", width: 20 },
+    { header: "Код ОК-016-94:", key: "code", width: 20 },
+    { header: "Тип синт:", key: "typeSint", width: 20 },
+    { header: "Вид синт:", key: "vidSint", width: 20 },
+    { header: "маркер общий:", key: "marker", width: 20 },
   ];
 
   for (const obj of uniqWorkPlace) {
@@ -236,13 +236,13 @@ module.exports.createBaseTabelSIZ = async (req, res, next) => {
         sheet.addRow(i);
       });
   }
-  sheet.autoFilter = 'A1:AZ1';
+  sheet.autoFilter = "A1:AZ1";
   res.set(
-    'Content-Type',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   );
   res.set(
-    'Content-Disposition',
+    "Content-Disposition",
     `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
   );
   await workbook.xlsx
@@ -463,7 +463,7 @@ module.exports.createBaseTabelSIZ = async (req, res, next) => {
 module.exports.createBaseTabel = (req, res, next) => {
   Enterprise.findById(req.params.id).then((ent) => {
     if (!ent) {
-      next(new NotFound('Предприятие не найдено'));
+      next(new NotFound("Предприятие не найдено"));
     }
     if (
       ent.owner.toString() === req.user._id ||
@@ -472,136 +472,136 @@ module.exports.createBaseTabel = (req, res, next) => {
       Value.find({ enterpriseId: req.params.id })
         .then(async (el) => {
           const workbook = new Excel.Workbook();
-          const sheet = workbook.addWorksheet('sheet');
+          const sheet = workbook.addWorksheet("sheet");
           sheet.columns = [
             {
-              header: '№ п/п',
-              key: 'number',
+              header: "№ п/п",
+              key: "number",
               width: 9,
               style: {
                 fill: {
-                  type: 'pattern',
-                  pattern: 'solid',
-                  fgColor: { argb: 'E0E0E0' },
+                  type: "pattern",
+                  pattern: "solid",
+                  fgColor: { argb: "E0E0E0" },
                 },
               },
               border: {
-                left: { style: 'thin' },
-                right: { style: 'thin' },
-                bottom: { style: 'thin' },
-                top: { style: 'thin' },
+                left: { style: "thin" },
+                right: { style: "thin" },
+                bottom: { style: "thin" },
+                top: { style: "thin" },
               },
             },
             {
-              header: 'Код профессии (при наличии)',
-              key: 'proffId',
+              header: "Код профессии (при наличии)",
+              key: "proffId",
               width: 20,
             },
-            { header: 'Номер рабочего места', key: 'num', width: 20 },
+            { header: "Номер рабочего места", key: "num", width: 20 },
             {
-              header: 'Профессия (Приказ 767н приложения 1):',
-              key: 'proff',
+              header: "Профессия (Приказ 767н приложения 1):",
+              key: "proff",
               width: 20,
             },
-            { header: 'Профессия', key: 'job', width: 20 },
-            { header: 'Подразделение', key: 'subdivision', width: 20 },
-            { header: 'Тип средства защиты', key: 'type', width: 20 },
-            {
-              header:
-                'Наименование специальной одежды, специальной обуви и других средств индивидуальной защиты',
-              key: 'vid',
-              width: 20,
-            },
+            { header: "Профессия", key: "job", width: 20 },
+            { header: "Подразделение", key: "subdivision", width: 20 },
+            { header: "Тип средства защиты", key: "type", width: 20 },
             {
               header:
-                'Нормы выдачи на год (период) (штуки, пары, комплекты, мл)',
-              key: 'norm',
+                "Наименование специальной одежды, специальной обуви и других средств индивидуальной защиты",
+              key: "vid",
               width: 20,
             },
-            { header: 'ОБЪЕКТ', key: 'obj', width: 20 },
-            { header: 'Источник', key: 'source', width: 20 },
-            { header: 'ID группы опасностей', key: 'dangerID', width: 20 },
-            { header: 'Группа опасности', key: 'danger', width: 25 },
-            { header: 'Опасность, ID 767', key: 'dangerGroupId', width: 17 },
-            { header: 'Опасности', key: 'dangerGroup', width: 25 },
             {
-              header: 'Опасное событие, текст 767',
-              key: 'dangerEventID',
+              header:
+                "Нормы выдачи на год (период) (штуки, пары, комплекты, мл)",
+              key: "norm",
+              width: 20,
+            },
+            { header: "ОБЪЕКТ", key: "obj", width: 20 },
+            { header: "Источник", key: "source", width: 20 },
+            { header: "ID группы опасностей", key: "dangerID", width: 20 },
+            { header: "Группа опасности", key: "danger", width: 25 },
+            { header: "Опасность, ID 767", key: "dangerGroupId", width: 17 },
+            { header: "Опасности", key: "dangerGroup", width: 25 },
+            {
+              header: "Опасное событие, текст 767",
+              key: "dangerEventID",
               width: 25,
             },
-            { header: 'Опасное событие', key: 'dangerEvent', width: 25 },
-            { header: 'Тяжесть', key: 'heaviness', width: 8 },
-            { header: 'Вероятность', key: 'probability', width: 12 },
-            { header: 'ИПР', key: 'ipr', width: 5 },
-            { header: 'Уровень риска', key: 'risk', width: 20 },
-            { header: 'Приемлемость', key: 'acceptability', width: 20 },
-            { header: 'Отношение к риску', key: 'riskAttitude', width: 20 },
-            { header: 'Тип СИЗ', key: 'typeSIZ', width: 20 },
-            { header: 'Вид СИЗ', key: 'speciesSIZ', width: 40 },
+            { header: "Опасное событие", key: "dangerEvent", width: 25 },
+            { header: "Тяжесть", key: "heaviness", width: 8 },
+            { header: "Вероятность", key: "probability", width: 12 },
+            { header: "ИПР", key: "ipr", width: 5 },
+            { header: "Уровень риска", key: "risk", width: 20 },
+            { header: "Приемлемость", key: "acceptability", width: 20 },
+            { header: "Отношение к риску", key: "riskAttitude", width: 20 },
+            { header: "Тип СИЗ", key: "typeSIZ", width: 20 },
+            { header: "Вид СИЗ", key: "speciesSIZ", width: 40 },
             {
               header:
-                'Нормы выдачи средств индивидуальной защиты на год (штуки, пары, комплекты, мл)',
-              key: 'issuanceRate',
+                "Нормы выдачи средств индивидуальной защиты на год (штуки, пары, комплекты, мл)",
+              key: "issuanceRate",
               width: 20,
             },
-            { header: 'ДОП средства', key: 'additionalMeans', width: 20 },
+            { header: "ДОП средства", key: "additionalMeans", width: 20 },
             {
               header:
-                'Нормы выдачи средств индивидуальной защиты, выдаваемых дополнительно, на год (штуки, пары, комплекты, мл)',
-              key: 'AdditionalIssuanceRate',
+                "Нормы выдачи средств индивидуальной защиты, выдаваемых дополнительно, на год (штуки, пары, комплекты, мл)",
+              key: "AdditionalIssuanceRate",
               width: 20,
             },
-            { header: 'Стандарты (ГОСТ, EN)', key: 'standart', width: 20 },
-            { header: 'Экспл.уровень', key: 'OperatingLevel', width: 20 },
-            { header: 'Комментарий', key: 'commit', width: 20 },
-            { header: 'ID опасности 776н', key: 'danger776Id', width: 20 },
-            { header: 'Опасности 776н', key: 'danger776', width: 20 },
+            { header: "Стандарты (ГОСТ, EN)", key: "standart", width: 20 },
+            { header: "Экспл.уровень", key: "OperatingLevel", width: 20 },
+            { header: "Комментарий", key: "commit", width: 20 },
+            { header: "ID опасности 776н", key: "danger776Id", width: 20 },
+            { header: "Опасности 776н", key: "danger776", width: 20 },
             {
-              header: 'ID опасного события 776н',
-              key: 'dangerEvent776Id',
-              width: 20,
-            },
-            {
-              header: 'Опасное событие 776н',
-              key: 'dangerEvent776',
-              width: 20,
-            },
-            { header: 'ID мер управления', key: 'riskManagementID', width: 20 },
-            {
-              header: 'Меры управления/контроля профессиональных рисков',
-              key: 'riskManagement',
-              width: 20,
-            },
-            { header: 'Тяжесть', key: 'heaviness1', width: 8 },
-            { header: 'Вероятность', key: 'probability1', width: 12 },
-            { header: 'ИПР', key: 'ipr1', width: 5 },
-            { header: 'Уровень риска1', key: 'risk1', width: 20 },
-            { header: 'Приемлемость1', key: 'acceptability1', width: 20 },
-            { header: 'Отношение к риску1', key: 'riskAttitude1', width: 20 },
-            {
-              header: 'Существующие меры упр-я рисками',
-              key: 'existingRiskManagement',
-              width: 20,
-            },
-            { header: 'Периодичность', key: 'periodicity', width: 20 },
-            {
-              header: 'Ответственное лицо',
-              key: 'responsiblePerson',
+              header: "ID опасного события 776н",
+              key: "dangerEvent776Id",
               width: 20,
             },
             {
-              header: 'Отметка о выполнении',
-              key: 'completionMark',
+              header: "Опасное событие 776н",
+              key: "dangerEvent776",
               width: 20,
             },
-            { header: 'Кол-во работников', key: 'numWorkers', width: 20 },
-            { header: 'Оборудование', key: 'equipment', width: 20 },
-            { header: 'Материалы', key: 'materials', width: 20 },
-            { header: 'Трудовая функция', key: 'laborFunction', width: 20 },
-            { header: 'Код ОК-016-94:', key: 'code', width: 20 },
-            { header: 'Тип синт:', key: 'typeSint', width: 20 },
-            { header: 'Вид синт:', key: 'vidSint', width: 20 },
-            { header: 'маркер общий:', key: 'marker', width: 20 },
+            { header: "ID мер управления", key: "riskManagementID", width: 20 },
+            {
+              header: "Меры управления/контроля профессиональных рисков",
+              key: "riskManagement",
+              width: 20,
+            },
+            { header: "Тяжесть", key: "heaviness1", width: 8 },
+            { header: "Вероятность", key: "probability1", width: 12 },
+            { header: "ИПР", key: "ipr1", width: 5 },
+            { header: "Уровень риска1", key: "risk1", width: 20 },
+            { header: "Приемлемость1", key: "acceptability1", width: 20 },
+            { header: "Отношение к риску1", key: "riskAttitude1", width: 20 },
+            {
+              header: "Существующие меры упр-я рисками",
+              key: "existingRiskManagement",
+              width: 20,
+            },
+            { header: "Периодичность", key: "periodicity", width: 20 },
+            {
+              header: "Ответственное лицо",
+              key: "responsiblePerson",
+              width: 20,
+            },
+            {
+              header: "Отметка о выполнении",
+              key: "completionMark",
+              width: 20,
+            },
+            { header: "Кол-во работников", key: "numWorkers", width: 20 },
+            { header: "Оборудование", key: "equipment", width: 20 },
+            { header: "Материалы", key: "materials", width: 20 },
+            { header: "Трудовая функция", key: "laborFunction", width: 20 },
+            { header: "Код ОК-016-94:", key: "code", width: 20 },
+            { header: "Тип синт:", key: "typeSint", width: 20 },
+            { header: "Вид синт:", key: "vidSint", width: 20 },
+            { header: "маркер общий:", key: "marker", width: 20 },
           ];
 
           let strIndex = 1;
@@ -614,7 +614,7 @@ module.exports.createBaseTabel = (req, res, next) => {
           });
           arr.sort((a, b) => a.localeCompare(b));
           arr.sort((a, b) => a - b);
-          sheet.autoFilter = 'A1:AZ1';
+          sheet.autoFilter = "A1:AZ1";
 
           for (const data of arr) {
             const filtredArr = el.filter((f) => f.num === data);
@@ -627,11 +627,11 @@ module.exports.createBaseTabel = (req, res, next) => {
             }
           }
           res.setHeader(
-            'Content-Type',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           );
           res.setHeader(
-            'Content-Disposition',
+            "Content-Disposition",
             'attachment; filename="Workbook.xlsx"'
           );
 
@@ -672,8 +672,8 @@ module.exports.createNormTabel = async (req, res, next) => {
     enterprise.owner.toString() != req.user._id ||
     !enterprise.access.includes(req.user._id);
 
-  if (!enterprise) next(new NotFound('Предприятие не найдено'));
-  if (!owner) next(new ConflictError('Нет доступа'));
+  if (!enterprise) next(new NotFound("Предприятие не найдено"));
+  if (!owner) next(new ConflictError("Нет доступа"));
 
   const value = await Value.find(
     { enterpriseId: req.params.id },
@@ -682,14 +682,14 @@ module.exports.createNormTabel = async (req, res, next) => {
   const allTypeSIZ = await TypeSiz.find({});
   const uniqWorkPlace = [...new Set(value.map((i) => i.num))];
 
-  const fileName = 'normSIZ.xlsx';
+  const fileName = "normSIZ.xlsx";
   await workbook.xlsx.readFile(fileName);
   const sheet = workbook.getWorksheet(1);
 
   const cell = (c, i) => sheet.getCell(c + i);
 
   let startRow = 9;
-  cell('A', 5).value = entName;
+  cell("A", 5).value = entName;
 
   for (const obj of uniqWorkPlace) {
     const filtredArr = value.filter((v) => v.num === obj);
@@ -709,10 +709,10 @@ module.exports.createNormTabel = async (req, res, next) => {
     }
     for (const i of filtredArr) {
       const strWorlPlace = `${i.num}. ${i.proffId ? i.proff : i.job}`;
-      const splitType = i.typeSIZ?.split(' для ')[1] || i.typeSIZ;
+      const splitType = i.typeSIZ?.split(" для ")[1] || i.typeSIZ;
       const nameSIZ = `${i.speciesSIZ} для защиты от ${
-        i.typeSIZ ? splitType : ''
-      } ${i.OperatingLevel ? i.OperatingLevel : ''}`;
+        i.typeSIZ ? splitType : ""
+      } ${i.OperatingLevel ? i.OperatingLevel : ""}`;
       const basis = !i.dangerEventID
         ? `Пункт ${i.proffId} Приложения 1 Приказа 767н`
         : `п. ${i.dangerEventID} Приложения 2 Приказа 767н`;
@@ -721,74 +721,74 @@ module.exports.createNormTabel = async (req, res, next) => {
         (f) => f.dependence === i.dangerEventID && f.speciesSIZ === i.speciesSIZ
       );
       if (i.typeSIZ) {
-        cell('B', startRow).value = i.subdivision;
-        cell('C', startRow).value = strWorlPlace;
-        cell('D', startRow).value = i.typeSIZ;
-        cell('E', startRow).value = nameSIZ;
-        cell('F', startRow).value = i.issuanceRate || i.norm;
-        cell('G', startRow).value = basis;
+        cell("B", startRow).value = i.subdivision;
+        cell("C", startRow).value = strWorlPlace;
+        cell("D", startRow).value = i.typeSIZ;
+        cell("E", startRow).value = nameSIZ;
+        cell("F", startRow).value = i.issuanceRate || i.norm;
+        cell("G", startRow).value = basis;
 
-        cell('B', startRow).style = style;
-        cell('C', startRow).style = style;
-        cell('D', startRow).style = style;
-        cell('E', startRow).style = style;
-        cell('F', startRow).style = style;
-        cell('G', startRow).style = style;
+        cell("B", startRow).style = style;
+        cell("C", startRow).style = style;
+        cell("D", startRow).style = style;
+        cell("E", startRow).style = style;
+        cell("F", startRow).style = style;
+        cell("G", startRow).style = style;
 
-        cell('H', startRow).value =
+        cell("H", startRow).value =
           i.markerBase || filtredTypeSIZ[0]?.markerBase;
-        cell('I', startRow).value =
+        cell("I", startRow).value =
           i.markerRubber || filtredTypeSIZ[0]?.markerRubber;
-        cell('J', startRow).value =
+        cell("J", startRow).value =
           i.markerSlip || filtredTypeSIZ[0]?.markerSlip;
-        cell('K', startRow).value =
+        cell("K", startRow).value =
           i.markerPuncture || filtredTypeSIZ[0]?.markerPuncture;
-        cell('L', startRow).value =
+        cell("L", startRow).value =
           i.markerGlovesAbrasion || filtredTypeSIZ[0]?.markerGlovesAbrasion;
-        cell('M', startRow).value =
+        cell("M", startRow).value =
           i.markerGlovesCut || filtredTypeSIZ[0]?.markerGlovesCut;
-        cell('N', startRow).value =
+        cell("N", startRow).value =
           i.markerGlovesPuncture || filtredTypeSIZ[0]?.markerGlovesPuncture;
-        cell('O', startRow).value =
+        cell("O", startRow).value =
           i.markerWinterShoes || filtredTypeSIZ[0]?.markerWinterShoes;
-        cell('P', startRow).value =
+        cell("P", startRow).value =
           i.markerWinterclothes || filtredTypeSIZ[0]?.markerWinterclothes;
-        cell('Q', startRow).value =
+        cell("Q", startRow).value =
           i.markerHierarchyOfClothing ||
           filtredTypeSIZ[0]?.markerHierarchyOfClothing;
-        cell('R', startRow).value =
+        cell("R", startRow).value =
           i.markerHierarchyOfShoes || filtredTypeSIZ[0]?.markerHierarchyOfShoes;
-        cell('S', startRow).value =
+        cell("S", startRow).value =
           i.markerHierarchyOfGloves ||
           filtredTypeSIZ[0]?.markerHierarchyOfGloves;
 
         startRow++;
         sheet.insertRow(startRow);
         if (i.additionalMeans) {
-          cell('B', startRow).value = i.subdivision;
-          cell('C', startRow).value = strWorlPlace;
-          cell('E', startRow).value = i.additionalMeans;
-          cell('F', startRow).value = i.AdditionalIssuanceRate;
-          cell('G', startRow).value = basis;
-          cell('B', startRow).style = style;
-          cell('C', startRow).style = style;
-          cell('D', startRow).style = style;
-          cell('E', startRow).style = style;
-          cell('F', startRow).style = style;
-          cell('G', startRow).style = style;
+          cell("B", startRow).value = i.subdivision;
+          cell("C", startRow).value = strWorlPlace;
+          cell("E", startRow).value = i.additionalMeans;
+          cell("F", startRow).value = i.AdditionalIssuanceRate;
+          cell("G", startRow).value = basis;
+          cell("B", startRow).style = style;
+          cell("C", startRow).style = style;
+          cell("D", startRow).style = style;
+          cell("E", startRow).style = style;
+          cell("F", startRow).style = style;
+          cell("G", startRow).style = style;
           startRow++;
           sheet.insertRow(startRow);
         }
       }
     }
   }
-  sheet.autoFilter = 'A8:S8';
+  sheet.autoFilter = "A8:S8";
   res.set(
-    'Content-Type',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   );
   res.set(
-    'Content-Disposition',
+    "Content-Disposition",
     `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
   );
   await workbook.xlsx
@@ -1151,7 +1151,7 @@ module.exports.createMapOPRTabel = (req, res, next) => {
   Enterprise.findById(req.params.id)
     .then((ent) => {
       if (!ent) {
-        next(new NotFound('Предприятие не найдено'));
+        next(new NotFound("Предприятие не найдено"));
       }
       if (
         ent.owner.toString() === req.user._id ||
@@ -1166,11 +1166,11 @@ module.exports.createMapOPRTabel = (req, res, next) => {
               return accumulator;
             }, []);
 
-            const fileName = 'mapOPR.xlsx';
+            const fileName = "mapOPR.xlsx";
             workbook.xlsx
               .readFile(fileName)
               .then((e) => {
-                const sheet = workbook.getWorksheet('Лист1');
+                const sheet = workbook.getWorksheet("Лист1");
 
                 uniq.forEach((w) => {
                   workbook.addWorksheet(w.num);
@@ -1179,7 +1179,7 @@ module.exports.createMapOPRTabel = (req, res, next) => {
                 workbook.worksheets.forEach((ss) => {
                   const newSheet = e.getWorksheet(ss.name);
                   for (let a = 1; a <= 43; a += 1) {
-                    if (ss.name !== 'Лист1') {
+                    if (ss.name !== "Лист1") {
                       const sheetRow2 = sheet.getRow(a);
                       newSheet.getRow(2).height = sheetRow2.height;
                       sheetRow2.eachCell(
@@ -1212,34 +1212,34 @@ module.exports.createMapOPRTabel = (req, res, next) => {
                   let i = 20;
                   const Ncell = (c) => newSheet.getCell(c);
 
-                  Ncell('E25').value = ent.chairmanJob;
-                  Ncell('H25').value = ent.chairman;
-                  Ncell('E28').value = ent.member1Job;
-                  Ncell('H28').value = ent.member1;
-                  Ncell('E30').value = ent.member2Job;
-                  Ncell('H30').value = ent.member2;
+                  Ncell("E25").value = ent.chairmanJob;
+                  Ncell("H25").value = ent.chairman;
+                  Ncell("E28").value = ent.member1Job;
+                  Ncell("H28").value = ent.member1;
+                  Ncell("E30").value = ent.member2Job;
+                  Ncell("H30").value = ent.member2;
 
                   numFilter.forEach((elem, index) => {
                     if (index === 0) {
                       Ncell(
-                        'A8'
+                        "A8"
                       ).value = `Наименование структурного подразделения: ${elem.subdivision}`;
                       Ncell(
-                        'A6'
+                        "A6"
                       ).value = `Наименование профессии (должности) работника: ${
                         elem.proff || elem.job
                       }`;
-                      Ncell('G11').value = elem.numWorkers;
+                      Ncell("G11").value = elem.numWorkers;
 
-                      Ncell('L6').value = elem.code || elem.proffId;
-                      Ncell('B1').value = ent.enterprise;
-                      Ncell('A7').value = `Номер рабочего места: ${elem.num}`;
-                      Ncell('G4').value = elem.num;
+                      Ncell("L6").value = elem.code || elem.proffId;
+                      Ncell("B1").value = ent.enterprise;
+                      Ncell("A7").value = `Номер рабочего места: ${elem.num}`;
+                      Ncell("G4").value = elem.num;
                     }
-                    if (!Ncell('G12').value) {
-                      Ncell('G12').value = elem.equipment;
-                      Ncell('G13').value = elem.materials;
-                      Ncell('G14').value = elem.laborFunction;
+                    if (!Ncell("G12").value) {
+                      Ncell("G12").value = elem.equipment;
+                      Ncell("G13").value = elem.materials;
+                      Ncell("G14").value = elem.laborFunction;
                     }
 
                     Ncell(`A${i}`).value = index + 1;
@@ -1331,11 +1331,11 @@ module.exports.createMapOPRTabel = (req, res, next) => {
                 workbook.removeWorksheet(1);
 
                 res.setHeader(
-                  'Content-Type',
-                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                  "Content-Type",
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 );
                 res.setHeader(
-                  'Content-Disposition',
+                  "Content-Disposition",
                   `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
                 );
                 workbook.xlsx
@@ -1368,7 +1368,7 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
   Enterprise.findById(req.params.id)
     .then((ent) => {
       if (!ent) {
-        next(new NotFound('Предприятие не найдено'));
+        next(new NotFound("Предприятие не найдено"));
       }
       if (
         ent.owner.toString() === req.user._id ||
@@ -1377,15 +1377,15 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
         Value.find({ enterpriseId: req.params.id })
           .sort({ ipr: -1 })
           .then((el) => {
-            const fileName = 'ListOfMeasures.xlsx';
+            const fileName = "ListOfMeasures.xlsx";
             workbook.xlsx
               .readFile(fileName)
               .then((e) => {
-                const sheet = e.getWorksheet('TDSheet');
+                const sheet = e.getWorksheet("TDSheet");
                 const arr = [];
                 el.forEach((i) => {
                   const obj = {};
-                  if (i.dangerEventID !== '') {
+                  if (i.dangerEventID !== "") {
                     if (
                       !arr.find(
                         (n) =>
@@ -1419,7 +1419,7 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                       arr.push(obj);
                     }
                   }
-                  if (i.dangerEventID === '') {
+                  if (i.dangerEventID === "") {
                     if (
                       !arr.find(
                         (n) =>
@@ -1466,7 +1466,7 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                         n.ipr1 === i.ipr1
                       ) {
                         if (!numArr.includes(n.num)) numArr.push(n.num);
-                        let numResult = '';
+                        let numResult = "";
                         numArr.forEach((nu) => {
                           numResult += `${nu}; `;
                         });
@@ -1487,7 +1487,7 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                         n.ipr1 === i.ipr1
                       ) {
                         if (!numArr.includes(n.num)) numArr.push(n.num);
-                        let numResult = '';
+                        let numResult = "";
                         numArr.forEach((nu) => {
                           numResult += `${nu}; `;
                         });
@@ -1500,114 +1500,114 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
 
                 let line = 13;
                 const cell = (c) => sheet.getCell(c + line);
-                sheet.getCell('C8').value = ent.enterprise;
-                sheet.getCell('P3').value = ent.chairman;
-                sheet.getCell('B14').value = ent.member1Job;
-                sheet.getCell('G14').value = ent.member1;
-                sheet.getCell('B16').value = ent.member2Job;
-                sheet.getCell('G16').value = ent.member2;
-                sheet.getCell('B18').value = ent.member3Job;
-                sheet.getCell('G18').value = ent.member3;
+                sheet.getCell("C8").value = ent.enterprise;
+                sheet.getCell("P3").value = ent.chairman;
+                sheet.getCell("B14").value = ent.member1Job;
+                sheet.getCell("G14").value = ent.member1;
+                sheet.getCell("B16").value = ent.member2Job;
+                sheet.getCell("G16").value = ent.member2;
+                sheet.getCell("B18").value = ent.member3Job;
+                sheet.getCell("G18").value = ent.member3;
 
                 arr.forEach((i) => {
-                  cell('A').value = line - 12;
-                  cell('B').value = i.danger776Id || i.dangerGroupId;
-                  cell('C').value = i.danger776 || i.dangerGroup;
-                  cell('D').value = i.dangerEvent776Id || i.dangerEventID;
-                  cell('E').value = i.dangerEvent776 || i.dangerEvent;
-                  cell('F').value = i.obj;
-                  cell('G').value = i.source;
-                  cell('H').value = i.num;
-                  cell('I').value = i.existingRiskManagement;
-                  cell('K').value = i.periodicity;
-                  cell('J').value = i.riskManagement;
-                  cell('L').value = i.responsiblePerson;
-                  cell('M').value = i.completionMark;
-                  cell('N').value = i.probability;
-                  cell('O').value = i.probability1;
-                  cell('P').value = i.heaviness;
-                  cell('Q').value = i.heaviness1;
-                  cell('R').value = i.ipr;
-                  cell('S').value = i.ipr1;
+                  cell("A").value = line - 12;
+                  cell("B").value = i.danger776Id || i.dangerGroupId;
+                  cell("C").value = i.danger776 || i.dangerGroup;
+                  cell("D").value = i.dangerEvent776Id || i.dangerEventID;
+                  cell("E").value = i.dangerEvent776 || i.dangerEvent;
+                  cell("F").value = i.obj;
+                  cell("G").value = i.source;
+                  cell("H").value = i.num;
+                  cell("I").value = i.existingRiskManagement;
+                  cell("K").value = i.periodicity;
+                  cell("J").value = i.riskManagement;
+                  cell("L").value = i.responsiblePerson;
+                  cell("M").value = i.completionMark;
+                  cell("N").value = i.probability;
+                  cell("O").value = i.probability1;
+                  cell("P").value = i.heaviness;
+                  cell("Q").value = i.heaviness1;
+                  cell("R").value = i.ipr;
+                  cell("S").value = i.ipr1;
 
-                  cell('A').style = style;
-                  cell('B').style = style;
-                  cell('C').style = style;
-                  cell('D').style = style;
-                  cell('E').style = style;
-                  cell('F').style = style;
-                  cell('G').style = style;
-                  cell('H').style = style;
-                  cell('I').style = style;
-                  cell('J').style = style;
-                  cell('L').style = style;
-                  cell('M').style = style;
-                  cell('N').style = style;
-                  cell('O').style = style;
-                  cell('P').style = style;
-                  cell('Q').style = style;
-                  cell('R').style = style;
-                  cell('K').style = style;
-                  cell('S').style = style;
+                  cell("A").style = style;
+                  cell("B").style = style;
+                  cell("C").style = style;
+                  cell("D").style = style;
+                  cell("E").style = style;
+                  cell("F").style = style;
+                  cell("G").style = style;
+                  cell("H").style = style;
+                  cell("I").style = style;
+                  cell("J").style = style;
+                  cell("L").style = style;
+                  cell("M").style = style;
+                  cell("N").style = style;
+                  cell("O").style = style;
+                  cell("P").style = style;
+                  cell("Q").style = style;
+                  cell("R").style = style;
+                  cell("K").style = style;
+                  cell("S").style = style;
 
                   if (i.ipr <= 2) {
-                    cell('R').style = {
-                      ...(cell('R').style || {}),
+                    cell("R").style = {
+                      ...(cell("R").style || {}),
                       fill: darkGeen,
                     };
                   }
                   if (i.ipr >= 3 && i.ipr <= 6) {
-                    cell('R').style = {
-                      ...(cell('R').style || {}),
+                    cell("R").style = {
+                      ...(cell("R").style || {}),
                       fill: green,
                     };
                   }
                   if (i.ipr >= 8 && i.ipr <= 12) {
-                    cell('R').style = {
-                      ...(cell('R').style || {}),
+                    cell("R").style = {
+                      ...(cell("R").style || {}),
                       fill: yellow,
                     };
                   }
                   if (i.ipr >= 15 && i.ipr <= 16) {
-                    cell('R').style = {
-                      ...(cell('R').style || {}),
+                    cell("R").style = {
+                      ...(cell("R").style || {}),
                       fill: orange,
                     };
                   }
                   if (i.ipr >= 20) {
-                    cell('R').style = {
-                      ...(cell('R').style || {}),
+                    cell("R").style = {
+                      ...(cell("R").style || {}),
                       fill: red,
                     };
                   }
 
                   if (i.ipr1 <= 2) {
-                    cell('S').style = {
-                      ...(cell('S').style || {}),
+                    cell("S").style = {
+                      ...(cell("S").style || {}),
                       fill: darkGeen,
                     };
                   }
                   if (i.ipr1 >= 3 && i.ipr1 <= 6) {
-                    cell('S').style = {
-                      ...(cell('S').style || {}),
+                    cell("S").style = {
+                      ...(cell("S").style || {}),
                       fill: green,
                     };
                   }
                   if (i.ipr1 >= 8 && i.ipr1 <= 12) {
-                    cell('S').style = {
-                      ...(cell('S').style || {}),
+                    cell("S").style = {
+                      ...(cell("S").style || {}),
                       fill: yellow,
                     };
                   }
                   if (i.ipr1 >= 15 && i.ipr1 <= 16) {
-                    cell('S').style = {
-                      ...(cell('S').style || {}),
+                    cell("S").style = {
+                      ...(cell("S").style || {}),
                       fill: orange,
                     };
                   }
                   if (i.ipr1 >= 20) {
-                    cell('S').style = {
-                      ...(cell('S').style || {}),
+                    cell("S").style = {
+                      ...(cell("S").style || {}),
                       fill: red,
                     };
                   }
@@ -1617,11 +1617,11 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
                 });
 
                 res.setHeader(
-                  'Content-Type',
-                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                  "Content-Type",
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 );
                 res.setHeader(
-                  'Content-Disposition',
+                  "Content-Disposition",
                   `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
                 );
                 workbook.xlsx
@@ -1649,7 +1649,7 @@ module.exports.createListOfMeasuresTabel = (req, res, next) => {
 module.exports.createListHazardsTable = (req, res, next) => {
   Enterprise.findById(req.params.id).then((ent) => {
     if (!ent) {
-      next(new NotFound('Предприятие не найдено'));
+      next(new NotFound("Предприятие не найдено"));
     }
     if (
       ent.owner.toString() === req.user._id ||
@@ -1670,7 +1670,7 @@ module.exports.createListHazardsTable = (req, res, next) => {
         }
       )
         .then((el) => {
-          const fileName = 'Реестр опасностей.xlsx';
+          const fileName = "Реестр опасностей.xlsx";
           workbook.xlsx
             .readFile(fileName)
             .then((e) => {
@@ -1757,25 +1757,25 @@ module.exports.createListHazardsTable = (req, res, next) => {
                     ) {
                       sheet.getCell(
                         sheet.getCell(address)._column.letter + colStr
-                      ).value = '+';
+                      ).value = "+";
                     } else if (
                       sheet.getCell(`D${colStr}`).value === v.dangerEventID &&
                       sheet.getCell(`D${colStr}`).value !== null
                     ) {
                       sheet.getCell(
                         sheet.getCell(address)._column.letter + colStr
-                      ).value = '+';
+                      ).value = "+";
                     }
                     colStr -= 1;
                   }
                 });
               });
               res.setHeader(
-                'Content-Type',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                "Content-Type",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               );
               res.setHeader(
-                'Content-Disposition',
+                "Content-Disposition",
                 `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
               );
               workbook.xlsx
@@ -1802,7 +1802,7 @@ module.exports.createListHazardsTable = (req, res, next) => {
 module.exports.createPlanTimetable = (req, res, next) => {
   Enterprise.findById(req.params.id).then((ent) => {
     if (!ent) {
-      next(new NotFound('Предприятие не найдено'));
+      next(new NotFound("Предприятие не найдено"));
     }
     if (
       ent.owner.toString() === req.user._id ||
@@ -1810,7 +1810,7 @@ module.exports.createPlanTimetable = (req, res, next) => {
     ) {
       Value.find({ enterpriseId: req.params.id })
         .then((el) => {
-          const fileName = 'План-график.xlsx';
+          const fileName = "План-график.xlsx";
           workbook.xlsx
             .readFile(fileName)
             .then((e) => {
@@ -1821,15 +1821,15 @@ module.exports.createPlanTimetable = (req, res, next) => {
               const cell = (c) => sheet.getCell(c);
               const cellSheetTwo = (c) => sheetTwo.getCell(c);
               const cellSheetThree = (c) => sheetThree.getCell(c);
-              sheet.autoFilter = 'A15:L15';
-              sheetTwo.autoFilter = 'A3:L3';
-              sheetThree.autoFilter = 'A14:L14';
-              cell('B10').value = ent.enterprise;
+              sheet.autoFilter = "A15:L15";
+              sheetTwo.autoFilter = "A3:L3";
+              sheetThree.autoFilter = "A14:L14";
+              cell("B10").value = ent.enterprise;
               let start = 15;
               const arr = [];
               el.forEach((i) => {
                 const obj = {};
-                if (i.dangerEventID !== '') {
+                if (i.dangerEventID !== "") {
                   if (
                     !arr.find(
                       (n) =>
@@ -1859,7 +1859,7 @@ module.exports.createPlanTimetable = (req, res, next) => {
                     arr.push(obj);
                   }
                 }
-                if (i.dangerEventID === '') {
+                if (i.dangerEventID === "") {
                   if (
                     !arr.find(
                       (n) =>
@@ -1904,7 +1904,7 @@ module.exports.createPlanTimetable = (req, res, next) => {
                       i.source.toLocaleLowerCase().trim()
                 ).forEach((nu) => {
                   if (!numArr.includes(nu.num)) numArr.push(nu.num);
-                  let numResult = '';
+                  let numResult = "";
                   numArr.forEach((num) => {
                     numResult += `${num}; `;
                   });
@@ -1919,7 +1919,7 @@ module.exports.createPlanTimetable = (req, res, next) => {
                       i.source.toLocaleLowerCase().trim()
                 ).forEach((nu) => {
                   if (!numArr.includes(nu.num)) numArr.push(nu.num);
-                  let numResult = '';
+                  let numResult = "";
                   numArr.forEach((num) => {
                     numResult += `${num}; `;
                   });
@@ -2047,11 +2047,11 @@ module.exports.createPlanTimetable = (req, res, next) => {
               });
 
               res.setHeader(
-                'Content-Type',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                "Content-Type",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               );
               res.setHeader(
-                'Content-Disposition',
+                "Content-Disposition",
                 `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
               );
 
@@ -2079,7 +2079,7 @@ module.exports.createPlanTimetable = (req, res, next) => {
 module.exports.createRegisterHazards = (req, res, next) => {
   Enterprise.findById(req.params.id).then((ent) => {
     if (!ent) {
-      next(new NotFound('Предприятие не найдено'));
+      next(new NotFound("Предприятие не найдено"));
     }
     if (
       ent.owner.toString() === req.user._id ||
@@ -2104,7 +2104,7 @@ module.exports.createRegisterHazards = (req, res, next) => {
         }
       )
         .then((el) => {
-          const fileName = 'Реестр оцененных опасностей_ИОУПР.xlsx';
+          const fileName = "Реестр оцененных опасностей_ИОУПР.xlsx";
           workbook.xlsx
             .readFile(fileName)
             .then((e) => {
@@ -2118,16 +2118,16 @@ module.exports.createRegisterHazards = (req, res, next) => {
                 critical: 0,
               };
 
-              sheet.getCell('B8').value = ent.enterprise;
-              sheet.getCell('K3').value = ent.chairman;
-              sheet.getCell('A14').value = ent.member1Job;
-              sheet.getCell('F14').value = ent.member1;
-              sheet.getCell('A16').value = ent.member2Job;
-              sheet.getCell('F16').value = ent.member2;
-              sheet.getCell('A18').value = ent.member3Job;
-              sheet.getCell('F18').value = ent.member3;
-              sheet.getCell('A20').value = ent.member4Job;
-              sheet.getCell('F20').value = ent.member4;
+              sheet.getCell("B8").value = ent.enterprise;
+              sheet.getCell("K3").value = ent.chairman;
+              sheet.getCell("A14").value = ent.member1Job;
+              sheet.getCell("F14").value = ent.member1;
+              sheet.getCell("A16").value = ent.member2Job;
+              sheet.getCell("F16").value = ent.member2;
+              sheet.getCell("A18").value = ent.member3Job;
+              sheet.getCell("F18").value = ent.member3;
+              sheet.getCell("A20").value = ent.member4Job;
+              sheet.getCell("F20").value = ent.member4;
 
               // Получаем уникальные источники
               const uniqSource = [];
@@ -2196,23 +2196,23 @@ module.exports.createRegisterHazards = (req, res, next) => {
                       i.countWorkPlaces = countWorker.length;
 
                       switch (c.risk) {
-                        case 'Незначительный':
+                        case "Незначительный":
                           i.veryLowWorker += Number(c.numWorkers);
                           i.veryLowPlace += 1;
                           break;
-                        case 'Низкий':
+                        case "Низкий":
                           i.lowWorker += Number(c.numWorkers);
                           i.lowPlace += 1;
                           break;
-                        case 'Средний':
+                        case "Средний":
                           i.midWorker += Number(c.numWorkers);
                           i.midPlace += 1;
                           break;
-                        case 'Высокий':
+                        case "Высокий":
                           i.highWorker += Number(c.numWorkers);
                           i.highPlace += 1;
                           break;
-                        case '':
+                        case "":
                           break;
                         default:
                           i.criticalWorker += Number(c.numWorkers);
@@ -2233,23 +2233,23 @@ module.exports.createRegisterHazards = (req, res, next) => {
                       }
                       i.countWorkPlaces = countWorker.length;
                       switch (c.risk) {
-                        case 'Незначительный':
+                        case "Незначительный":
                           i.veryLowWorker += Number(c.numWorkers);
                           i.veryLowPlace += 1;
                           break;
-                        case 'Низкий':
+                        case "Низкий":
                           i.lowWorker += Number(c.numWorkers);
                           i.lowPlace += 1;
                           break;
-                        case 'Средний':
+                        case "Средний":
                           i.midWorker += Number(c.numWorkers);
                           i.midPlace += 1;
                           break;
-                        case 'Высокий':
+                        case "Высокий":
                           i.highWorker += Number(c.numWorkers);
                           i.highPlace += 1;
                           break;
-                        case '':
+                        case "":
                           break;
                         default:
                           i.criticalWorker += Number(c.numWorkers);
@@ -2382,35 +2382,35 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   sheet.getCell(`K${startRow}`).style = style;
                   sheet.getCell(`L${startRow}`).style = style;
                   sheet.getCell(`M${startRow}`).style = style;
-                  if (sheet.getCell(`H${startRow}`).value !== '0/0') {
+                  if (sheet.getCell(`H${startRow}`).value !== "0/0") {
                     diagrammaValue.veryLow += 1;
                     sheet.getCell(`H${startRow}`).style = {
                       ...(sheet.getCell(`H${startRow}`).style || {}),
                       fill: darkGeen,
                     };
                   }
-                  if (sheet.getCell(`I${startRow}`).value !== '0/0') {
+                  if (sheet.getCell(`I${startRow}`).value !== "0/0") {
                     diagrammaValue.low += 1;
                     sheet.getCell(`I${startRow}`).style = {
                       ...(sheet.getCell(`I${startRow}`).style || {}),
                       fill: green,
                     };
                   }
-                  if (sheet.getCell(`J${startRow}`).value !== '0/0') {
+                  if (sheet.getCell(`J${startRow}`).value !== "0/0") {
                     diagrammaValue.mid += 1;
                     sheet.getCell(`J${startRow}`).style = {
                       ...(sheet.getCell(`J${startRow}`).style || {}),
                       fill: yellow,
                     };
                   }
-                  if (sheet.getCell(`K${startRow}`).value !== '0/0') {
+                  if (sheet.getCell(`K${startRow}`).value !== "0/0") {
                     diagrammaValue.height += 1;
                     sheet.getCell(`K${startRow}`).style = {
                       ...(sheet.getCell(`K${startRow}`).style || {}),
                       fill: orange,
                     };
                   }
-                  if (sheet.getCell(`L${startRow}`).value !== '0/0') {
+                  if (sheet.getCell(`L${startRow}`).value !== "0/0") {
                     diagrammaValue.critical += 1;
                     sheet.getCell(`L${startRow}`).style = {
                       ...(sheet.getCell(`L${startRow}`).style || {}),
@@ -2419,18 +2419,18 @@ module.exports.createRegisterHazards = (req, res, next) => {
                   }
                   sheet.insertRow(index + 13);
                 });
-              sheetDiagramma.getCell('B3').value = diagrammaValue.veryLow;
-              sheetDiagramma.getCell('B4').value = diagrammaValue.low;
-              sheetDiagramma.getCell('B5').value = diagrammaValue.mid;
-              sheetDiagramma.getCell('B6').value = diagrammaValue.height;
-              sheetDiagramma.getCell('B7').value = diagrammaValue.critical;
+              sheetDiagramma.getCell("B3").value = diagrammaValue.veryLow;
+              sheetDiagramma.getCell("B4").value = diagrammaValue.low;
+              sheetDiagramma.getCell("B5").value = diagrammaValue.mid;
+              sheetDiagramma.getCell("B6").value = diagrammaValue.height;
+              sheetDiagramma.getCell("B7").value = diagrammaValue.critical;
 
               res.setHeader(
-                'Content-Type',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                "Content-Type",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               );
               res.setHeader(
-                'Content-Disposition',
+                "Content-Disposition",
                 `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
               );
 
@@ -2456,10 +2456,10 @@ module.exports.createRegisterHazards = (req, res, next) => {
 };
 //Таблица Перечень СИЗ
 module.exports.createListSiz = (req, res, next) => {
-  const fileName = 'ПЕРЕЧЕНЬ СИЗ.xlsx';
+  const fileName = "ПЕРЕЧЕНЬ СИЗ.xlsx";
   Enterprise.findById(req.params.id).then((ent) => {
     if (!ent) {
-      next(new NotFound('Предприятие не найдено'));
+      next(new NotFound("Предприятие не найдено"));
     }
     if (
       ent.owner.toString() === req.user._id ||
@@ -2473,45 +2473,52 @@ module.exports.createListSiz = (req, res, next) => {
               let startRow = 13;
               const sheet = e.getWorksheet(1);
               const cell = (c, i) => sheet.getCell(c + i);
-              cell('B', 10).value = ent.enterprise;
-              cell('H', 3).value = ent.chairman;
-              cell('A', 15).value = ent.member1Job;
-              cell('D', 15).value = ent.member1;
-              cell('A', 17).value = ent.member2Job;
-              cell('D', 17).value = ent.member2;
-              cell('A', 19).value = ent.member3Job;
-              cell('D', 19).value = ent.member3;
-              cell('A', 21).value = ent.member4Job;
-              cell('D', 21).value = ent.member4;
+              cell("B", 10).value = ent.enterprise;
+              cell("H", 3).value = ent.chairman;
+              cell("A", 15).value = ent.member1Job;
+              cell("D", 15).value = ent.member1;
+              cell("A", 17).value = ent.member2Job;
+              cell("D", 17).value = ent.member2;
+              cell("A", 19).value = ent.member3Job;
+              cell("D", 19).value = ent.member3;
+              cell("A", 21).value = ent.member4Job;
+              cell("D", 21).value = ent.member4;
 
-              el.forEach((s) => {
+              const filteredArray = [];
+              el.filter((item) => {
+  if (!filteredArray.some((element) => element.num === item.num && element.dangerEventID === item.dangerEventID && element.speciesSIZ === item.speciesSIZ)) {
+    filteredArray.push(item);
+  }
+});
+
+filteredArray.forEach((s) => {
                 if (s.typeSIZ) {
-                  cell('A', startRow).value = s.num;
-                  cell('B', startRow).value = s.proffId;
-                  cell('C', startRow).value = s.prof || s.job;
-                  cell('D', startRow).value = s.subdivision;
-                  cell('E', startRow).value = s.dangerEventID;
-                  cell('F', startRow).value = s.typeSIZ;
-                  cell('G', startRow).value = s.speciesSIZ;
-                  cell('H', startRow).value = s.issuanceRate;
-                  cell('A', startRow).border = borderCell;
-                  cell('B', startRow).border = borderCell;
-                  cell('C', startRow).border = borderCell;
-                  cell('D', startRow).border = borderCell;
-                  cell('E', startRow).border = borderCell;
-                  cell('F', startRow).border = borderCell;
-                  cell('G', startRow).border = borderCell;
-                  cell('H', startRow).border = borderCell;
+                  cell("A", startRow).value = s.num;
+                  cell("B", startRow).value = s.proffId;
+                  cell("C", startRow).value = s.proff || s.job;
+                  cell("D", startRow).value = s.subdivision;
+                  cell("E", startRow).value = s.dangerEventID;
+                  cell("F", startRow).value = s.typeSIZ;
+                  cell("G", startRow).value = s.speciesSIZ;
+                  cell("H", startRow).value = s.issuanceRate;
+                  cell("A", startRow).border = borderCell;
+                  cell("B", startRow).border = borderCell;
+                  cell("C", startRow).border = borderCell;
+                  cell("D", startRow).border = borderCell;
+                  cell("E", startRow).border = borderCell;
+                  cell("F", startRow).border = borderCell;
+                  cell("G", startRow).border = borderCell;
+                  cell("H", startRow).border = borderCell;
                   startRow += 1;
                   sheet.insertRow(startRow);
                 }
               });
               res.setHeader(
-                'Content-Type',
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                "Content-Type",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               );
               res.setHeader(
-                'Content-Disposition',
+                "Content-Disposition",
                 `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
               );
 
@@ -2538,14 +2545,14 @@ module.exports.createListSiz = (req, res, next) => {
 
 // Таблица Соотнесение опасностей
 module.exports.createCorrelationOfHazards = async (req, res, next) => {
-  const fileName = 'Книга1.xlsx';
+  const fileName = "Книга1.xlsx";
   const enterprise = await Enterprise.findById(req.params.id);
   const owner =
     enterprise.owner.toString() != req.user._id ||
     !enterprise.access.includes(req.user._id);
 
-  if (!enterprise) next(new NotFound('Предприятие не найдено'));
-  if (!owner) next(new ConflictError('Нет доступа'));
+  if (!enterprise) next(new NotFound("Предприятие не найдено"));
+  if (!owner) next(new ConflictError("Нет доступа"));
 
   const value = await Value.find(
     { enterpriseId: req.params.id },
@@ -2560,14 +2567,14 @@ module.exports.createCorrelationOfHazards = async (req, res, next) => {
   const uniqEventId = [...new Set(value.map((i) => i.dangerEventID))];
   const arr = [];
   uniqEventId.forEach((i) => {
-    const obj = { num: '' };
+    const obj = { num: "" };
     const filterd = value.filter((f) => f.dangerEventID === i);
     obj.dangerGroupId = filterd[0].dangerGroupId;
     obj.dangerGroup = filterd[0].dangerGroup;
     obj.dangerEventID = filterd[0].dangerEventID;
     obj.dangerEvent = filterd[0].dangerEvent;
     const uniqWorkPlace = [...new Set(filterd.map((i) => i.num))];
-    obj.num = uniqWorkPlace.join('; ');
+    obj.num = uniqWorkPlace.join("; ");
     arr.push(obj);
   });
   await workbook.xlsx
@@ -2578,43 +2585,57 @@ module.exports.createCorrelationOfHazards = async (req, res, next) => {
   const sheet = workbook.getWorksheet(1);
 
   const cell = (literal, index) => sheet.getCell(literal + index);
+
+  cell("C", 22).value = enterprise.member1Job;
+  cell("E", 22).value = enterprise.member1;
+  cell("C", 25).value = enterprise.member2Job;
+  cell("E", 25).value = enterprise.member2;
+  cell("C", 28).value = enterprise.member3Job;
+  cell("E", 28).value = enterprise.member3;
+  cell("C", 31).value = enterprise.member4Job;
+  cell("E", 31).value = enterprise.member4;
+  cell("C", 34).value = enterprise.member5Job;
+  cell("E", 34).value = enterprise.member5;
+  cell("C", 37).value = enterprise.member6Job;
+  cell("E", 37).value = enterprise.member6;
+
   let startRow = 16;
 
   const TEXT_CELL_10 =
     'Приказ Минтруда РФ от 29.10.2021 №767н "Об утверждении Единых типовых норм выдачи средств индивидуальной защиты и смывающих средств.';
-  cell('I', 6).value = enterprise.chairman;
+  cell("I", 6).value = enterprise.chairman;
   arr.forEach((i) => {
     if (i.dangerEventID) {
       const number = startRow - 15;
-      cell('A', startRow).value = number;
-      cell('F', startRow).value = i.dangerGroupId;
-      cell('G', startRow).value = i.dangerGroup;
-      cell('H', startRow).value = i.dangerEventID;
-      cell('I', startRow).value = i.dangerEvent;
-      cell('J', startRow).value = TEXT_CELL_10;
-      cell('K', startRow).value = i.num;
+      cell("A", startRow).value = number;
+      cell("F", startRow).value = i.dangerGroupId;
+      cell("G", startRow).value = i.dangerGroup;
+      cell("H", startRow).value = i.dangerEventID;
+      cell("I", startRow).value = i.dangerEvent;
+      cell("J", startRow).value = TEXT_CELL_10;
+      cell("K", startRow).value = i.num;
 
-      cell('A', startRow).style = style;
-      cell('B', startRow).style = style;
-      cell('C', startRow).style = style;
-      cell('D', startRow).style = style;
-      cell('E', startRow).style = style;
-      cell('F', startRow).style = style;
-      cell('G', startRow).style = style;
-      cell('H', startRow).style = style;
-      cell('I', startRow).style = style;
-      cell('J', startRow).style = style;
-      cell('K', startRow).style = style;
+      cell("A", startRow).style = style;
+      cell("B", startRow).style = style;
+      cell("C", startRow).style = style;
+      cell("D", startRow).style = style;
+      cell("E", startRow).style = style;
+      cell("F", startRow).style = style;
+      cell("G", startRow).style = style;
+      cell("H", startRow).style = style;
+      cell("I", startRow).style = style;
+      cell("J", startRow).style = style;
+      cell("K", startRow).style = style;
       startRow++;
       sheet.insertRow(startRow);
     }
   });
   res.set(
-    'Content-Type',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   );
   res.set(
-    'Content-Disposition',
+    "Content-Disposition",
     `attachment; filename="${Date.now()}_My_Workbook.xlsx"`
   );
   await workbook.xlsx

@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+﻿/* eslint-disable no-console */
 const express = require('express');
 
 const app = express();
@@ -13,7 +13,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(fileUpload());
 
-const { PORT = 3001, MONGODB = 'mongodb://127.0.0.1:27017/test' } = process.env;
+const { PORT = 3005, MONGODB = 'mongodb://127.0.0.1:27017/test' } = process.env;
 
 try {
   mongoose.connect(MONGODB);
@@ -23,7 +23,8 @@ try {
 }
 
 const urlList = [
-  'http://localhost:3000',
+  'http://localhost:3001',
+'http://192.168.11.217:3001',
   'https://tafontend.online',
   'http://tafontend.online/',
 ];
