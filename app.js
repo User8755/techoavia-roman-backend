@@ -15,12 +15,9 @@ app.use(fileUpload());
 
 const { PORT = 3005, MONGODB = 'mongodb://127.0.0.1:27017/test' } = process.env;
 
-try {
-  mongoose.connect(MONGODB);
-  console.log('успех');
-} catch (e) {
-  console.log(e);
-}
+mongoose.connect(MONGODB, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Успешное подключение к MongoDB'))
+  .catch((err) => console.error('Ошибка подключения к MongoDB:', err));
 
 const urlList = [
   'http://localhost:3001',
