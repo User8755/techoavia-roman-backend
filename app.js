@@ -13,15 +13,16 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(fileUpload());
 
-const { PORT = 3005, MONGODB = 'mongodb://127.0.0.1:27017/test' } = process.env;
+const { PORT = 3001, MONGODB = 'mongodb://127.0.0.1:27017/test' } = process.env;
 
-mongoose.connect(MONGODB, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose
+  .connect(MONGODB, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Успешное подключение к MongoDB'))
   .catch((err) => console.error('Ошибка подключения к MongoDB:', err));
 
 const urlList = [
   'http://localhost:3001',
-'http://192.168.11.217:3001',
+  'http://192.168.11.217:3001',
   'https://tafontend.online',
   'http://tafontend.online/',
 ];
