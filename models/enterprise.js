@@ -91,6 +91,6 @@ const enterprise = new mongoose.Schema({
     type: String,
     maxlength: 30,
   },
-});
+}, { strict: true });
 
 module.exports = mongoose.model('enterprise', enterprise);

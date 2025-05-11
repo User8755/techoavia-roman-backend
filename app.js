@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const fileUpload = require('express-fileupload');
-
+const Enterprise = require('./models/enterprise');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -21,7 +21,7 @@ mongoose
   .catch((err) => console.error('Ошибка подключения к MongoDB:', err));
 
 const urlList = [
-  'http://localhost:3001',
+  'http://localhost:3002',
   'http://192.168.11.217:3001',
   'https://tafontend.online',
   'http://tafontend.online/',
@@ -57,6 +57,7 @@ app.use((err, req, res, next) => {
   });
   next();
 });
+
 
 app.listen(PORT, () => {
   console.log(`Слушаем порт ${PORT}`);

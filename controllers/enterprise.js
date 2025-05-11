@@ -53,7 +53,7 @@ module.exports.createEnterprise = (req, res, next) => {
 };
 
 module.exports.getEnterprisesUser = (req, res, next) => {
-  Enterprise.find({ owner: req.user._id })
+  Enterprise.find({ owner: req.user._id }, { enterprise: 1 })
     .then((i) => {
       res.send(i);
     })

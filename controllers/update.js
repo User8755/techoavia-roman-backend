@@ -7,7 +7,7 @@ const workbook = new Excel.Workbook();
 module.exports.UpdatesProff767 = (req, res, next) => {
   const handleStyleString = (valueStr) => {
     if (typeof valueStr === 'string') {
-      const str = valueStr.charAt(0).toUpperCase() + valueStr.substr(1);
+      const str = valueStr.charAt(0).toUpperCase() + valueStr.substring(1);
       return str.trim();
     }
     if (typeof valueStr === 'number') {
@@ -60,6 +60,10 @@ module.exports.UpdatesProff767 = (req, res, next) => {
           );
           newObj.markerHierarchyOfGloves = handleStyleString(
             cell('Q', startRow).value
+          );
+          newObj.markerTypeSiz = handleStyleString(cell('R', startRow).value);
+          newObj.markerMarkerTypeSiz = handleStyleString(
+            cell('S', startRow).value
           );
 
           if (!newObj.proffId) {
@@ -161,6 +165,10 @@ module.exports.UpdatesTypeSiz = (req, res, next) => {
           );
           newObj.markerHierarchyOfGloves = handleStyleString(
             cell('T', startRow).value
+          );
+          newObj.markerTypeSiz = handleStyleString(cell('U', startRow).value);
+          newObj.markerMarkerTypeSiz = handleStyleString(
+            cell('V', startRow).value
           );
 
           if (!newObj.dependence || !newObj.label || !newObj.speciesSIZ) {

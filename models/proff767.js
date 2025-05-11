@@ -91,6 +91,16 @@ const proff767 = new mongoose.Schema(
       type: String,
       maxlength: 3,
     },
+    markerTypeSiz: {
+      // Тип СИЗ
+      type: String,
+      maxlength: 100,
+    },
+    markerMarkerTypeSiz: {
+      //  Маркер Тип СИЗ
+      type: String,
+      maxlength: 100,
+    },
   },
   { versionKey: false }
 );
